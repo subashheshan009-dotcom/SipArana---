@@ -1,26 +1,59 @@
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { Sparkles, MessageCircle, Volume2, X, Heart, Smile } from 'lucide-react';
+import { Sparkles, X, Heart, Smile } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface MascotProps {
   trigger?: boolean;
 }
 
-const MOTIVATION_MESSAGES = [
-  { si: 'සුබ පැතුම්! අද දවසේ ඔයාගේ පාඩම් ඉලක්කය සපුරාගන්න පුළුවන්!', en: 'Great job! Keep the momentum going for today\'s study goal!' },
-  { si: 'උත්සාහය අත්හරින්න එපා! හැම අමාරු ගණනක්ම විසඳන්න ක්‍රමයක් තියෙනවා.', en: 'Never give up! Every tough problem has a structured solution.' },
-  { si: 'A/L සහ O/L විභාග ජයගන්න දිනපතා පුහුණුව තමයි එකම රහස!', en: 'Daily consistent practice is the only secret to Island Top Ranks!' },
-  { si: 'විනාඩි 25ක් පාඩම් කරලා විනාඩි 5ක විවේකයක් ගන්න (Pomodoro ක්‍රමය)!', en: 'Study for 25 mins, take a 5 min break for maximum retention!' },
-  { si: 'Z-Score එක වැඩි කරගන්න Past Papers වැඩිපුර කරන්න!', en: 'Boost your Z-Score by practicing at least 10 years of Past Papers!' }
+interface MascotMessage {
+  si: string;
+  ta: string;
+  en: string;
+}
+
+const MOTIVATION_MESSAGES: MascotMessage[] = [
+  {
+    si: 'සුබ පැතුම්! අද දවසේ ඔයාගේ පාඩම් ඉලක්කය සපුරාගන්න පුළුවන්!',
+    ta: 'வாழ்த்துகள்! இன்றைய படிப்பு இலக்கை உங்களால் எளிதாக அடைய முடியும்!',
+    en: 'Great job! Keep the momentum going for today\'s study goal!'
+  },
+  {
+    si: 'උත්සාහය අත්හරින්න එපා! හැම අමාරු ගණනක්ම විසඳන්න ක්‍රමයක් තියෙනවා.',
+    ta: 'முயற்சியைக் கைவிடாதீர்கள்! கடினமான ஒவ்வொரு கேள்விக்கும் ஒரு தீர்வு உண்டு.',
+    en: 'Never give up! Every tough problem has a structured solution.'
+  },
+  {
+    si: 'A/L සහ O/L විභාග ජයගන්න දිනපතා පුහුණුව තමයි එකම රහස!',
+    ta: 'A/L மற்றும் O/L தேர்வுகளில் வெல்ல தினசரி தொடர் பயிற்சியே சிறந்த வழி!',
+    en: 'Daily consistent practice is the only secret to Island Top Ranks!'
+  },
+  {
+    si: 'විනාඩි 25ක් පාඩම් කරලා විනාඩි 5ක විවේකයක් ගන්න (Pomodoro ක්‍රමය)!',
+    ta: '25 நிமிடங்கள் படித்து 5 நிமிடங்கள் ஓய்வெடுங்கள் (Pomodoro முறை)!',
+    en: 'Study for 25 mins, take a 5 min break for maximum retention!'
+  },
+  {
+    si: 'Z-Score එක වැඩි කරගන්න Past Papers වැඩිපුර කරන්න!',
+    ta: 'Z-புள்ளியை உயர்த்த கடந்த கால வினாத்தாள்களை அதிகம் பயிற்சி செய்யுங்கள்!',
+    en: 'Boost your Z-Score by practicing at least 10 years of Past Papers!'
+  },
+  {
+    si: 'AI සරසවි සහකාරගෙන් ඕනෑම විෂය ගැටලුවක් සරලව අහන්න!',
+    ta: 'AI உதவியாளரிடம் எந்த பாட சந்தேகத்தையும் எளிதாகக் கேளுங்கள்!',
+    en: 'Ask the AI study assistant any complex syllabus doubt instantly!'
+  }
 ];
 
 export default function Mascot({ trigger }: MascotProps) {
-  const { profile, addXP } = useAuth();
+  const { addXP } = useAuth();
+  const { language, tText, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
   const [isHighFiving, setIsHighFiving] = useState(false);
-  const [heartsCount, setHeartsCount] = useState(0);
+  const [, setHeartsCount] = useState(0);
 
   useEffect(() => {
     if (trigger) {
@@ -49,6 +82,19 @@ export default function Mascot({ trigger }: MascotProps) {
   };
 
   const currentMsg = MOTIVATION_MESSAGES[messageIndex];
+  const primaryText = tText(currentMsg, currentMsg.en);
+
+  const mascotTitle = language === 'si'
+    ? 'සිපුරු (Sipuru AI Mascot)'
+    : language === 'ta'
+    ? 'சிப்புரு (Sipuru AI வழிகாட்டி)'
+    : 'Sipuru AI Study Mascot';
+
+  const nextTipText = language === 'si'
+    ? 'තව උපදෙසක්'
+    : language === 'ta'
+    ? 'அடுத்த குறிப்பு'
+    : 'Next Study Tip';
 
   return (
     <div id="siparana-mascot-container" className="fixed bottom-5 right-5 z-40 flex flex-col items-end">
@@ -61,7 +107,7 @@ export default function Mascot({ trigger }: MascotProps) {
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-1.5">
             <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>සිපුරු (Sipuru AI Mascot)</span>
+              <span>{mascotTitle}</span>
             </div>
             <button
               id="mascot-close-btn"
@@ -72,25 +118,28 @@ export default function Mascot({ trigger }: MascotProps) {
             </button>
           </div>
 
-          <p className="text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
-            "{currentMsg.si}"
+          <p className="text-slate-800 dark:text-slate-100 font-semibold leading-relaxed text-[13px]">
+            "{primaryText}"
           </p>
-          <p className="text-slate-500 dark:text-slate-400 italic">
-            "{currentMsg.en}"
-          </p>
+          
+          {language !== 'en' && (
+            <p className="text-slate-500 dark:text-slate-400 text-[11px] italic">
+              "{currentMsg.en}"
+            </p>
+          )}
 
-          <div className="pt-1.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="pt-1.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 gap-2">
             <button
               id="mascot-next-msg-btn"
               onClick={nextMessage}
               className="text-blue-600 dark:text-blue-400 font-medium hover:underline flex items-center gap-1"
             >
-              <Smile className="w-3 h-3" /> තව උපදෙසක්
+              <Smile className="w-3 h-3" /> {nextTipText}
             </button>
             <button
               id="mascot-highfive-btn"
               onClick={handleHighFive}
-              className="bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg border border-blue-200 dark:border-blue-800 flex items-center gap-1 font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/50"
+              className="bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg border border-blue-200 dark:border-blue-800 flex items-center gap-1 font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/50 whitespace-nowrap"
             >
               ✋ High Five! (+15 XP)
             </button>

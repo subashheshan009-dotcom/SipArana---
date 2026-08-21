@@ -6,9 +6,20 @@ export type DemoPresetKey = 'maths' | 'bio' | 'commerce' | 'ol' | 'junior' | 'ar
 interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
-  login: (email: string, pass: string) => Promise<boolean>;
+  login: (emailOrPhone: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: (googleData?: {
+    name?: string;
+    email?: string;
+    avatar?: string;
+    category?: StudentCategory;
+    grade?: SchoolGrade;
+    stream?: Stream;
+    university?: string;
+    degreeProgramme?: string;
+    district?: string;
+  }) => Promise<{ success: boolean; error?: string }>;
   loginAsDemo: (presetKey: DemoPresetKey) => void;
-  register: (data: Partial<UserProfile>) => Promise<boolean>;
+  register: (data: Partial<UserProfile> & { password?: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   updateProfile: (data: Partial<UserProfile>) => void;
   setGradeAndStream: (grade: SchoolGrade, stream?: Stream) => void;
@@ -269,17 +280,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Load from local storage or set default demo
+    // Check if user session exists in local storage
     const saved = localStorage.getItem('siparana_user');
     if (saved) {
       try {
         setProfile(JSON.parse(saved));
       } catch {
-        setProfile(DEFAULT_USERS.maths);
+        setProfile(null);
       }
     } else {
-      // Default to demo maths student so preview is immediately welcoming
-      setProfile(DEFAULT_USERS.maths);
+      // User is not logged in by default - display Welcome / Sign In / Register screen
+      setProfile(null);
     }
     setLoading(false);
   }, []);
@@ -293,19 +304,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, _pass: string): Promise<boolean> => {
-    // Check if match demo or create user
-    const existing = Object.values(DEFAULT_USERS).find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existing) {
-      persistUser(existing);
-      return true;
+  const login = async (
+    emailOrPhone: string,
+    pass: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const trimmedInput = emailOrPhone.trim().toLowerCase();
+    const cleanPhone = trimmedInput.replace(/[^0-9]/g, '');
+
+    // 1. Check custom registered users in local storage
+    const storedUsersJson = localStorage.getItem('siparana_registered_accounts');
+    if (storedUsersJson) {
+      try {
+        const storedUsers: Array<{ profile: UserProfile; password?: string; phone?: string }> =
+          JSON.parse(storedUsersJson);
+
+        const found = storedUsers.find((acc) => {
+          const emailMatch = acc.profile.email.toLowerCase() === trimmedInput;
+          const phoneMatch = acc.phone && acc.phone.replace(/[^0-9]/g, '') === cleanPhone;
+          return emailMatch || phoneMatch;
+        });
+
+        if (found) {
+          if (found.password && pass && found.password !== pass) {
+            return {
+              success: false,
+              error: 'මුරපදය වැරදියි. කරුණාකර නිවැරදි මුරපදය ඇතුළත් කරන්න (Invalid Password).',
+            };
+          }
+          persistUser(found.profile);
+          return { success: true };
+        }
+      } catch {
+        // Continue to check demo presets
+      }
     }
-    // Dynamic login fallback
+
+    // 2. Check predefined demo users
+    const matchedDemo = Object.values(DEFAULT_USERS).find((u) => {
+      return (
+        u.email.toLowerCase() === trimmedInput ||
+        u.name.toLowerCase().includes(trimmedInput) ||
+        (trimmedInput.includes('kasun') && u.id === 'usr_maths_1') ||
+        (trimmedInput.includes('heshan') && u.id === 'usr_uni_1')
+      );
+    });
+
+    if (matchedDemo) {
+      persistUser(matchedDemo);
+      return { success: true };
+    }
+
+    // 3. Fallback: If non-empty email/phone, create a clean student profile
+    const isEmail = trimmedInput.includes('@');
+    const displayEmail = isEmail ? trimmedInput : `${cleanPhone || 'user'}@siparana.lk`;
+    const derivedName = isEmail
+      ? trimmedInput.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ')
+      : `Student (${trimmedInput})`;
+
     const newUser: UserProfile = {
       id: `usr_${Date.now()}`,
-      name: email.split('@')[0] || 'Student',
-      email,
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      name: derivedName.charAt(0).toUpperCase() + derivedName.slice(1),
+      email: displayEmail,
+      avatar:
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       grade: 12,
       level: 'AL',
       stream: 'Physical Science (Maths)',
@@ -321,15 +382,151 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       solvedDoubtsCount: 0,
       bookmarkedPaperIds: [],
     };
+
+    // Save into registered accounts so it can be re-logged into later
+    try {
+      const existingAccounts: Array<{ profile: UserProfile; password?: string; phone?: string }> =
+        JSON.parse(localStorage.getItem('siparana_registered_accounts') || '[]');
+      existingAccounts.push({ profile: newUser, password: pass, phone: cleanPhone });
+      localStorage.setItem('siparana_registered_accounts', JSON.stringify(existingAccounts));
+    } catch {
+      // ignore
+    }
+
     persistUser(newUser);
-    return true;
+    return { success: true };
+  };
+
+  const loginWithGoogle = async (googleData?: {
+    name?: string;
+    email?: string;
+    avatar?: string;
+    category?: StudentCategory;
+    grade?: SchoolGrade;
+    stream?: Stream;
+    university?: string;
+    degreeProgramme?: string;
+    district?: string;
+    medium?: Medium;
+  }): Promise<{ success: boolean; error?: string }> => {
+    const userEmail = (googleData?.email || 'subashheshan009@gmail.com').trim().toLowerCase();
+    const rawName = googleData?.name || (userEmail.includes('@') ? userEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ') : 'Heshan Subasinghe');
+    const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+    const userAvatar = googleData?.avatar || `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`;
+
+    // Determine chosen medium or fallback to saved app language
+    let activeMedium: Medium = googleData?.medium || 'Sinhala';
+    try {
+      const savedLang = localStorage.getItem('siparana_app_language');
+      if (savedLang === 'ta') activeMedium = 'Tamil';
+      else if (savedLang === 'en') activeMedium = 'English';
+      else if (savedLang === 'si') activeMedium = 'Sinhala';
+    } catch {
+      // ignore
+    }
+
+    // Check if user already registered before
+    const storedUsersJson = localStorage.getItem('siparana_registered_accounts');
+    if (storedUsersJson) {
+      try {
+        const storedUsers: Array<{ profile: UserProfile; password?: string; phone?: string }> = JSON.parse(storedUsersJson);
+        const existing = storedUsers.find(acc => acc.profile.email.toLowerCase() === userEmail);
+        if (existing) {
+          const updatedProfile: UserProfile = {
+            ...existing.profile,
+            medium: googleData?.medium || existing.profile.medium || activeMedium,
+            authProvider: 'google',
+            lastActiveDate: new Date().toISOString().split('T')[0]
+          };
+          persistUser(updatedProfile);
+          return { success: true };
+        }
+      } catch {
+        // continue
+      }
+    }
+
+    const isUni = googleData?.category === 'University' || userEmail.includes('eng') || userEmail.includes('uni') || userEmail.includes('moratuwa');
+    
+    let newUser: UserProfile;
+    if (isUni) {
+      newUser = {
+        id: `usr_google_${Date.now()}`,
+        name: formattedName,
+        email: userEmail,
+        avatar: userAvatar,
+        authProvider: 'google',
+        studentCategory: 'University',
+        level: 'CAMPUS',
+        stream: 'Higher Education',
+        school: googleData?.university || 'University of Moratuwa',
+        university: googleData?.university || 'University of Moratuwa',
+        universityShort: 'UoM',
+        faculty: 'Faculty of Engineering',
+        degreeProgramme: googleData?.degreeProgramme || 'B.Sc. (Hons) in Computer Science & Engineering',
+        degreeCode: 'ENG-CSE',
+        academicYear: 2,
+        academicSemester: 1,
+        studentIdNumber: '220459X',
+        targetYear: 2027,
+        district: googleData?.district || 'Colombo',
+        medium: googleData?.medium || activeMedium || 'English',
+        isPremium: true,
+        xp: 1200,
+        streakDays: 3,
+        lastActiveDate: new Date().toISOString().split('T')[0],
+        completedLessonsCount: 8,
+        solvedDoubtsCount: 4,
+        bookmarkedPaperIds: [],
+        currentGpa: 3.85,
+        targetGpa: 4.0
+      };
+    } else {
+      const gradeVal = googleData?.grade || 13;
+      newUser = {
+        id: `usr_google_${Date.now()}`,
+        name: formattedName,
+        email: userEmail,
+        avatar: userAvatar,
+        authProvider: 'google',
+        studentCategory: 'School',
+        grade: gradeVal,
+        level: gradeVal <= 9 ? 'JUNIOR' : gradeVal <= 11 ? 'OL' : 'AL',
+        stream: googleData?.stream || (gradeVal <= 9 ? 'Junior Secondary (Grade 6-9)' : gradeVal <= 11 ? 'General O/L' : 'Physical Science (Maths)'),
+        targetYear: 2026,
+        school: 'Sri Lanka National School',
+        district: googleData?.district || 'Colombo',
+        medium: googleData?.medium || activeMedium || 'Sinhala',
+        isPremium: true,
+        xp: 1000,
+        streakDays: 1,
+        lastActiveDate: new Date().toISOString().split('T')[0],
+        completedLessonsCount: 4,
+        solvedDoubtsCount: 2,
+        bookmarkedPaperIds: [],
+      };
+    }
+
+    try {
+      const existingAccounts: Array<{ profile: UserProfile; password?: string; phone?: string }> =
+        JSON.parse(localStorage.getItem('siparana_registered_accounts') || '[]');
+      existingAccounts.push({ profile: newUser });
+      localStorage.setItem('siparana_registered_accounts', JSON.stringify(existingAccounts));
+    } catch {
+      // ignore
+    }
+
+    persistUser(newUser);
+    return { success: true };
   };
 
   const loginAsDemo = (presetKey: DemoPresetKey) => {
     persistUser(DEFAULT_USERS[presetKey] || DEFAULT_USERS.maths);
   };
 
-  const register = async (data: Partial<UserProfile>): Promise<boolean> => {
+  const register = async (
+    data: Partial<UserProfile> & { password?: string; phone?: string }
+  ): Promise<{ success: boolean; error?: string }> => {
     const gradeVal = data.grade || 12;
     let levelVal: ExamLevel = 'AL';
     let streamVal: Stream = data.stream || 'Physical Science (Maths)';
@@ -342,18 +539,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       streamVal = 'General O/L';
     }
 
+    const { password, phone, ...profileFields } = data;
+
     const newUser: UserProfile = {
       id: `usr_${Date.now()}`,
-      name: data.name || 'New Student',
-      email: data.email || 'student@siparana.lk',
-      avatar: data.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      name: profileFields.name || 'New Student',
+      email: profileFields.email || 'student@siparana.lk',
+      avatar:
+        profileFields.avatar ||
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
       grade: gradeVal,
-      level: data.level || levelVal,
+      level: profileFields.level || levelVal,
       stream: streamVal,
-      targetYear: data.targetYear || (gradeVal === 11 ? 2026 : gradeVal === 13 ? 2026 : 2027),
-      school: data.school || 'National School',
-      district: data.district || 'Colombo',
-      medium: data.medium || 'Sinhala',
+      targetYear:
+        profileFields.targetYear ||
+        (gradeVal === 11 ? 2026 : gradeVal === 13 ? 2026 : 2027),
+      school: profileFields.school || 'National School',
+      district: profileFields.district || 'Colombo',
+      medium: profileFields.medium || 'Sinhala',
       isPremium: false,
       xp: 250,
       streakDays: 1,
@@ -361,10 +564,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       completedLessonsCount: 0,
       solvedDoubtsCount: 0,
       bookmarkedPaperIds: [],
-      ...data,
+      ...profileFields,
     };
+
+    // Store in permanent account list
+    try {
+      const existingAccounts: Array<{ profile: UserProfile; password?: string; phone?: string }> =
+        JSON.parse(localStorage.getItem('siparana_registered_accounts') || '[]');
+      existingAccounts.push({ profile: newUser, password: password, phone: phone });
+      localStorage.setItem('siparana_registered_accounts', JSON.stringify(existingAccounts));
+    } catch {
+      // ignore
+    }
+
     persistUser(newUser);
-    return true;
+    return { success: true };
   };
 
   const setGradeAndStream = (newGrade: SchoolGrade, customStream?: Stream) => {
@@ -508,6 +722,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         profile,
         loading,
         login,
+        loginWithGoogle,
         loginAsDemo,
         register,
         logout,

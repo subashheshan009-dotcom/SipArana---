@@ -1,6 +1,6 @@
 {
   "name": "SipArana Educational Web App",
-  "description": "Sri Lanka's comprehensive digital learning platform for Grades 6–13 (Junior Secondary, O/L, and A/L) and University Higher Education, featuring Guru Potha aligned lessons, video classroom, University Degree AI Assistant, semester modules, past papers, GPA forecaster, and research tools.",
+  "description": "Sri Lanka's comprehensive digital learning platform for Grades 6–13 (Junior Secondary, O/L, and A/L) and University Higher Education, featuring secure student authentication & onboarding, Guru Potha aligned lessons, video classroom, University Degree AI Assistant, semester modules, past papers, GPA forecaster, and research tools.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -1,5 +1,6 @@
 export type ExamLevel = 'AL' | 'OL' | 'JUNIOR' | 'CAMPUS';
 export type StudentCategory = 'School' | 'University';
+export type AppLanguage = 'si' | 'ta' | 'en';
 
 export type Stream = 
   | 'Physical Science (Maths)' 
@@ -20,7 +21,7 @@ export interface UserProfile {
   email: string;
   avatar: string;
   studentCategory?: StudentCategory; // 'School' or 'University'
-  grade: SchoolGrade;
+  grade?: SchoolGrade;
   level: ExamLevel;
   stream: Stream;
   targetYear: number;
@@ -35,6 +36,7 @@ export interface UserProfile {
   solvedDoubtsCount: number;
   bookmarkedPaperIds: string[];
   enrolledSubjectIds?: string[];
+  authProvider?: 'google' | 'email' | 'demo';
   
   // University Student Specific Attributes
   university?: string;

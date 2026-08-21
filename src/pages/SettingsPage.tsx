@@ -14,16 +14,19 @@ import {
   ShieldCheck,
   Save,
   GraduationCap,
-  Layers
+  Layers,
+  Languages
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage, SUPPORTED_LANGUAGES } from '@/context/LanguageContext';
 import { SRI_LANKA_DISTRICTS, SCHOOL_GRADES } from '@/data/mockData';
-import type { Stream, ExamLevel, Medium, SchoolGrade } from '@/types';
+import type { Stream, ExamLevel, Medium, SchoolGrade, AppLanguage } from '@/types';
 
 export default function SettingsPage() {
   const { profile, updateProfile, setGradeAndStream, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
 
   const [name, setName] = useState(profile?.name || '');
   const [school, setSchool] = useState(profile?.school || '');
@@ -76,19 +79,62 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-3xl mx-auto">
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100">
-          ගිණුම් සහ ශ්‍රේණි සැකසුම් (Account & Curriculum Settings)
+          {language === 'si'
+            ? 'ගිණුම් සහ ශ්‍රේණි සැකසුම් (Account & Curriculum Settings)'
+            : language === 'ta'
+            ? 'கணக்கு & பாடத்திட்ட அமைப்புகள் (Account Settings)'
+            : 'Account & Curriculum Settings'}
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-          ඔබගේ ශ්‍රේණිය (Grade 6-13), විෂය ධාරාව, පාසල, දිස්ත්‍රික්කය සහ තේමාවන් කළමනාකරණය කරන්න.
+          {language === 'si'
+            ? 'ඔබගේ ශ්‍රේණිය (Grade 6-13), භාෂාව, විෂය ධාරාව, පාසල, දිස්ත්‍රික්කය සහ තේමාවන් කළමනාකරණය කරන්න.'
+            : language === 'ta'
+            ? 'உங்கள் தரம் (தரம் 6-13), மொழி, பாடப்பிரிவு, பாடசாலை மற்றும் கருப்பொருளை நிர்வகிக்கவும்.'
+            : 'Manage your active grade (Grades 6–13), system language, stream, school, district, and UI theme.'}
         </p>
       </div>
 
       {savedSuccess && (
         <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4" />
-          <span>සැකසුම් සාර්ථකව සුරකින ලදී! (Settings saved successfully).</span>
+          <span>{language === 'si' ? 'සැකසුම් සාර්ථකව සුරකින ලදී!' : language === 'ta' ? 'அமைப்புகள் வெற்றிகரமாகச் சேமிக்கப்பட்டன!' : 'Settings saved successfully!'}</span>
         </div>
       )}
+
+      {/* Global Application Language Card */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <Languages className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+            <span>{t('selectLanguage')}</span>
+          </h3>
+          <span className="text-[11px] text-cyan-600 dark:text-cyan-400 font-semibold">
+            🇱🇰 Trilingual Support
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold">
+          {SUPPORTED_LANGUAGES.map((lang) => {
+            const isSelected = language === lang.code;
+            return (
+              <button
+                key={lang.code}
+                id={`settings-lang-${lang.code}-btn`}
+                onClick={() => setLanguage(lang.code as AppLanguage)}
+                className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition text-left ${
+                  isSelected
+                    ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/30'
+                    : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                }`}
+              >
+                <span className="text-xl">{lang.flag}</span>
+                <span className="font-bold text-sm">{lang.nativeName}</span>
+                <span className="text-[11px] opacity-70 font-normal">({lang.name})</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* 1. Profile Information */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-5">
