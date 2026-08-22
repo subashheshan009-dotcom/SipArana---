@@ -131,26 +131,66 @@ Your Goals & Guidelines:
     }
   });
 
-  // General School Level AI Tutor Endpoint (for Grades 6-13)
+  // General School Level AI Tutor Endpoint (for Grades 6-13 & A/L Media Studies)
   app.post('/api/gemini/school-tutor', async (req, res) => {
     try {
-      const { prompt, grade, subject, stream, medium } = req.body;
+      const { prompt, grade, subject, stream, medium, history } = req.body;
       const ai = getGeminiClient();
 
-      const systemInstruction = `You are "SipArana Guru Bot" (සිප්අරණ ගුරු සහකාර), the friendly and expert Sri Lankan National Curriculum AI Teacher for School Grade ${grade || 11}, Subject: ${subject || 'General'}, Stream: ${stream || 'General'}, Medium: ${medium || 'Sinhala'}.
-Always strictly align with Sri Lankan Ministry of Education & NIE Guru Potha (ගුරු මාර්ගෝපදේශ සංග්‍රහය).
-Explain in simple, encouraging Sinhala and English, with clear examples, diagrams described in text, and exam-focused mnemonic tips.`;
+      const systemInstruction = `You are "SipArana Guru Bot & Media Assistant" (සිප්අරණ ගුරු සහකාර සහ මාධ්‍ය අධ්‍යයන සහකාර), the expert AI educator for Sri Lanka's National Curriculum (NIE Guru Potha / ගුරු මාර්ගෝපදේශ සංග්‍රහය).
+Target Context:
+- Grade: ${grade || 'Grade 12/13 (A/L)'}
+- Subject: ${subject || 'Communication and Media Studies (සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය)'}
+- Stream: ${stream || 'Arts / Media Stream'}
+- Preferred Medium: ${medium || 'Sinhala, Tamil, or English depending on user question'}
+
+Specialized Domain Expertise:
+1. A/L Communication & Media Studies (සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය / தொடர்பாடலும் ஊடகக் கற்கையும்):
+   - Communication Models & Theories: Harold Lasswell (1948 - Who says what in which channel to whom with what effect), Shannon-Weaver Mathematical Model (Source, Transmitter, Channel, Noise, Receiver, Destination), David Berlo (SMCR: Source, Message, Channel, Receiver), Wilbur Schramm (Field of experience & interaction loop), Westley & MacLean, Agenda-Setting Theory, Two-Step Flow, Uses & Gratifications, Semiotics (Ferdinand de Saussure: Signifier/Signified, Roland Barthes: Denotation/Connotation).
+   - Cinema & Film History: World cinema evolution (Lumière Brothers 1895, Georges Méliès 'A Trip to the Moon', Edwin S. Porter, Sergei Eisenstein & Soviet Montage, Italian Neorealism, French New Wave) & Sri Lankan Cinema History (1947 'Kadawunu Poronduwa' by B.A.W. Jayamanne, 1956 milestone 'Rekava' by Dr. Lester James Peries, 'Gamperaliya', Dharmasena Pathiraja's 'Bambaru Avith', Prasanna Vithanage, Asoka Handagama).
+   - Film Language: 180-degree rule, Kuleshov effect, Mise-en-scène, camera shots (ELS, LS, MS, CU, ECU), camera movements (Pan, Tilt, Track, Dolly, Crane), lighting (3-point: key, fill, backlight).
+   - Print Journalism & Newspaper Production: News criteria/values (Timeliness, Proximity, Prominence, Consequence, Human Interest, Conflict, Oddity), Inverted Pyramid structure, 5W1H lead writing, editorial ethics, Defamation, Sri Lanka Press Council.
+   - Broadcasting Arts (Radio & Television): Radio scripting, Foley sound effects, microphone polar patterns (Cardioid, Omnidirectional, Shotgun), TV studio rundown sheets, Vision switchers, Chroma keying.
+   - Photography: Exposure Triangle (Aperture/f-stop, Shutter Speed, ISO), Depth of Field, Composition (Rule of Thirds, Golden Ratio, Framing).
+2. General National Curriculum: Combined Maths, Physics, Chemistry, Biology, Commerce/Economics, ICT, History, Languages.
+3. Guidelines:
+   - Provide answers in the requested language (Sinhala, Tamil, or English).
+   - Use clear markdown with headings, bullet points, and exam mnemonics.
+   - Reference previous A/L past paper marking schemes and NIE Teacher Guides.`;
 
       if (!ai) {
+        // High quality curriculum fallback for A/L Media and General subjects
+        const isMedia = subject?.toLowerCase().includes('media') || prompt?.toLowerCase().includes('media') || prompt?.toLowerCase().includes('film') || prompt?.toLowerCase().includes('lasswell') || prompt?.toLowerCase().includes('cinema') || prompt?.toLowerCase().includes('journalism');
+        
+        const fallbackText = isMedia
+          ? `### 🎬 සිප්අරණ මාධ්‍ය අධ්‍යයන සහකාර (A/L Media Studies AI Guide)\n\n**විෂය:** සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය (Communication & Media Studies)\n**ප්‍රශ්නය:** "${prompt}"\n\n#### 📌 ප්‍රධාන විභාග කරුණු (Core Syllabus Concept):\n1. **මූලික සිද්ධාන්තය:** ශ්‍රී ලංකා විභාග දෙපාර්තමේන්තුවේ පසුගිය විභාග ප්‍රශ්න පත්‍ර හා ගුරු මාර්ගෝපදේශ සංග්‍රහයට (Guru Potha) අනුව මෙම සංකල්පය අ.පො.ස. උසස් පෙළ විභාගයේ අනිවාර්ය ඒකකයකි.\n2. **න්‍යායික පසුබිම:** ආදර්ශ ආකෘතියේ සංරචක (මූලාශ්‍රය, පණිවිඩය, නාලිකාව, ප්‍රතිග්‍රාහකයා, ප්‍රතිපෝෂණය සහ බාධක) පැහැදිලි රූප සටහන් සහිතව ඉදිරිපත් කරන්න.\n3. **ප්‍රායෝගික නිදසුන:** ශ්‍රී ලාංකේය සන්නිවේදන ක්ෂේත්‍රය (පුවත්පත්, ගුවන්විදුලි, රූපවාහිනී හෝ සිනමාව) ආශ්‍රිත උදාහරණයක් මගින් පැහැදිලි කිරීමෙන් උපරිම ලකුණු ලබාගත හැක.\n4. **විභාග උපදෙස:** 2018-2024 Marking Scheme අනුව ලකුණු බෙදී යන ප්‍රධාන පියවර කෙරෙහි අවධානය යොමු කරන්න.\n\n💡 *Tip: Explore the dedicated Media Stream Section for interactive camera simulators, cinema timelines, and flashcards!*`
+          : `### 📚 සිප්අරණ පාසල් ගුරු සහකාර (SipArana School Tutor)\n\n**ශ්‍රේණිය:** ${grade || 12} ශ්‍රේණිය | **විෂය:** ${subject || 'සාමාන්‍ය'}\n**ප්‍රශ්නය:** "${prompt}"\n\n#### 📌 ගුරු පොතට අනුකූල මගපෙන්වීම:\n1. **මූලික සිද්ධාන්තය:** ශ්‍රී ලංකා ජාතික විෂය නිර්දේශයේ (NIE Guru Potha) අදාළ නිපුණතාව හා ඉගෙනුම් ඵල නිවැරදිව අධ්‍යයනය කරන්න.\n2. **විභාග සැලසුම:** පසුගිය වසරවල (2018-2024) ප්‍රශ්න පත්‍රවල ව්‍යුහගත හා රචනා ප්‍රශ්න රටාවන්ට අනුව ලකුණු ලබා ගැනීමේ ප්‍රධාන පියවර (Marking points) ලියන්න.\n3. **පාරිභාෂික වචන:** විෂයානුබද්ධ නිවැරදි විද්‍යාත්මක හෝ තාක්ෂණික පාරිභාෂික යෙදුම් භාවිත කරන්න.`;
+
         return res.json({
-          text: `### 📚 සිප්අරණ පාසල් ගුරු සහකාර (SipArana School Tutor)\n\n**ශ්‍රේණිය:** ${grade || 11} ශ්‍රේණිය | **විෂය:** ${subject || 'සාමාන්‍ය'}\n\n*නිරීක්ෂණය:* "${prompt}" පිළිබඳ ගුරු පොතට අනුකූල කෙටි සටහන:\n1. ශ්‍රී ලංකා ජාතික විෂය නිර්දේශයට අනුව මෙහි මූලික සිද්ධාන්ත හොඳින් මතක තබාගන්න.\n2. විභාග ප්‍රශ්න පත්‍රවල පසුගිය වසරවල (2018-2024) බහුවරණ හා ව්‍යුහගත රචනා ප්‍රශ්න පුහුණු වන්න.\n3. නිවැරදි විද්‍යාත්මක හෝ ගණිතමය පාරිභාෂික වචන භාවිත කරන්න.`,
+          text: fallbackText,
           isFallback: true
         });
       }
 
+      const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+
+      if (Array.isArray(history) && history.length > 0) {
+        for (const msg of history.slice(-6)) {
+          contents.push({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.content }]
+          });
+        }
+      }
+
+      contents.push({
+        role: 'user',
+        parts: [{ text: prompt }]
+      });
+
       const response = await ai.models.generateContent({
         model: 'gemini-3.7-flash',
-        contents: prompt,
+        contents,
         config: {
           systemInstruction,
           temperature: 0.7,

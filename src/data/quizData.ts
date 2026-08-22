@@ -521,5 +521,147 @@ export const UNIT_QUIZZES_DATA: UnitQuiz[] = [
         difficulty: 'Easy'
       }
     ]
+  },
+
+  // 7. A/L Communication & Media Studies - Theories, Models & Semiotics
+  {
+    id: 'quiz_al_media_theories_01',
+    title: 'Communication Models, Lasswell, Berlo & Semiotics',
+    titleSinhala: 'සන්නිවේදන ආකෘති, ලැස්වෙල්, බර්ලෝ SMCR සහ සංකේතවේදය',
+    titleTamil: 'தொடர்பாடல் மாதிரிகள் & குறியியல் (A/L Media Studies)',
+    subjectId: 'sub_media_studies',
+    subjectName: 'Communication & Media Studies',
+    subjectSinhala: 'සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය',
+    grade: 13,
+    stream: 'Arts',
+    unitNumber: 1,
+    timeLimitMinutes: 15,
+    totalMarks: 100,
+    xpReward: 120,
+    iconName: 'Layers',
+    color: 'from-amber-600 to-amber-900',
+    description: 'Test your grasp on Harold Lasswell 5-question formula, Shannon & Weaver noise, Berlo SMCR, and Saussure semiotic signs.',
+    descriptionSinhala: 'ලැස්වෙල් ආකෘතිය, ෂැනන් සහ වීවර්ගේ ඝෝෂාව, බර්ලෝගේ ආකෘතිය සහ සසූර්ගේ සංකේතවේදය පිළිබඳ උසස් පෙළ බහුවරණ පරීක්ෂණය.',
+    questions: [
+      {
+        id: 'q_med_1',
+        questionNumber: 1,
+        questionText: 'In Harold Lasswell\'s (1948) 5-question communication model, what research analysis corresponds to the question "In Which Channel?"',
+        questionTextSinhala: 'හැරල්ඩ් ලැස්වෙල්ගේ (1948) සන්නිවේදන ආකෘතියේ "කුමන නාලිකාවෙන්ද?" (In Which Channel?) යන ප්‍රශ්නයට අදාළ වන පර්යේෂණ ක්ෂේත්‍රය කුමක්ද?',
+        options: [
+          { id: 'opt_1', text: 'Media Analysis (මාධ්‍ය විශ්ලේෂණය)', textSinhala: 'මාධ්‍ය විශ්ලේෂණය (Media Analysis)' },
+          { id: 'opt_2', text: 'Control Analysis (පාලන විශ්ලේෂණය)', textSinhala: 'පාලන විශ්ලේෂණය (Control Analysis)' },
+          { id: 'opt_3', text: 'Content Analysis (අන්තර්ගත විශ්ලේෂණය)', textSinhala: 'අන්තර්ගත විශ්ලේෂණය (Content Analysis)' },
+          { id: 'opt_4', text: 'Audience Analysis (ප්‍රේක්ෂක විශ්ලේෂණය)', textSinhala: 'ප්‍රේක්ෂක විශ්ලේෂණය (Audience Analysis)' },
+          { id: 'opt_5', text: 'Effects Analysis (බලපෑම් විශ්ලේෂණය)', textSinhala: 'බලපෑම් විශ්ලේෂණය (Effects Analysis)' },
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'In Lasswell\'s model: Who = Control Analysis, Says What = Content Analysis, In Which Channel = Media Analysis, To Whom = Audience Analysis, With What Effect = Effects Analysis.',
+        explanationSinhala: 'ලැස්වෙල් ආකෘතියේ: කවුරුන්ද = පාලන විශ්ලේෂණය, කුමක් පවසයිද = අන්තර්ගත විශ්ලේෂණය, කුමන නාලිකාවෙන්ද = මාධ්‍ය විශ්ලේෂණය, කා හටද = ප්‍රේක්ෂක විශ්ලේෂණය, කුමන බලපෑමකින්ද = බලපෑම් විශ්ලේෂණය.',
+        guruPothaRef: 'A/L Media Studies Teacher Guide • Unit 01 Communication Models',
+        topic: 'Harold Lasswell Model',
+        difficulty: 'Easy'
+      },
+      {
+        id: 'q_med_2',
+        questionNumber: 2,
+        questionText: 'Which communication model was the first to introduce the concept of "Noise Source" (සන්නිවේදන බාධක / ඝෝෂාව)?',
+        questionTextSinhala: 'සන්නිවේදන ක්‍රියාවලියට "ඝෝෂාව" (Noise Source) හෙවත් බාධක සංකල්පය ප්‍රථම වරට හඳුන්වාදුන් ආකෘතිය කුමක්ද?',
+        options: [
+          { id: 'opt_1', text: 'Shannon and Weaver Model (1949)', textSinhala: 'ෂැනන් සහ වීවර්ගේ ගණිතමය ආකෘතිය (1949)' },
+          { id: 'opt_2', text: 'Aristotle\'s Rhetoric Model', textSinhala: 'ඇරිස්ටෝටල්ගේ ආකෘතිය' },
+          { id: 'opt_3', text: 'David Berlo\'s SMCR Model', textSinhala: 'ඩේවිඩ් බර්ලෝගේ SMCR ආකෘතිය' },
+          { id: 'opt_4', text: 'Wilbur Schramm\'s 1st Model', textSinhala: 'විල්බර් ශ්‍රාම්ගේ පළමු ආකෘතිය' },
+          { id: 'opt_5', text: 'Newcomb\'s ABX Model', textSinhala: 'නිව්කොම්බ්ගේ ABX ආකෘතිය' },
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'Claude Shannon and Warren Weaver introduced the mathematical model of communication in 1949 at Bell Labs, which explicitly modeled Noise in the channel.',
+        explanationSinhala: '1949 දී ක්ලෝඩ් ෂැනන් සහ වොරන් වීවර් විසින් ඉදිරිපත් කළ ගණිතමය ආකෘතිය මගින් නාලිකාව තුළ හටගන්නා ඝෝෂාව (Noise) ප්‍රථම වරට විද්‍යාත්මකව හඳුන්වාදෙන ලදී.',
+        guruPothaRef: 'A/L Media Studies Syllabus • Unit 01 Communication Models',
+        topic: 'Shannon & Weaver Model',
+        difficulty: 'Medium'
+      },
+      {
+        id: 'q_med_3',
+        questionNumber: 3,
+        questionText: 'According to Swiss linguist Ferdinand de Saussure, a Sign (සංකේතය) is a dyadic composite of:',
+        questionTextSinhala: 'ස්විස් ජාතික වාග්විද්‍යාඥ ෆර්ඩිනන්ඩ් ඩි සසූර්ට අනුව සංකේතයක් (Sign) යනු කුමන අංග දෙකෙහි එකතුවක්ද?',
+        options: [
+          { id: 'opt_1', text: 'Signifier (සංකේතකය) + Signified (සංකේතිතය)', textSinhala: 'සංකේතකය (Signifier) + සංකේතිතය (Signified)' },
+          { id: 'opt_2', text: 'Sender (ප්‍රේෂකයා) + Receiver (ග්‍රාහකයා)', textSinhala: 'ප්‍රේෂකයා + ග්‍රාහකයා' },
+          { id: 'opt_3', text: 'Icon (ප්‍රතිමාව) + Index (දර්ශකය)', textSinhala: 'ප්‍රතිමාව + දර්ශකය' },
+          { id: 'opt_4', text: 'Denotation (වාච්‍යාර්ථය) + Connotation (ව්‍යංගාර්ථය)', textSinhala: 'වාච්‍යාර්ථය + ව්‍යංගාර්ථය' },
+          { id: 'opt_5', text: 'Code (කේතය) + Message (පණිවිඩය)', textSinhala: 'කේතය + පණිවිඩය' },
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'Saussure defined Sign = Signifier (material form, sound, visual image) + Signified (the mental concept represented).',
+        explanationSinhala: 'සසූර්ට අනුව සංකේතයක් යනු සංකේතකය (භෞතික/ශ්‍රව්‍ය/දෘශ්‍ය ස්වරූපය) සහ සංකේතිතය (මනසේ හටගන්නා අදහස/සංකල්පය) යන අංග දෙකේ එකතුවකි.',
+        guruPothaRef: 'A/L Media Studies Textbook • Semiotics & Visual Culture',
+        topic: 'Semiotics (සංකේතවේදය)',
+        difficulty: 'Medium'
+      }
+    ]
+  },
+
+  // 8. A/L Communication & Media Studies - Sri Lankan Cinema & Film Language
+  {
+    id: 'quiz_al_media_cinema_02',
+    title: 'Sri Lankan Cinema History & Film Language (1947–Present)',
+    titleSinhala: 'ශ්‍රී ලාංකේය සිනමා ඉතිහාසය, රේඛාව සහ සිනමා භාෂාව',
+    titleTamil: 'இலங்கை சினிமா வரலாறு & திரைப்படக் கலை (A/L Media)',
+    subjectId: 'sub_media_studies',
+    subjectName: 'Communication & Media Studies',
+    subjectSinhala: 'සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය',
+    grade: 13,
+    stream: 'Arts',
+    unitNumber: 4,
+    timeLimitMinutes: 15,
+    totalMarks: 100,
+    xpReward: 120,
+    iconName: 'Film',
+    color: 'from-blue-700 to-indigo-900',
+    description: 'Assess knowledge on 1947 Kadawunu Poronduwa, Lester James Peries 1956 Rekava, 180-degree rule, and mise-en-scène.',
+    descriptionSinhala: 'කඩවුණු පොරොන්දුව, රේඛාව, ගම්පෙරළිය, 180° රීතිය සහ මිසෝන්සෙන් පිළිබඳ විභාග බහුවරණ.',
+    questions: [
+      {
+        id: 'q_cin_1',
+        questionNumber: 1,
+        questionText: 'Why is Dr. Lester James Peries\' film "Rekava" (1956) considered the revolutionary turning point of Sri Lankan cinema?',
+        questionTextSinhala: '1956 දී ආචාර්ය ලෙස්ටර් ජේම්ස් පීරිස් නිර්මාණය කළ "රේඛාව" චිත්‍රපටය ශ්‍රී ලාංකේය සිනමාවේ ඓතිහාසික හැරවුම් ලක්ෂ්‍යය ලෙස සලකන්නේ මන්ද?',
+        options: [
+          { id: 'opt_1', text: 'First film completely shot outdoors on real locations breaking South Indian studio theatrical formula', textSinhala: 'දකුණු ඉන්දීය චිත්‍රාගාර නාට්‍ය සම්ප්‍රදායෙන් බැහැරව සැබෑ එළිමහන් පරිසරයේ (Outdoor Locations) කැමරාගත කළ ප්‍රථම යථාර්ථවාදී ලාංකේය චිත්‍රපටය වීම' },
+          { id: 'opt_2', text: 'It was the very first film made with Sinhala dialogues', textSinhala: 'එය ප්‍රථම සිංහල දෙබස් සහිත චිත්‍රපටය වූ නිසා' },
+          { id: 'opt_3', text: 'It won the Golden Peacock award at New Delhi', textSinhala: 'එය නවදිල්ලි සිනමා උළෙලේදී රන් මයුර සම්මානය දිනූ නිසා' },
+          { id: 'opt_4', text: 'It was the first film to feature color cinematography in Sri Lanka', textSinhala: 'එය ශ්‍රී ලංකාවේ ප්‍රථම වර්ණ චිත්‍රපටය වූ නිසා' },
+          { id: 'opt_5', text: 'It was produced by the Minerva theatre group in Madras', textSinhala: 'එය මිනර්වා නාට්‍ය කණ්ඩායම මදුරාසියේදී නිෂ්පාදනය කළ නිසා' },
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'Rekava (1956) broke away from artificial South Indian studio sets and melodrama, taking the camera outdoors to Sri Lankan villages, establishing indigenous cinematic realism.',
+        explanationSinhala: 'රේඛාව චිත්‍රපටය දකුණු ඉන්දීය මැදිරි සිනමාවේ කෘත්‍රිමත්වයෙන් මිදී කැමරාව සැබෑ ගම්බද එළිමහන් පරිසරයට ගෙන ගොස් ස්වදේශීය සිනමා භාෂාවක් නිර්මාණය කළේය.',
+        guruPothaRef: 'A/L Media Studies Resource Book • Sri Lankan Cinema History',
+        topic: 'Sri Lankan Film History',
+        difficulty: 'Easy'
+      },
+      {
+        id: 'q_cin_2',
+        questionNumber: 2,
+        questionText: 'What is the primary visual purpose of the "180-Degree Rule" (අංශක 180 රීතිය) in cinematography?',
+        questionTextSinhala: 'සිනමා කැමරාකරණයේදී අංශක 180 රීතිය (180-Degree Rule) අනුගමනය කිරීමේ ප්‍රධාන අරමුණ කුමක්ද?',
+        options: [
+          { id: 'opt_1', text: 'To maintain consistent screen direction and spatial orientation between characters', textSinhala: 'චරිත අතර අවකාශීය දිශානතිය (Spatial Orientation / Eye-line Match) ප්‍රේක්ෂකයාට නොමඟ නොයන සේ ආරක්ෂා කිරීම' },
+          { id: 'opt_2', text: 'To adjust camera shutter speed according to frame rate', textSinhala: 'කැමරා කපාට වේගය රාමු අනුපාතයට ගැළපීම' },
+          { id: 'opt_3', text: 'To eliminate audio background noise in outdoor filming', textSinhala: 'එළිමහන් රූගත කිරීම් වලදී පසුබිම් ශබ්ද ඉවත් කිරීම' },
+          { id: 'opt_4', text: 'To achieve 3D stereoscopic depth', textSinhala: 'ත්‍රිමාණ දෘශ්‍ය ගැඹුර ලබාගැනීම' },
+          { id: 'opt_5', text: 'To ensure color temperature balance (5600K)', textSinhala: 'වර්ණ උෂ්ණත්වය තුලනය කිරීම' },
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'The 180-degree rule establishes an imaginary axis of action so characters stay consistently left/right in relation to each other across shots.',
+        explanationSinhala: 'අංශක 180 රීතිය මගින් ක්‍රියාකාරී අක්ෂයක් (Axis of Action) නිර්මාණය කර චරිත එකිනෙකා දෙස බලන දිශානතිය තහවුරු කරයි.',
+        guruPothaRef: 'A/L Media Studies • Film Grammar & Editing',
+        topic: '180-Degree Rule',
+        difficulty: 'Medium'
+      }
+    ]
   }
 ];
+

@@ -247,5 +247,108 @@ export const SYLLABUS_CATALOG_DATA: SyllabusItem[] = [
       'Pythagoras: c² = a² + b²',
       'Mean x̄ = Σfx / Σf'
     ]
+  },
+
+  // 7. A/L Communication & Media Studies Official NIE Syllabus & Guru Potha
+  {
+    id: 'syl_al_media_syllabus',
+    title: 'G.C.E. A/L Communication & Media Studies NIE Official Syllabus & Teacher Guide',
+    titleSinhala: 'අ.පො.ස. උසස් පෙළ සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය නිල ගුරු මාර්ගෝපදේශය (Guru Potha)',
+    titleTamil: 'க.பொ.த. உயர்தர தொடர்பாடலும் ஊடகக் கற்கையும் வழிகாட்டி',
+    subjectCode: 'AL-MED-07',
+    subjectName: 'Communication & Media Studies',
+    subjectSinhala: 'සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය',
+    grade: 13,
+    level: 'AL',
+    stream: 'Arts',
+    yearPublished: 2024,
+    fileType: 'NIE Syllabus',
+    fileSize: '5.4 MB',
+    pageCount: 168,
+    downloadCount: 42100,
+    color: 'from-amber-600 to-amber-900',
+    competencyCount: 18,
+    summary: 'Comprehensive national curriculum for A/L Media Studies covering human communication theories, semiotics, print journalism, broadcasting, cinema history, and photography.',
+    summarySinhala: 'මානව සන්නිවේදන න්‍යාය, සංකේතවේදය, මුද්‍රිත පුවත්පත් කලාව, ගුවන්විදුලි හා රූපවාහිනී විකාශනය, සිනමා ඉතිහාසය හා ඡායාරූප ශිල්පය සියලු නිපුණතා.',
+    competencies: [
+      { competencyNo: '1.0', description: 'Human Communication, Concepts & Models (Lasswell, Shannon-Weaver, Berlo, Schramm)', descriptionSinhala: 'මානව සන්නිවේදනය, මූලික සංකල්ප සහ සන්නිවේදන ආකෘති', periods: 35 },
+      { competencyNo: '2.0', description: 'Print Journalism, News Values, 5W1H & Editorial Ethics', descriptionSinhala: 'මුද්‍රිත මාධ්‍ය, ප්‍රවෘත්ති සම්පාදනය සහ ජනමාධ්‍ය ආචාරධර්ම', periods: 40 },
+      { competencyNo: '3.0', description: 'Broadcasting Arts (Radio Drama, TV Studio Production & Foley Sound)', descriptionSinhala: 'ගුවන්විදුලි හා රූපවාහිනී මාධ්‍ය නිර්මාණකරණය හා ශබ්ද ප්‍රයෝග', periods: 45 },
+      { competencyNo: '4.0', description: 'Cinema & Sri Lankan Film History (1947 Kadawunu Poronduwa, 1956 Rekava to Modern Era)', descriptionSinhala: 'සිනමා ඉතිහාසය, සිනමා භාෂාව සහ ශ්‍රී ලාංකේය සිනමා විකාශනය', periods: 50 },
+      { competencyNo: '5.0', description: 'Photography & Visual Media (Exposure Triangle, Depth of Field, Composition)', descriptionSinhala: 'ඡායාරූප ශිල්පය, නිරාවරණ ත්‍රිකෝණය සහ දෘශ්‍ය මාධ්‍ය සංස්කෘතිය', periods: 30 }
+    ],
+    keyFormulasAndConcepts: [
+      'Harold Lasswell: Who -> Says What -> In Which Channel -> To Whom -> With What Effect',
+      'Shannon-Weaver: Source -> Transmitter -> Channel (Noise) -> Receiver -> Destination',
+      'Berlo SMCR: Source -> Message -> Channel -> Receiver',
+      'Exposure: Aperture (f-stop), Shutter Speed (1/s), ISO Sensitivity',
+      '1947: Kadawunu Poronduwa (1st Sinhala Film), 1956: Rekava (Lester James Peries - Realism Turning Point)'
+    ]
+  },
+
+  // 8. A/L Media Studies Past Paper & Marking Scheme Collection
+  {
+    id: 'syl_al_media_pastpapers',
+    title: 'G.C.E. A/L Media Studies 2018-2024 Past Papers with Official Marking Schemes',
+    titleSinhala: 'අ.පො.ස. උසස් පෙළ සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය පසුගිය විභාග ප්‍රශ්න පත්‍ර සහ ලකුණු දීමේ පටිපාටි',
+    titleTamil: 'க.பொ.த. உயர்தர ஊடகக் கற்கை கடந்த கால வினாத்தாள்கள் & புள்ளித்திட்டம்',
+    subjectCode: 'AL-MED-08',
+    subjectName: 'Communication & Media Studies',
+    subjectSinhala: 'සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය',
+    grade: 13,
+    level: 'AL',
+    stream: 'Arts',
+    yearPublished: 2024,
+    fileType: 'Past Paper PDF',
+    fileSize: '7.8 MB',
+    pageCount: 184,
+    downloadCount: 35600,
+    color: 'from-amber-700 to-slate-900',
+    competencyCount: 12,
+    summary: 'Past papers Part I (MCQ) and Part II (Structured & Essay) with Department of Examinations official marking schemes and model answers.',
+    summarySinhala: 'විභාග දෙපාර්තමේන්තුවේ නිල ලකුණු දීමේ පටිපාටි (Marking Scheme) සහිත 2018-2024 පසුගිය ප්‍රශ්න පත්‍ර සහ ආදර්ශ පිළිතුරු.',
+    competencies: [
+      { competencyNo: 'PP-1', description: '2024 A/L Media Studies Paper I & II with Evaluation Report', descriptionSinhala: '2024 උසස් පෙළ මාධ්‍ය අධ්‍යයන ප්‍රශ්න පත්‍රය සහ පිළිතුරු පත්‍ර ඇගයීම් වාර්තාව', periods: 10 },
+      { competencyNo: 'PP-2', description: '2023 A/L Media Studies Paper I & II with Evaluation Report', descriptionSinhala: '2023 උසස් පෙළ මාධ්‍ය අධ්‍යයන ප්‍රශ්න පත්‍රය සහ පිළිතුරු පත්‍ර ඇගයීම් වාර්තාව', periods: 10 },
+      { competencyNo: 'PP-3', description: '2022 A/L Media Studies Paper I & II with Evaluation Report', descriptionSinhala: '2022 උසස් පෙළ මාධ්‍ය අධ්‍යයන ප්‍රශ්න පත්‍රය සහ පිළිතුරු පත්‍ර ඇගයීම් වාර්තාව', periods: 10 }
+    ],
+    keyFormulasAndConcepts: [
+      'MCQ Pacing: 50 Questions in 120 Minutes (2.4 min/question)',
+      'Essay Marking Rubrics: Theoretical Definition (25%), Local Case Examples (35%), Critical Analysis (40%)',
+      'Press Council Act & Defamation Defense Guidelines'
+    ]
+  },
+
+  // 9. A/L Media Studies Short Notes & Mind Maps
+  {
+    id: 'syl_al_media_shortnotes',
+    title: 'A/L Media Studies High-Yield Short Notes, Mind Maps & Formula Sheets',
+    titleSinhala: 'උසස් පෙළ සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය කෙටි සටහන් සහ සංකල්ප සිතියම්',
+    titleTamil: 'ஊடகக் கற்கை சுருக்கக் குறிப்புகள் & கருத்து வரைபடங்கள்',
+    subjectCode: 'AL-MED-09',
+    subjectName: 'Communication & Media Studies',
+    subjectSinhala: 'සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය',
+    grade: 13,
+    level: 'AL',
+    stream: 'Arts',
+    yearPublished: 2024,
+    fileType: 'Summary Notes',
+    fileSize: '3.1 MB',
+    pageCount: 64,
+    downloadCount: 29400,
+    color: 'from-amber-500 to-blue-800',
+    competencyCount: 10,
+    summary: 'Fast revision sheets covering all communication models, cinema history timelines, photography exposure triangles, and journalism leads.',
+    summarySinhala: 'විභාගයට පෙර කඩිනම් පුනරීක්ෂණය සඳහා සියලුම න්‍යාය ආකෘති, සිනමා කාලරාමු, ඡායාරූප සූත්‍ර සහ පුවත්පත් ශිල්ප ක්‍රම සාරාංශය.',
+    competencies: [
+      { competencyNo: 'SN-1', description: 'All Communication Models on 1-Page Comparison Matrix', descriptionSinhala: 'සියලුම සන්නිවේදන ආකෘති සංසන්දනාත්මක සාරාංශ සටහන', periods: 5 },
+      { competencyNo: 'SN-2', description: 'Chronological Timeline of World & Sri Lankan Cinema', descriptionSinhala: 'ලෝක හා ශ්‍රී ලාංකේය සිනමාවේ ඓතිහාසික කාලරාමුව', periods: 5 },
+      { competencyNo: 'SN-3', description: 'Photography Exposure & Camera Techniques Quick Cheat Sheet', descriptionSinhala: 'ඡායාරූප නිරාවරණ ත්‍රිකෝණය සහ කැමරා ශිල්ප ක්‍රම කෙටි සටහන', periods: 5 }
+    ],
+    keyFormulasAndConcepts: [
+      'Aristotle: Ethos (Credibility), Pathos (Emotion), Logos (Logic)',
+      'Semiotics: Sign = Signifier (Sound/Image) + Signified (Mental Concept)',
+      'Cinema: 180° Rule, Kuleshov Montage Effect, 3-Point Lighting'
+    ]
   }
 ];
