@@ -1,14 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Clock,
-  Play,
-  Pause,
-  RotateCcw,
-  Volume2,
-  VolumeX,
-  Award,
-  Layers,
-  CheckCircle2,
   Plus,
   Trash2,
   Sparkles,
@@ -20,54 +12,11 @@ import {
 import { FLASHCARDS_DATA, INITIAL_STUDY_TASKS } from '@/data/mockData';
 import { useAuth } from '@/context/AuthContext';
 import type { Flashcard, StudyTask } from '@/types';
+import StudyStopwatch from '@/components/StudyStopwatch';
 
 export default function UtilitiesPage() {
   const { addXP } = useAuth();
-  const [activeTool, setActiveTool] = useState<'pomodoro' | 'calculator' | 'flashcards' | 'planner' | 'formulas'>('pomodoro');
-
-  // Pomodoro State
-  const [pomoMode, setPomoMode] = useState<'work' | 'shortBreak' | 'longBreak'>('work');
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
-  const [isRunning, setIsRunning] = useState(false);
-  const [completedSessions, setCompletedSessions] = useState(3);
-  const [ambientSound, setAmbientSound] = useState<'none' | 'rain' | 'lofi' | 'library'>('none');
-
-  useEffect(() => {
-    let timer: any = null;
-    if (isRunning && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && isRunning) {
-      setIsRunning(false);
-      if (pomoMode === 'work') {
-        setCompletedSessions((prev) => prev + 1);
-        addXP(60);
-        alert('🎉 සුබ පැතුම්! 25 min Study session completed. You earned +60 XP!');
-        setPomoMode('shortBreak');
-        setTimeLeft(5 * 60);
-      } else {
-        alert('Break completed! Ready for the next focus sprint?');
-        setPomoMode('work');
-        setTimeLeft(25 * 60);
-      }
-    }
-    return () => clearInterval(timer);
-  }, [isRunning, timeLeft, pomoMode]);
-
-  const switchPomoMode = (mode: 'work' | 'shortBreak' | 'longBreak') => {
-    setPomoMode(mode);
-    setIsRunning(false);
-    if (mode === 'work') setTimeLeft(25 * 60);
-    if (mode === 'shortBreak') setTimeLeft(5 * 60);
-    if (mode === 'longBreak') setTimeLeft(15 * 60);
-  };
-
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
+  const [activeTool, setActiveTool] = useState<'stopwatch' | 'calculator' | 'flashcards' | 'planner' | 'formulas'>('stopwatch');
 
   // GPA Calculator State
   const [sub1, setSub1] = useState('A');
@@ -132,14 +81,14 @@ export default function UtilitiesPage() {
           පාඩම් මෙවලම් කට්ටලය (Study Utilities)
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-          Supercharge your study efficiency with Pomodoro focus timer, Z-Score estimator, and interactive revision flashcards.
+          Supercharge your study efficiency with an unbounded Study Stopwatch & interactive time analytics Bar Chart, Z-Score estimator, and revision flashcards.
         </p>
       </div>
 
       {/* Tool Selector Bar */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
         {[
-          { id: 'pomodoro', label: '⏱️ Pomodoro Focus Timer' },
+          { id: 'stopwatch', label: '⏱️ Study Stopwatch & Bar Chart' },
           { id: 'calculator', label: '📊 Z-Score & GPA Estimator' },
           { id: 'flashcards', label: '🗂️ Spaced Flashcards' },
           { id: 'planner', label: '📝 Daily Study Planner' },
@@ -148,9 +97,9 @@ export default function UtilitiesPage() {
           <button
             key={t.id}
             onClick={() => setActiveTool(t.id as any)}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold transition whitespace-nowrap ${
+            className={`px-4 py-2 rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
               activeTool === t.id
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 font-black'
                 : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
@@ -159,114 +108,9 @@ export default function UtilitiesPage() {
         ))}
       </div>
 
-      {/* 1. Pomodoro Focus Timer Tool */}
-      {activeTool === 'pomodoro' && (
-        <div className="max-w-2xl mx-auto bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xl text-center space-y-8">
-          {/* Mode switch */}
-          <div className="inline-flex p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800 gap-2 text-xs font-bold">
-            <button
-              onClick={() => switchPomoMode('work')}
-              className={`px-4 py-2 rounded-xl transition ${
-                pomoMode === 'work'
-                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              Focus Session (25m)
-            </button>
-            <button
-              onClick={() => switchPomoMode('shortBreak')}
-              className={`px-4 py-2 rounded-xl transition ${
-                pomoMode === 'shortBreak'
-                  ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              Short Break (5m)
-            </button>
-            <button
-              onClick={() => switchPomoMode('longBreak')}
-              className={`px-4 py-2 rounded-xl transition ${
-                pomoMode === 'longBreak'
-                  ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              Long Break (15m)
-            </button>
-          </div>
-
-          {/* Big Digital Timer Display */}
-          <div className="relative w-64 h-64 mx-auto flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full border-8 border-slate-100 dark:border-slate-800" />
-            <div
-              className={`absolute inset-0 rounded-full border-8 border-transparent transition-all duration-1000 ${
-                pomoMode === 'work'
-                  ? 'border-t-blue-600 border-r-blue-600'
-                  : 'border-t-emerald-500 border-r-emerald-500'
-              }`}
-              style={{
-                transform: `rotate(${((timeLeft / (pomoMode === 'work' ? 1500 : 300)) * 360)}deg)`
-              }}
-            />
-            <div className="space-y-1">
-              <span className="text-5xl sm:text-6xl font-black font-mono tracking-tight text-slate-800 dark:text-slate-100">
-                {formatTime(timeLeft)}
-              </span>
-              <p className="text-xs font-semibold text-slate-400">
-                {pomoMode === 'work' ? '🧠 Deep Study Mode' : '☕ Relax & Recharge'}
-              </p>
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={() => setIsRunning(!isRunning)}
-              className={`px-8 py-3.5 rounded-2xl text-white font-extrabold text-sm flex items-center gap-2 shadow-lg transition transform active:scale-95 ${
-                isRunning
-                  ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/30'
-                  : 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/30'
-              }`}
-            >
-              {isRunning ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-white" />}
-              <span>{isRunning ? 'Pause Session' : 'Start Focus'}</span>
-            </button>
-
-            <button
-              onClick={() => switchPomoMode(pomoMode)}
-              className="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
-              title="Reset Timer"
-            >
-              <RotateCcw className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Ambient Sound & Stats */}
-          <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-            <div className="flex items-center gap-2">
-              <Volume2 className="w-4 h-4 text-slate-400" />
-              <span className="text-slate-500 font-semibold">Background Atmosphere:</span>
-              <select
-                value={ambientSound}
-                onChange={(e) => setAmbientSound(e.target.value as any)}
-                className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-bold"
-              >
-                <option value="none">Muted / Silence</option>
-                <option value="rain">🌧️ Tropical Rain & Thunder</option>
-                <option value="lofi">🎧 Sri Lanka Lo-fi Beats</option>
-                <option value="library">📚 Quiet Library Ambience</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold">
-              <span>Completed Today:</span>
-              <span className="px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/60">
-                {completedSessions} Pomodoros (+180 XP)
-              </span>
-            </div>
-          </div>
-        </div>
+      {/* 1. Unbounded Study Stopwatch & Analytics Bar Chart Tool */}
+      {activeTool === 'stopwatch' && (
+        <StudyStopwatch />
       )}
 
       {/* 2. Z-Score & GPA Estimator */}

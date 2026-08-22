@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Gold Gradient for Laurel Wreath -->
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6B846" />
+      <stop offset="50%" stop-color="#E29A26" />
+      <stop offset="100%" stop-color="#C57E12" />
+    </linearGradient>
+
+    <!-- Navy Gradient for Graduation Cap -->
+    <linearGradient id="navyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="50%" stop-color="#0F2B5C" />
+      <stop offset="100%" stop-color="#0A1D3F" />
+    </linearGradient>
+    
+    <!-- Single Leaf Template -->
+    <g id="laurelLeaf">
+      <path d="M0,0 C-4,-12 -12,-20 -24,-24 C-16,-12 -12,-4 0,0 Z" fill="url(#goldGradient)" />
+      <path d="M0,0 C4,-12 12,-20 24,-24 C16,-12 12,-4 0,0 Z" fill="url(#goldGradient)" />
+    </g>
+  </defs>
+
+  <!-- Laurel Wreath Left Side -->
+  <g transform="translate(250, 220)">
+    <!-- Branch stems -->
+    <path d="M-15,140 C-80,130 -145,70 -145,-20 C-145,-75 -105,-125 -30,-150" fill="none" stroke="#E29A26" stroke-width="4.5" stroke-linecap="round" />
+    <path d="M15,140 C80,130 145,70 145,-20 C145,-75 105,-125 30,-150" fill="none" stroke="#E29A26" stroke-width="4.5" stroke-linecap="round" />
+    
+    <!-- Crossed bottom stems -->
+    <path d="M-25,130 L15,155 M25,130 L-15,155" stroke="#C57E12" stroke-width="4" stroke-linecap="round" />
+
+    <!-- Left Leaves along the arc -->
+    <g transform="translate(-30, -150) rotate(-40)"><use href="#laurelLeaf" transform="scale(0.8)" /></g>
+    <g transform="translate(-65, -135) rotate(-55)"><use href="#laurelLeaf" transform="scale(0.85)" /></g>
+    <g transform="translate(-95, -110) rotate(-70)"><use href="#laurelLeaf" transform="scale(0.9)" /></g>
+    <g transform="translate(-120, -75) rotate(-85)"><use href="#laurelLeaf" transform="scale(0.95)" /></g>
+    <g transform="translate(-138, -35) rotate(-100)"><use href="#laurelLeaf" transform="scale(1)" /></g>
+    <g transform="translate(-144, 10) rotate(-115)"><use href="#laurelLeaf" transform="scale(1)" /></g>
+    <g transform="translate(-138, 55) rotate(-130)"><use href="#laurelLeaf" transform="scale(0.95)" /></g>
+    <g transform="translate(-118, 95) rotate(-145)"><use href="#laurelLeaf" transform="scale(0.9)" /></g>
+    <g transform="translate(-85, 125) rotate(-160)"><use href="#laurelLeaf" transform="scale(0.85)" /></g>
+    <g transform="translate(-45, 140) rotate(-175)"><use href="#laurelLeaf" transform="scale(0.8)" /></g>
+
+    <!-- Right Leaves along the arc -->
+    <g transform="translate(30, -150) rotate(40) scale(-1, 1)"><use href="#laurelLeaf" transform="scale(0.8)" /></g>
+    <g transform="translate(65, -135) rotate(55) scale(-1, 1)"><use href="#laurelLeaf" transform="scale(0.85)" /></g>
+    <g transform="translate(95, -110) rotate(70) scale(-1, 1)"><use href="#laurelLeaf" transform="scale(0.9)" /></g>
+    <g transform="translate(120, -75) rotate(85) scale(-1, 1)"><use href="#laurelLeaf" transform="scale(0.95)" /></g>
+    <g transform="translate(138, -35) rotate(100) scale(-1, 1)"><use href="#laurelLeaf" transform="scale(1)" /></g>
+    <g transform="translate(144, 10) rotate(115) scale(-1, 1)"><use href="#laurelLeaf" transform="scale(1)" /></g>
+    <g transform="translate(138, 55) rotate(130) scale(-1, 1)"><use href="#laurelLeaf" transform="scale(0.95)" /></g>
+    <g transform="translate(118, 95) rotate(145) scale(-1, 1)"><use href="#laurelLeaf" transform="scale(0.9)" /></g>
+    <g transform="translate(85, 125) rotate(160) scale(-1, 1)"><use href="#laurelLeaf" transform="scale(0.85)" /></g>
+    <g transform="translate(45, 140) rotate(175) scale(-1, 1)"><use href="#laurelLeaf" transform="scale(0.8)" /></g>
+
+    <!-- Inner small leaf accents -->
+    <circle cx="-145" cy="-20" r="3" fill="#F6B846" />
+    <circle cx="145" cy="-20" r="3" fill="#F6B846" />
+  </g>
+
+  <!-- Central Graduation Cap (Mortarboard) -->
+  <g transform="translate(250, 205)">
+    <!-- Cap Top Diamond Plane (Tilted 3D Mortarboard) -->
+    <path d="M0,-65 L88,-20 L0,25 L-88,-20 Z" fill="url(#navyGradient)" />
+    
+    <!-- Cap Lower Bevel / Under-edge -->
+    <path d="M-88,-20 L0,25 L0,32 L-88,-13 Z" fill="#0A1D3F" opacity="0.9" />
+    <path d="M0,25 L88,-20 L88,-13 L0,32 Z" fill="#142B63" opacity="0.9" />
+
+    <!-- Cap Base (Skull cap with geometric cutout) -->
+    <path d="M-52,0 L0,26 L52,0 L52,42 L0,68 L-52,42 Z" fill="url(#navyGradient)" />
+    
+    <!-- White Fold / Chevron Accent inside Cap -->
+    <path d="M-44,8 L0,30 L44,8 L44,18 L0,40 L-44,18 Z" fill="#FFFFFF" />
+    
+    <!-- Tassel Button at Center Top -->
+    <ellipse cx="0" cy="-20" rx="5" ry="3" fill="#0A1D3F" />
+    
+    <!-- Tassel Ribbon / Hanging Tassel on Right -->
+    <path d="M0,-20 Q55,-10 65,15 L65,52" fill="none" stroke="#0A1D3F" stroke-width="4.5" stroke-linecap="round" />
+    <!-- Tassel Band and Fringe -->
+    <rect x="61" y="50" width="8" height="4" rx="1.5" fill="#E29A26" />
+    <path d="M60,54 L70,54 L72,70 L58,70 Z" fill="#0A1D3F" />
+  </g>
+
+  <!-- Brand Typography: SIPARANA -->
+  <text
+    x="250"
+    y="415"
+    text-anchor="middle"
+    font-family="'Cinzel', 'Trajan Pro', 'Baskerville', 'Georgia', serif"
+    font-size="44"
+    font-weight="900"
+    letter-spacing="9"
+    fill="#0F2B5C"
+  >
+    SIPARANA
+  </text>
+</svg>

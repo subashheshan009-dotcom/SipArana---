@@ -41,6 +41,10 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
 
     // Navigation
     nav_dashboard: 'පුවරුව (Dashboard)',
+    nav_quizzes: 'බහුවරණ පරීක්ෂණ (MCQ Quizzes)',
+    nav_ai_tutor: 'AI ගුරු සහකාර (AI Tutor)',
+    nav_analytics: 'ප්‍රගති වාර්තාව (Analytics)',
+    nav_offline_syllabus: 'නිල විෂය නිර්දේශ PDF (Offline Syllabi)',
     nav_university: 'සරසවි AI සහකාර (University)',
     nav_classroom: 'වීඩියෝ පන්ති කාමරය (Classroom)',
     nav_subjects: 'විෂයන් & ප්‍රශ්න පත්‍ර (Subjects)',
@@ -202,6 +206,10 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
 
     // Navigation
     nav_dashboard: 'முகப்பு (Dashboard)',
+    nav_quizzes: 'பன்மைத் தெரிவு வினாக்கள் (MCQ Quizzes)',
+    nav_ai_tutor: 'AI குரல் ஆசிரியர் (AI Tutor)',
+    nav_analytics: 'செயல்திறன் பகுப்பாய்வு (Analytics)',
+    nav_offline_syllabus: 'பாடத்திட்டம் & PDF (Offline Syllabi)',
     nav_university: 'பல்கலைக்கழக AI உதவியாளர் (University)',
     nav_classroom: 'வீடியோ வகுப்பறை (Classroom)',
     nav_subjects: 'பாடங்கள் & வினாத்தாள்கள் (Subjects)',
@@ -363,6 +371,10 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
 
     // Navigation
     nav_dashboard: 'Dashboard',
+    nav_quizzes: 'MCQ Quizzes & Tests',
+    nav_ai_tutor: 'AI Tutor & Voice Bot',
+    nav_analytics: 'Performance Analytics',
+    nav_offline_syllabus: 'Offline Syllabus & PDFs',
     nav_university: 'University AI Portal',
     nav_classroom: 'Video Classroom',
     nav_subjects: 'Subjects & Past Papers',

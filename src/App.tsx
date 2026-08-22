@@ -15,6 +15,10 @@ import UtilitiesPage from '@/pages/UtilitiesPage';
 import NewsPage from '@/pages/NewsPage';
 import PremiumPage from '@/pages/PremiumPage';
 import SettingsPage from '@/pages/SettingsPage';
+import QuizzesPage from '@/pages/QuizzesPage';
+import AITutorPage from '@/pages/AITutorPage';
+import PerformanceAnalyticsPage from '@/pages/PerformanceAnalyticsPage';
+import OfflineSyllabusPage from '@/pages/OfflineSyllabusPage';
 
 function AppContent() {
   const { profile, loading } = useAuth();
@@ -50,6 +54,20 @@ function AppContent() {
     switch (page) {
       case 'dashboard':
         return <Dashboard onNavigate={handleNavigate} />;
+      case 'quizzes':
+        return <QuizzesPage onNavigateAnalytics={() => handleNavigate('analytics')} />;
+      case 'ai_tutor':
+        return <AITutorPage />;
+      case 'analytics':
+        return (
+          <PerformanceAnalyticsPage
+            onNavigateQuizzes={() => handleNavigate('quizzes')}
+            onNavigateSyllabus={() => handleNavigate('offline_syllabus')}
+            onNavigateTutor={() => handleNavigate('ai_tutor')}
+          />
+        );
+      case 'offline_syllabus':
+        return <OfflineSyllabusPage />;
       case 'university':
         return <UniversityPortal />;
       case 'classroom':

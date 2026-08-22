@@ -22,16 +22,25 @@ import {
   ShieldCheck,
   Video,
   ChevronDown,
-  Globe
+  Globe,
+  FileQuestion,
+  Bot,
+  BarChart3,
+  HardDriveDownload
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useLanguage, SUPPORTED_LANGUAGES } from '@/context/LanguageContext';
 import { SCHOOL_GRADES } from '@/data/mockData';
 import type { SchoolGrade, AppLanguage } from '@/types';
+import SiparanaLogo from '@/components/SiparanaLogo';
 
 export type PageId =
   | 'dashboard'
+  | 'quizzes'
+  | 'ai_tutor'
+  | 'analytics'
+  | 'offline_syllabus'
   | 'university'
   | 'classroom'
   | 'subjects'
@@ -63,12 +72,16 @@ interface NavItemDef {
 
 const NAV_ITEMS_CONFIG: NavItemDef[] = [
   { id: 'dashboard', icon: LayoutDashboard, transKey: 'dashboard', enLabel: 'Dashboard', siLabel: 'පුවරුව', taLabel: 'முகப்பு பலகை' },
-  { id: 'university', icon: Sparkles, transKey: 'universityPortal', enLabel: 'University AI Portal', siLabel: 'සරසවි AI සහකාර', taLabel: 'பல்கலைக்கழக AI தளம்', badgeText: 'AI Degree', highlight: true },
+  { id: 'quizzes', icon: FileQuestion, transKey: 'quizzes', enLabel: 'MCQ Quizzes', siLabel: 'බහුවරණ පරීක්ෂණ', taLabel: 'பன்மைத் தெரிவு வினாக்கள்', badgeText: 'Auto-Marked', highlight: true },
+  { id: 'ai_tutor', icon: Bot, transKey: 'aiTutor', enLabel: 'AI Tutor & Voice', siLabel: 'AI ගුරු සහකාර', taLabel: 'AI குரல் ஆசிரியர்', badgeText: 'Voice AI', highlight: true },
+  { id: 'analytics', icon: BarChart3, transKey: 'analytics', enLabel: 'Performance Analytics', siLabel: 'ප්‍රගති වාර්තාව', taLabel: 'செயல்திறன் பகுப்பாய்வு', badgeText: 'Live Diagnostic' },
+  { id: 'offline_syllabus', icon: HardDriveDownload, transKey: 'offlineSyllabus', enLabel: 'Offline Syllabus & PDFs', siLabel: 'නිල විෂය නිර්දේශ PDF', taLabel: 'பாடத்திட்டம் & PDF', badgeText: '100% Free' },
+  { id: 'university', icon: Sparkles, transKey: 'universityPortal', enLabel: 'University AI Portal', siLabel: 'සරසවි AI සහකාර', taLabel: 'பல்கலைக்கழக AI தளம்', badgeText: 'AI Degree' },
   { id: 'classroom', icon: Video, transKey: 'classroom', enLabel: 'HD Video Classroom', siLabel: 'වීඩියෝ පන්ති කාමරය', taLabel: 'வீடியோ வகுப்பறை', badgeText: 'HD • 6-13' },
   { id: 'subjects', icon: BookOpen, transKey: 'subjectsPapers', enLabel: 'Subjects & Past Papers', siLabel: 'විෂයන් & ප්‍රශ්න පත්‍ර', taLabel: 'பாடங்கள் & வினாத்தாள்கள்', badgeText: 'Guru Potha' },
   { id: 'campus', icon: GraduationCap, transKey: 'campusZScore', enLabel: 'Campus & Z-Score', siLabel: 'සරසවි & Z-Score', taLabel: 'பல்கலைக்கழகம் & Z-புள்ளி', badgeText: 'Cutoffs' },
   { id: 'community', icon: Users2, transKey: 'community', enLabel: 'Student Community', siLabel: 'ශිෂ්‍ය සංසදය', taLabel: 'மாணவர் சமூகம்' },
-  { id: 'utilities', icon: Wrench, transKey: 'utilities', enLabel: 'Study Utilities', siLabel: 'පාඩම් මෙවලම්', taLabel: 'படிப்பு கருவிகள்', badgeText: 'Pomodoro' },
+  { id: 'utilities', icon: Wrench, transKey: 'utilities', enLabel: 'Study Utilities', siLabel: 'පාඩම් මෙවලම්', taLabel: 'படிப்பு கருவிகள்', badgeText: 'Stopwatch & Chart' },
   { id: 'news', icon: Newspaper, transKey: 'examNews', enLabel: 'Exam News & Alerts', siLabel: 'විභාග පුවත්', taLabel: 'தேர்வுச் செய்திகள்' },
   { id: 'premium', icon: Crown, transKey: 'proMembership', enLabel: 'SipArana Pro', siLabel: 'ප්‍රෝ සාමාජිකත්වය', taLabel: 'புரோ உறுப்பினர்', isPro: true },
   { id: 'settings', icon: Settings, transKey: 'settings', enLabel: 'Settings', siLabel: 'සැකසුම්', taLabel: 'அமைப்புகள்' },
@@ -109,25 +122,25 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
         className="hidden md:flex md:w-64 lg:w-72 flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 sticky top-0 h-screen z-30 select-none"
       >
         {/* Brand Header */}
-        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div className="p-4 lg:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div
             onClick={() => onNavigate('dashboard')}
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center gap-3 cursor-pointer group w-full"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-6 h-6" />
+            <div className="w-11 h-11 rounded-xl bg-white p-1 shadow-md shadow-blue-900/10 border border-slate-200/80 dark:border-slate-700 flex-shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <SiparanaLogo variant="mark" size="sm" className="w-full h-full" />
             </div>
-            <div>
-              <div className="flex items-center gap-1">
-                <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 bg-clip-text text-transparent">
-                  SipArana
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="font-black text-base lg:text-lg tracking-wider uppercase font-serif text-slate-900 dark:text-white">
+                  SIPARANA
                 </span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-extrabold bg-blue-600 text-white">
                   LK
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                ජාතික පාසල් අධ්‍යාපන පියස
+              <p className="text-[10px] lg:text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">
+                ජාතික අධ්‍යාපන පියස
               </p>
             </div>
           </div>
@@ -310,7 +323,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
           className="sticky top-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between"
         >
           {/* Mobile Menu & Logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               id="mobile-menu-toggle-btn"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -322,11 +335,11 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
               onClick={() => onNavigate('dashboard')}
               className="md:hidden flex items-center gap-2 cursor-pointer"
             >
-              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
-                S
+              <div className="w-8 h-8 rounded-lg bg-white p-0.5 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                <SiparanaLogo variant="mark" size="xs" className="w-full h-full" />
               </div>
-              <span className="font-bold text-base tracking-tight text-blue-600 dark:text-blue-400">
-                SipArana
+              <span className="font-black text-base tracking-wider uppercase font-serif text-slate-900 dark:text-white">
+                SIPARANA
               </span>
             </div>
           </div>
@@ -556,13 +569,18 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
           >
             <div className="w-4/5 max-w-xs bg-white dark:bg-slate-900 h-full p-4 flex flex-col shadow-2xl">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
-                    S
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-white p-1 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                    <SiparanaLogo variant="mark" size="xs" className="w-full h-full" />
                   </div>
-                  <span className="font-bold text-lg text-blue-600 dark:text-blue-400">
-                    SipArana
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="font-black text-base tracking-wider uppercase font-serif text-slate-900 dark:text-white leading-none">
+                      SIPARANA
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-semibold mt-0.5">
+                      National Education
+                    </span>
+                  </div>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}

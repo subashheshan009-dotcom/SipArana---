@@ -21,6 +21,8 @@ import {
 import { SUBJECTS_DATA, SCHOOL_GRADES } from '@/data/mockData';
 import { useAuth } from '@/context/AuthContext';
 import type { Subject, Unit, Lesson, PastPaper, Stream, SchoolGrade } from '@/types';
+import AranaMascot from '@/components/AranaMascot';
+import { soundFX } from '@/utils/audioUtils';
 
 export default function SubjectsPage() {
   const { profile, toggleBookmarkPaper, addXP, setGradeAndStream } = useAuth();
@@ -512,19 +514,35 @@ export default function SubjectsPage() {
                                 onClick={() => {
                                   setQuizSubmitted(true);
                                   if (selectedOption === q.correctIndex) {
+                                    soundFX.playCorrect();
                                     addXP(30);
+                                  } else {
+                                    soundFX.playIncorrect();
                                   }
                                 }}
-                                className="w-full py-2.5 bg-blue-600 disabled:opacity-50 text-white rounded-xl text-xs font-bold hover:bg-blue-500 transition"
+                                className="w-full py-2.5 bg-blue-600 disabled:opacity-50 text-white rounded-xl text-xs font-bold hover:bg-blue-500 transition shadow-md"
                               >
                                 පිළිතුර තහවුරු කරන්න (Submit Answer)
                               </button>
                             ) : (
-                              <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
-                                <span className="font-bold text-slate-800 dark:text-slate-200">
-                                  විවරණය (Explanation):
-                                </span>
-                                <p className="text-slate-600 dark:text-slate-400">{q.explanation}</p>
+                              <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-3 shadow-md">
+                                <AranaMascot
+                                  size="sm"
+                                  mood={selectedOption === q.correctIndex ? 'celebrating' : 'encouraging'}
+                                  interactive={false}
+                                  showBadge={false}
+                                  message={
+                                    selectedOption === q.correctIndex
+                                      ? 'ඉතා විශිෂ්ටයි! 🎉 ඔබගේ පිළිතුර නිවැරදියි. ඔබට +30 XP හිමිවුණා!'
+                                      : 'හොඳ උත්සාහයක්! 💪 පහත විවරණය අධ්‍යයනය කර නැවත මතකයට නංවාගන්න.'
+                                  }
+                                />
+                                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-1">
+                                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                                    විවරණය (Explanation):
+                                  </span>
+                                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{q.explanation}</p>
+                                </div>
                               </div>
                             )}
                           </div>

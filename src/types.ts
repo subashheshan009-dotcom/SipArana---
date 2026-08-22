@@ -323,4 +323,18 @@ export interface UniversityResource {
   rating: number;
 }
 
+export interface StudySessionRecord {
+  id: string;
+  subject: string;
+  topic?: string;
+  totalSeconds: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  xpEarned: number;
+  timestamp: number;
+  date: string;
+  timeFormatted: string;
+}
+
 
