@@ -26,7 +26,8 @@ import {
   FileQuestion,
   Bot,
   BarChart3,
-  HardDriveDownload
+  HardDriveDownload,
+  ShoppingBag
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -37,6 +38,7 @@ import SiparanaLogo from '@/components/SiparanaLogo';
 
 export type PageId =
   | 'dashboard'
+  | 'book_shop'
   | 'quizzes'
   | 'ai_tutor'
   | 'analytics'
@@ -72,6 +74,7 @@ interface NavItemDef {
 
 const NAV_ITEMS_CONFIG: NavItemDef[] = [
   { id: 'dashboard', icon: LayoutDashboard, transKey: 'dashboard', enLabel: 'Dashboard', siLabel: 'පුවරුව', taLabel: 'முகப்பு பலகை' },
+  { id: 'book_shop', icon: ShoppingBag, transKey: 'bookShop', enLabel: 'SipArana Book Shop', siLabel: 'සිප්අරණ පොත් හල', taLabel: 'புத்தக சந்தை', badgeText: 'Marketplace', highlight: true },
   { id: 'quizzes', icon: FileQuestion, transKey: 'quizzes', enLabel: 'MCQ Quizzes', siLabel: 'බහුවරණ පරීක්ෂණ', taLabel: 'பன்மைத் தெரிவு வினாக்கள்', badgeText: 'Auto-Marked', highlight: true },
   { id: 'ai_tutor', icon: Bot, transKey: 'aiTutor', enLabel: 'AI Tutor & Voice', siLabel: 'AI ගුරු සහකාර', taLabel: 'AI குரல் ஆசிரியர்', badgeText: 'Voice AI', highlight: true },
   { id: 'analytics', icon: BarChart3, transKey: 'analytics', enLabel: 'Performance Analytics', siLabel: 'ප්‍රගති වාර්තාව', taLabel: 'செயல்திறன் பகுப்பாய்வு', badgeText: 'Live Diagnostic' },

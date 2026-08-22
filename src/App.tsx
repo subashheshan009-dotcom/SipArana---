@@ -19,6 +19,7 @@ import QuizzesPage from '@/pages/QuizzesPage';
 import AITutorPage from '@/pages/AITutorPage';
 import PerformanceAnalyticsPage from '@/pages/PerformanceAnalyticsPage';
 import OfflineSyllabusPage from '@/pages/OfflineSyllabusPage';
+import BookShopPage from '@/pages/BookShopPage';
 
 function AppContent() {
   const { profile, loading } = useAuth();
@@ -54,6 +55,8 @@ function AppContent() {
     switch (page) {
       case 'dashboard':
         return <Dashboard onNavigate={handleNavigate} />;
+      case 'book_shop':
+        return <BookShopPage />;
       case 'quizzes':
         return <QuizzesPage onNavigateAnalytics={() => handleNavigate('analytics')} />;
       case 'ai_tutor':

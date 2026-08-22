@@ -26,7 +26,8 @@ import {
   Globe,
   FileQuestion,
   BarChart3,
-  HardDriveDownload
+  HardDriveDownload,
+  ShoppingBag
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -253,6 +254,21 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
       {/* 3. HORIZONTAL QUICK-ACTION APP TOOLS BAR */}
       <section className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <button
+          onClick={() => onNavigate('book_shop')}
+          className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-white to-blue-500/10 dark:from-amber-950/30 dark:via-slate-900 dark:to-blue-950/30 border-2 border-amber-400/60 dark:border-amber-500/50 hover:border-amber-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+        >
+          <div className="p-2 rounded-xl bg-amber-500 text-slate-950 font-bold w-fit group-hover:scale-105 transition shadow-sm">
+            <ShoppingBag className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-amber-700 dark:text-amber-300">
+              {language === 'si' ? 'සිප්අරණ පොත් හල' : language === 'ta' ? 'புத்தக சந்தை' : 'Book Shop'}
+            </h4>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Buy & Sell Books</p>
+          </div>
+        </button>
+
         <button
           onClick={() => onNavigate('quizzes')}
           className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-blue-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
