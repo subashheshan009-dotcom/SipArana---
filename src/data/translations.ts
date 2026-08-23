@@ -41,6 +41,8 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
 
     // Navigation
     nav_dashboard: 'පුවරුව (Dashboard)',
+    nav_fun_english: 'විනෝදජනක ඉංග්‍රීසි & විවේකය (Fun English & Relax)',
+    funEnglish: 'විනෝදජනක ඉංග්‍රීසි & විවේකය',
     nav_google_hub: 'ගූගල් අධ්‍යාපන පීඨය (Google Student Hub)',
     googleHub: 'ගූගල් අධ්‍යාපන පීඨය',
     nav_free_courses: 'නිදහස් ඔන්ලයින් පාඨමාලා (Free Online Courses)',
@@ -211,6 +213,8 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
 
     // Navigation
     nav_dashboard: 'முகப்பு (Dashboard)',
+    nav_fun_english: 'வேடிக்கையான ஆங்கிலம் & ஓய்வு (Fun English & Relax)',
+    funEnglish: 'வேடிக்கையான ஆங்கிலம் & ஓய்வு',
     nav_google_hub: 'கூகிள் மாணவர் தளம் (Google Student Hub)',
     googleHub: 'கூகிள் மாணவர் தளம்',
     nav_free_courses: 'இலவச இணையப் படிப்புகள் (Free Online Courses)',
@@ -381,6 +385,8 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
 
     // Navigation
     nav_dashboard: 'Dashboard',
+    nav_fun_english: 'Fun English & Relax',
+    funEnglish: 'Fun English & Relax',
     nav_google_hub: 'Google Student Hub',
     googleHub: 'Google Student Hub',
     nav_free_courses: 'Free Online Courses',

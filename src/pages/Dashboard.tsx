@@ -27,11 +27,13 @@ import {
   FileQuestion,
   BarChart3,
   HardDriveDownload,
-  ShoppingBag
+  ShoppingBag,
+  Smile
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { SUBJECTS_DATA, NEWS_ARTICLES_DATA, INITIAL_STUDY_TASKS, SCHOOL_GRADES } from '@/data/mockData';
+import { useExamNews } from '@/context/NewsContext';
+import { SUBJECTS_DATA, INITIAL_STUDY_TASKS, SCHOOL_GRADES } from '@/data/mockData';
 import type { PageId } from '@/components/Layout';
 import type { StudyTask } from '@/types';
 import SiparanaLogo from '@/components/SiparanaLogo';
@@ -45,6 +47,7 @@ interface DashboardProps {
 export default function Dashboard({ onNavigate }: DashboardProps) {
   const { profile, addXP } = useAuth();
   const { language, t } = useLanguage();
+  const { notices, isSyncing } = useExamNews();
   const [tasks, setTasks] = useState<StudyTask[]>(INITIAL_STUDY_TASKS);
   const [quizAnswered, setQuizAnswered] = useState<number | null>(null);
   const [quizScore, setQuizScore] = useState<boolean | null>(null);
@@ -253,7 +256,22 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       </section>
 
       {/* 3. HORIZONTAL QUICK-ACTION APP TOOLS BAR */}
-      <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3">
+      <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-11 gap-3">
+        <button
+          onClick={() => onNavigate('fun_english')}
+          className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/20 via-white to-yellow-500/20 dark:from-amber-950/60 dark:via-slate-900 dark:to-yellow-950/50 border-2 border-amber-400 dark:border-amber-500/70 hover:border-amber-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+        >
+          <div className="p-2 rounded-xl bg-amber-500 text-slate-950 font-bold w-fit group-hover:scale-105 transition shadow-sm">
+            <Smile className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-amber-800 dark:text-amber-300">
+              {language === 'si' ? 'ඉංග්‍රීසි & විවේකය' : language === 'ta' ? 'ஆங்கிலம் & ஓய்வு' : 'Fun English'}
+            </h4>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Mascot 4-Step Flow</p>
+          </div>
+        </button>
+
         <button
           onClick={() => onNavigate('google_hub')}
           className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600/15 via-white to-indigo-600/15 dark:from-blue-950/50 dark:via-slate-900 dark:to-indigo-950/50 border-2 border-blue-500/80 dark:border-blue-400/70 hover:border-blue-600 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
@@ -676,30 +694,72 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           {/* Urgent Exam Notice Bulletin */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-blue-500" />
-                <span>{language === 'si' ? 'විභාග පුවත් (Exam News)' : language === 'ta' ? 'தேர்வு செய்திகள்' : 'Exam Bulletins'}</span>
-              </h3>
+                <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                  <span>{language === 'si' ? 'විභාග පුවත්' : language === 'ta' ? 'தேர்வு செய்திகள்' : 'Exam Bulletins'}</span>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                </h3>
+              </div>
               <button
                 onClick={() => onNavigate('news')}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5"
               >
-                More
+                <span>Live Feed</span>
+                <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
             <div className="space-y-3 divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-              {NEWS_ARTICLES_DATA.slice(0, 2).map((news) => (
-                <div key={news.id} className="pt-2 first:pt-0 space-y-1">
+              {notices.slice(0, 2).map((news) => (
+                <div
+                  key={news.id}
+                  onClick={() => onNavigate('news')}
+                  className="pt-2 first:pt-0 space-y-1 cursor-pointer group"
+                >
                   <div className="flex items-center justify-between text-[10px]">
-                    <span className="font-bold text-blue-600 dark:text-blue-400">{news.category}</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.2 rounded">
+                      {news.authorityCode}
+                    </span>
                     <span className="text-slate-400">{news.publishedDate}</span>
                   </div>
-                  <p className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2">
+                  <p className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 transition line-clamp-2 leading-snug">
                     {language === 'si' ? news.titleSinhala : news.title}
                   </p>
                 </div>
               ))}
+            </div>
+          </div>
+          {/* Fun English & Relax with Mascot Banner Card */}
+          <div
+            onClick={() => onNavigate('fun_english')}
+            className="p-5 rounded-3xl bg-gradient-to-br from-amber-500/20 via-yellow-500/10 to-orange-500/20 dark:from-amber-950/50 dark:via-slate-900 dark:to-yellow-950/40 border-2 border-amber-400/80 dark:border-amber-500/60 shadow-md hover:border-amber-500 hover:shadow-xl transition-all cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 text-xs font-black uppercase tracking-wider">
+                <Smile className="w-4 h-4 text-amber-500" />
+                <span>Mascot English & Relax</span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black group-hover:scale-105 transition">
+                4-Step Flow 🚀
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-amber-600 transition">
+                {language === 'si' ? 'විනෝදජනක ඉංග්‍රීසි & විවේක පියස' : 'Fun English & Relax Zone'}
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Word Quizzes, Short Stories, Riddles & Guided Breather with Arana Mascot.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between pt-1 text-xs font-black text-amber-700 dark:text-amber-400">
+              <span>Start Daily Break</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
         </div>

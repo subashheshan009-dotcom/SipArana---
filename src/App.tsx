@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { LanguageProvider } from '@/context/LanguageContext';
+import { NewsProvider } from '@/context/NewsContext';
+import { CoursesProvider } from '@/context/CoursesContext';
 import Layout, { type PageId } from '@/components/Layout';
 import Mascot from '@/components/Mascot';
 import AuthPage from '@/pages/AuthPage';
@@ -22,6 +24,7 @@ import OfflineSyllabusPage from '@/pages/OfflineSyllabusPage';
 import BookShopPage from '@/pages/BookShopPage';
 import FreeCoursesPage from '@/pages/FreeCoursesPage';
 import GoogleStudentHubPage from '@/pages/GoogleStudentHubPage';
+import FunEnglishRelaxPage from '@/pages/FunEnglishRelaxPage';
 
 function AppContent() {
   const { profile, loading } = useAuth();
@@ -57,6 +60,8 @@ function AppContent() {
     switch (page) {
       case 'dashboard':
         return <Dashboard onNavigate={handleNavigate} />;
+      case 'fun_english':
+        return <FunEnglishRelaxPage onNavigate={handleNavigate} />;
       case 'google_hub':
         return <GoogleStudentHubPage onNavigate={handleNavigate} />;
       case 'free_courses':
@@ -105,7 +110,7 @@ function AppContent() {
       <Layout current={page} onNavigate={handleNavigate}>
         {renderPage()}
       </Layout>
-      <Mascot trigger={highFive} />
+      <Mascot trigger={highFive} onNavigate={handleNavigate} />
     </>
   );
 }
@@ -115,7 +120,11 @@ export default function App() {
     <LanguageProvider>
       <ThemeProvider>
         <AuthProvider>
-          <AppContent />
+          <NewsProvider>
+            <CoursesProvider>
+              <AppContent />
+            </CoursesProvider>
+          </NewsProvider>
         </AuthProvider>
       </ThemeProvider>
     </LanguageProvider>

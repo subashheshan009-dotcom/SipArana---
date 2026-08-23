@@ -548,3 +548,85 @@ export const FREE_COURSES: FreeCourse[] = [
     featured: false
   }
 ];
+
+export interface CourseProviderStatus {
+  id: string;
+  name: string;
+  shortCode: string;
+  portalUrl: string;
+  status: 'ONLINE' | 'FETCHING' | 'SYNCED';
+  pingMs: number;
+}
+
+export const COURSE_AUTHORITIES: CourseProviderStatus[] = [
+  { id: 'moratuwa', name: 'Univ of Moratuwa (MoraX)', shortCode: 'MoraX', portalUrl: 'https://open.uom.lk', status: 'SYNCED', pingMs: 38 },
+  { id: 'google', name: 'Google Career Certificates & Skills', shortCode: 'Google', portalUrl: 'https://grow.google', status: 'SYNCED', pingMs: 25 },
+  { id: 'harvard', name: 'Harvard & edX Free Courses', shortCode: 'Harvard', portalUrl: 'https://pll.harvard.edu', status: 'SYNCED', pingMs: 62 },
+  { id: 'ousl', name: 'Open University of Sri Lanka', shortCode: 'OUSL', portalUrl: 'https://ou.ac.lk', status: 'SYNCED', pingMs: 44 }
+];
+
+export const SIMULATED_NEW_COURSES: FreeCourse[] = [
+  {
+    id: 'morax-ai-generative-sl',
+    title: 'Generative AI & Prompt Engineering for Sri Lankan Students',
+    titleSinhala: 'ශ්‍රී ලාංකික සිසුන් සඳහා Generative AI සහ Prompt Engineering (නොමිලේ)',
+    titleTamil: 'இலங்கை மாணவர்களுக்கான ஜெனரேட்டிவ் AI மற்றும் பிராம்ப்ட் இன்ஜினியரிங்',
+    provider: 'University of Moratuwa & ICTA',
+    platform: 'MoraX Online Portal',
+    category: 'it_programming',
+    level: 'Beginner',
+    duration: '4 Weeks (Self-Paced • 12 Hours)',
+    description: 'Master practical AI tools, Gemini, ChatGPT, and Python AI frameworks to supercharge your academic research, coding, and problem-solving skills with official University of Moratuwa certificate.',
+    descriptionSinhala: 'මොරටුව විශ්වවිද්‍යාලය සහ ICTA එක්ව නොමිලේ පිරිනමන Generative AI මූලික පාඨමාලාව. AI තාක්ෂණය අධ්‍යාපනයට සහ කේතකරණයට යොදාගන්නා ආකාරය ඉගෙනගන්න.',
+    whatYouWillLearn: [
+      'Prompt Engineering strategies for complex academic problems',
+      'Using Gemini and Python for data summarization and science',
+      'AI ethics, plagiarism avoidance, and responsible usage',
+      'Official verified digital certificate from University of Moratuwa'
+    ],
+    whatYouWillLearnSinhala: [
+      'අධ්‍යාපනික ගැටලු විසඳීමට Prompt Engineering නිවැරදිව භාවිතය',
+      'Python සහ AI මගින් දත්ත විශ්ලේෂණය සහ සාරාංශ සකස් කිරීම',
+      'AI සදාචාරාත්මක භාවිතය සහ plagiarism වළක්වා ගැනීම',
+      'මොරටුව සරසවියෙන් නිකුත් වන නොමිලේ ඩිජිටල් සහතිකය'
+    ],
+    courseUrl: 'https://open.uom.lk',
+    badge: 'MoraX Free Certificate',
+    freeCertificate: true,
+    language: 'Sinhala & English',
+    rating: 4.95,
+    studentsCount: '18,500+ Enrolled',
+    featured: true
+  },
+  {
+    id: 'google-cybersecurity-foundations',
+    title: 'Google Cybersecurity & Digital Safety Essentials',
+    titleSinhala: 'Google සයිබර් ආරක්ෂණ සහ ඩිජිටල් ආරක්ෂාව පිළිබඳ පාඨමාලාව',
+    titleTamil: 'கூகிள் சைபர் பாதுகாப்பு அடிப்படைகள்',
+    provider: 'Google Career Certificates',
+    platform: 'Grow with Google',
+    category: 'it_programming',
+    level: 'Beginner',
+    duration: '3 Weeks (Self-Paced)',
+    description: 'Learn fundamental network defense, malware detection, encryption, and personal data privacy from Google security analysts.',
+    descriptionSinhala: 'Google ආයතනයේ ආරක්ෂක ඉංජිනේරුවන් විසින් මෙහෙයවන නොමිලේ Cybersecurity පාඨමාලාව. සයිබර් ප්‍රහාරවලින් ආරක්ෂා වීම සහ Network Security මූලධර්ම.',
+    whatYouWillLearn: [
+      'Threat detection and network vulnerability assessment',
+      'Password security, two-factor authentication, and phishing defense',
+      'Google recognized badge for your LinkedIn resume'
+    ],
+    whatYouWillLearnSinhala: [
+      'සයිබර් තර්ජන හඳුනාගැනීම සහ Network Security',
+      'Password සහ පුද්ගලික දත්ත ආරක්ෂා කරගැනීම',
+      'Google වෙතින් පිරිනමන නොමිලේ ඩිජිටල් Badge එක'
+    ],
+    courseUrl: 'https://grow.google/certificates/',
+    badge: 'Google Official Badge',
+    freeCertificate: true,
+    language: 'English',
+    rating: 4.9,
+    studentsCount: '95,000+ Students',
+    featured: true
+  }
+];
+

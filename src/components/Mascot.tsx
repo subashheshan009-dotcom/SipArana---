@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { Sparkles, X, Heart, Smile } from 'lucide-react';
+import { Sparkles, X, Heart, Smile, Bell, ArrowRight, Volume2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useExamNews } from '@/context/NewsContext';
+import type { PageId } from '@/components/Layout';
 
 interface MascotProps {
   trigger?: boolean;
+  onNavigate?: (page: PageId) => void;
 }
 
 interface MascotMessage {
@@ -47,13 +50,25 @@ const MOTIVATION_MESSAGES: MascotMessage[] = [
   }
 ];
 
-export default function Mascot({ trigger }: MascotProps) {
+export default function Mascot({ trigger, onNavigate }: MascotProps) {
   const { addXP } = useAuth();
   const { language, tText, t } = useLanguage();
+  const {
+    latestBreakingNotice,
+    mascotAlertDismissed,
+    dismissMascotAlert,
+    speakNotice,
+    isSpeaking,
+    stopSpeaking
+  } = useExamNews();
+
   const [isOpen, setIsOpen] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
   const [isHighFiving, setIsHighFiving] = useState(false);
   const [, setHeartsCount] = useState(0);
+
+  // Show alert popover if there's a breaking notice that hasn't been dismissed
+  const hasActiveExamAlert = !!latestBreakingNotice && !mascotAlertDismissed;
 
   useEffect(() => {
     if (trigger) {
@@ -96,8 +111,79 @@ export default function Mascot({ trigger }: MascotProps) {
     ? 'அடுத்த குறிப்பு'
     : 'Next Study Tip';
 
+  const handleExamAlertClick = () => {
+    if (onNavigate) {
+      onNavigate('news');
+    }
+    dismissMascotAlert();
+  };
+
   return (
     <div id="siparana-mascot-container" className="fixed bottom-5 right-5 z-40 flex flex-col items-end">
+      {/* 1. Breaking Exam Notice Cartoon Mascot Notification Popup */}
+      {hasActiveExamAlert && !isOpen && (
+        <div
+          id="mascot-breaking-exam-alert-bubble"
+          className="mb-3 max-w-sm bg-gradient-to-br from-amber-500 via-orange-500 to-red-600 text-white p-4 rounded-3xl shadow-2xl space-y-2.5 animate-in fade-in slide-in-from-bottom-4 duration-300 ring-4 ring-amber-300/50 border border-white/20"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-black tracking-wide uppercase">
+              <Bell className="w-3.5 h-3.5 animate-bounce text-yellow-200" />
+              <span>Official Exam Alert</span>
+            </div>
+            <button
+              onClick={dismissMascotAlert}
+              className="p-1 rounded-full bg-black/20 hover:bg-black/40 text-white transition"
+              title="Dismiss"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-xs font-black leading-snug">
+              📢 {language === 'si' ? 'නව විභාග නිවේදනයක් නිකුත් විය!' : language === 'ta' ? 'புதிய தேர்வு அறிவிப்பு வெளியானது!' : 'New Exam Notice is Out!'}
+            </p>
+            <p className="text-[11px] text-amber-100 font-medium line-clamp-2 leading-relaxed">
+              {language === 'si'
+                ? latestBreakingNotice?.titleSinhala
+                : language === 'ta'
+                ? latestBreakingNotice?.tamilSummary
+                : latestBreakingNotice?.title}
+            </p>
+          </div>
+
+          <div className="pt-1 flex items-center justify-between gap-2 text-[11px]">
+            <button
+              onClick={() => {
+                if (isSpeaking) {
+                  stopSpeaking();
+                } else {
+                  speakNotice(
+                    language === 'si'
+                      ? latestBreakingNotice?.sinhalaSummary || ''
+                      : latestBreakingNotice?.summary || '',
+                    language
+                  );
+                }
+              }}
+              className="px-2.5 py-1 rounded-xl bg-white/20 hover:bg-white/30 font-bold flex items-center gap-1 transition"
+            >
+              <Volume2 className="w-3.5 h-3.5" />
+              <span>{isSpeaking ? 'Stop Voice' : 'Listen'}</span>
+            </button>
+
+            <button
+              onClick={handleExamAlertClick}
+              className="px-3 py-1 rounded-xl bg-white text-slate-900 font-black flex items-center gap-1 hover:bg-amber-100 transition shadow-md group"
+            >
+              <span>{language === 'si' ? 'දැන්ම බලන්න' : 'Check Now'}</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Speech bubble */}
       {isOpen && (
         <div
@@ -165,6 +251,8 @@ export default function Mascot({ trigger }: MascotProps) {
           className={`relative p-1 rounded-full transition-all duration-300 transform hover:scale-105 shadow-xl ${
             isHighFiving
               ? 'scale-110 ring-4 ring-amber-400 rotate-6'
+              : hasActiveExamAlert
+              ? 'ring-4 ring-amber-500 ring-offset-2 animate-pulse'
               : 'ring-2 ring-blue-500/50 hover:ring-blue-500'
           } bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600`}
           title="Click to talk to Sipuru Mascot"
@@ -214,9 +302,9 @@ export default function Mascot({ trigger }: MascotProps) {
 
           {/* Pulse badge */}
           <span className="absolute -top-1 -right-1 flex h-4 w-4">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-amber-500 text-[9px] font-bold text-slate-900 items-center justify-center">
-              💡
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${hasActiveExamAlert ? 'bg-red-400' : 'bg-amber-400'} opacity-75`}></span>
+            <span className={`relative inline-flex rounded-full h-4 w-4 ${hasActiveExamAlert ? 'bg-red-500' : 'bg-amber-500'} text-[9px] font-bold text-slate-900 items-center justify-center`}>
+              {hasActiveExamAlert ? '🚨' : '💡'}
             </span>
           </span>
         </button>
