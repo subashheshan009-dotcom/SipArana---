@@ -253,7 +253,37 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       </section>
 
       {/* 3. HORIZONTAL QUICK-ACTION APP TOOLS BAR */}
-      <section className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+      <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3">
+        <button
+          onClick={() => onNavigate('google_hub')}
+          className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600/15 via-white to-indigo-600/15 dark:from-blue-950/50 dark:via-slate-900 dark:to-indigo-950/50 border-2 border-blue-500/80 dark:border-blue-400/70 hover:border-blue-600 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+        >
+          <div className="p-2 rounded-xl bg-blue-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+            <Globe className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-blue-700 dark:text-blue-300">
+              {language === 'si' ? 'ගූගල් අධ්‍යාපන' : language === 'ta' ? 'கூகிள் தளம்' : 'Google Hub'}
+            </h4>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">7 In-App Tools</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => onNavigate('free_courses')}
+          className="p-3.5 rounded-2xl bg-gradient-to-br from-cyan-500/15 via-white to-blue-500/15 dark:from-cyan-950/40 dark:via-slate-900 dark:to-blue-950/40 border-2 border-cyan-400/70 dark:border-cyan-500/60 hover:border-cyan-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+        >
+          <div className="p-2 rounded-xl bg-cyan-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+            <Compass className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-cyan-700 dark:text-cyan-300">
+              {language === 'si' ? 'නිදහස් පාඨමාලා' : language === 'ta' ? 'இலவச படிப்புகள்' : 'Free Courses'}
+            </h4>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Harvard, Google & UoM</p>
+          </div>
+        </button>
+
         <button
           onClick={() => onNavigate('book_shop')}
           className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-white to-blue-500/10 dark:from-amber-950/30 dark:via-slate-900 dark:to-blue-950/30 border-2 border-amber-400/60 dark:border-amber-500/50 hover:border-amber-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"

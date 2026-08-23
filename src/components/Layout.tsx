@@ -27,7 +27,8 @@ import {
   Bot,
   BarChart3,
   HardDriveDownload,
-  ShoppingBag
+  ShoppingBag,
+  Compass
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -38,6 +39,8 @@ import SiparanaLogo from '@/components/SiparanaLogo';
 
 export type PageId =
   | 'dashboard'
+  | 'google_hub'
+  | 'free_courses'
   | 'book_shop'
   | 'quizzes'
   | 'ai_tutor'
@@ -74,6 +77,8 @@ interface NavItemDef {
 
 const NAV_ITEMS_CONFIG: NavItemDef[] = [
   { id: 'dashboard', icon: LayoutDashboard, transKey: 'dashboard', enLabel: 'Dashboard', siLabel: 'පුවරුව', taLabel: 'முகப்பு பலகை' },
+  { id: 'google_hub', icon: Globe, transKey: 'googleHub', enLabel: 'Google Student Hub', siLabel: 'ගූගල් අධ්‍යාපන පීඨය', taLabel: 'கூகிள் மாணவர் தளம்', badgeText: 'In-App Hub', highlight: true },
+  { id: 'free_courses', icon: Compass, transKey: 'freeCourses', enLabel: 'Free Online Courses', siLabel: 'නිදහස් ඔන්ලයින් පාඨමාලා', taLabel: 'இலவச இணையப் படிப்புகள்', badgeText: '100% Free', highlight: true },
   { id: 'book_shop', icon: ShoppingBag, transKey: 'bookShop', enLabel: 'SipArana Book Shop', siLabel: 'සිප්අරණ පොත් හල', taLabel: 'புத்தக சந்தை', badgeText: 'Marketplace', highlight: true },
   { id: 'quizzes', icon: FileQuestion, transKey: 'quizzes', enLabel: 'MCQ Quizzes', siLabel: 'බහුවරණ පරීක්ෂණ', taLabel: 'பன்மைத் தெரிவு வினாக்கள்', badgeText: 'Auto-Marked', highlight: true },
   { id: 'ai_tutor', icon: Bot, transKey: 'aiTutor', enLabel: 'AI Tutor & Voice', siLabel: 'AI ගුරු සහකාර', taLabel: 'AI குரல் ஆசிரியர்', badgeText: 'Voice AI', highlight: true },

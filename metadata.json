@@ -1,6 +1,6 @@
 {
   "name": "SipArana Educational Web App",
-  "description": "Sri Lanka's comprehensive digital learning platform for Grades 6–13 (Junior Secondary, O/L, and A/L) and University Higher Education, featuring SipArana Book Shop marketplace, MCQ quizzes, AI voice tutor, performance analytics, syllabus PDFs, video classroom, and University Portal.",
+  "description": "Sri Lanka's comprehensive digital learning platform for Grades 6–13 (Junior Secondary, O/L, and A/L) and University Higher Education, featuring the Google Student Hub, Free Online Courses, SipArana Book Shop marketplace, MCQ quizzes, AI voice tutor, performance analytics, syllabus PDFs, video classroom, and University Portal.",
   "requestFramePermissions": [
     "microphone"
   ],

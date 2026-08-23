@@ -29,8 +29,10 @@ export interface UnitQuiz {
   subjectId: string;
   subjectName: string;
   subjectSinhala: string;
-  grade: number;
+  grade: number | string;
+  category: 'al' | 'ol' | 'junior' | 'uni';
   stream: string;
+  streamId: string;
   unitNumber: number;
   timeLimitMinutes: number;
   totalMarks: number;
@@ -41,6 +43,491 @@ export interface UnitQuiz {
   descriptionSinhala: string;
   questions: MCQQuestion[];
 }
+
+export interface QuizCategory {
+  id: 'al' | 'ol' | 'junior' | 'uni';
+  name: string;
+  nameSinhala: string;
+  nameTamil: string;
+  description: string;
+  descriptionSinhala: string;
+  badge: string;
+  icon: string;
+  gradient: string;
+}
+
+export interface QuizStream {
+  id: string;
+  categoryId: 'al' | 'ol' | 'junior' | 'uni';
+  name: string;
+  nameSinhala: string;
+  nameTamil: string;
+  icon: string;
+  description: string;
+  descriptionSinhala: string;
+  color: string;
+}
+
+export interface QuizSubject {
+  id: string;
+  streamId: string;
+  categoryId: 'al' | 'ol' | 'junior' | 'uni';
+  name: string;
+  nameSinhala: string;
+  nameTamil: string;
+  iconName: string;
+  color: string;
+  gradeLevels: string;
+  syllabusCode: string;
+  descriptionSinhala: string;
+}
+
+export const QUIZ_CATEGORIES: QuizCategory[] = [
+  {
+    id: 'al',
+    name: 'G.C.E. Advanced Level (A/L)',
+    nameSinhala: 'අ.පො.ස. උසස් පෙළ (12 - 13 ශ්‍රේණි)',
+    nameTamil: 'க.பொ.த உயர்தரம் (A/L)',
+    description: 'Physical Science, Bio, Commerce, Arts & Technology Streams with University Entrance Focus',
+    descriptionSinhala: 'ගණිත, ජීව විද්‍යා, වාණිජ, කලා සහ තාක්ෂණවේදය සියලු ධාරා සඳහා විභාග බහුවරණ පරීක්ෂණ',
+    badge: 'Grades 12 - 13 • National Syllabus',
+    icon: 'GraduationCap',
+    gradient: 'from-blue-600 to-indigo-800'
+  },
+  {
+    id: 'ol',
+    name: 'G.C.E. Ordinary Level (O/L)',
+    nameSinhala: 'අ.පො.ස. සාමාන්‍ය පෙළ (10 - 11 ශ්‍රේණි)',
+    nameTamil: 'க.பொ.த சாதாரண தரம் (O/L)',
+    description: 'Core National Subjects (Science, Maths, History, English) & Electives',
+    descriptionSinhala: 'විද්‍යාව, ගණිතය, ඉතිහාසය, භාෂාව සහ කාණ්ඩ විෂයයන් සඳහා ඒකක ආදර්ශ පරීක්ෂණ',
+    badge: 'Grades 10 - 11 • O/L Exam Prep',
+    icon: 'BookOpen',
+    gradient: 'from-amber-600 to-orange-700'
+  },
+  {
+    id: 'junior',
+    name: 'Junior Secondary School',
+    nameSinhala: 'කණිෂ්ඨ අංශය (6 - 9 ශ්‍රේණි)',
+    nameTamil: 'இடைநிலைப் பிரிவு (தரம் 6 - 9)',
+    description: 'Foundational concept building in Science, Mathematics, English & History',
+    descriptionSinhala: 'මූලික සිද්ධාන්ත හා දැනුම වර්ධනය කරන ආකර්ෂණීය බහුවරණ ප්‍රශ්නාවලි',
+    badge: 'Grades 6 - 9 • Middle School',
+    icon: 'Sparkles',
+    gradient: 'from-emerald-600 to-teal-800'
+  },
+  {
+    id: 'uni',
+    name: 'University & Higher Undergrad',
+    nameSinhala: 'විශ්වවිද්‍යාල උපාධි & වෘත්තීය අංශය',
+    nameTamil: 'பல்கலைக்கழக மற்றும் உயர் கல்வி',
+    description: 'Computer Science, Software Engineering, Business, Finance & Applied Sciences',
+    descriptionSinhala: 'සරසවි උපාධි පාඨමාලා, පරිගණක විද්‍යාව, මෘදුකාංග ඉංජිනේරු විද්‍යාව සහ කළමනාකරණය',
+    badge: 'Undergraduate • Higher Education',
+    icon: 'Award',
+    gradient: 'from-purple-600 to-violet-900'
+  }
+];
+
+export const QUIZ_STREAMS: QuizStream[] = [
+  // A/L Streams
+  {
+    id: 'stream_al_maths',
+    categoryId: 'al',
+    name: 'Physical Science (Combined Maths)',
+    nameSinhala: 'භෞතික විද්‍යා (ගණිත) ධාරාව',
+    nameTamil: 'பௌதிக விஞ்ஞானப் பிரிவு (கணிதம்)',
+    icon: 'Calculator',
+    description: 'Combined Mathematics, Physics, Chemistry, and ICT',
+    descriptionSinhala: 'සංයුක්ත ගණිතය, භෞතික විද්‍යාව, රසායන විද්‍යාව සහ තොරතුරු තාක්ෂණය',
+    color: 'from-blue-600 to-indigo-700'
+  },
+  {
+    id: 'stream_al_bio',
+    categoryId: 'al',
+    name: 'Biological Science (Bio)',
+    nameSinhala: 'ජීව විද්‍යා ධාරාව',
+    nameTamil: 'உயிரியல் விஞ்ஞானப் பிரிவு',
+    icon: 'Dna',
+    description: 'Biology, Chemistry, Physics, and Agricultural Science',
+    descriptionSinhala: 'ජීව විද්‍යාව, රසායන විද්‍යාව, භෞතික විද්‍යාව සහ කෘෂි විද්‍යාව',
+    color: 'from-emerald-600 to-teal-700'
+  },
+  {
+    id: 'stream_al_commerce',
+    categoryId: 'al',
+    name: 'Commerce Stream',
+    nameSinhala: 'වාණිජ ධාරාව',
+    nameTamil: 'வணிகப் பிரிவு',
+    icon: 'TrendingUp',
+    description: 'Accounting, Business Studies, Economics, and Information Tech',
+    descriptionSinhala: 'ගිණුම්කරණය, ව්‍යාපාර අධ්‍යයනය, ආර්ථික විද්‍යාව',
+    color: 'from-amber-600 to-orange-700'
+  },
+  {
+    id: 'stream_al_arts',
+    categoryId: 'al',
+    name: 'Arts & Humanities',
+    nameSinhala: 'කලා ධාරාව හා මානව ශාස්ත්‍ර',
+    nameTamil: 'கலைப் பிரிவு',
+    icon: 'Layers',
+    description: 'Media Studies, Sinhala, Political Science, Logic, Geography',
+    descriptionSinhala: 'සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය, සිංහල, දේශපාලන විද්‍යාව, තර්ක ශාස්ත්‍රය',
+    color: 'from-purple-600 to-pink-700'
+  },
+  {
+    id: 'stream_al_tech',
+    categoryId: 'al',
+    name: 'Technology Stream',
+    nameSinhala: 'තාක්ෂණවේදය ධාරාව',
+    nameTamil: 'தொழில்நுட்பப் பிரிவு',
+    icon: 'Cpu',
+    description: 'Engineering Tech, Bio-systems Tech, Science for Technology (SFT), ICT',
+    descriptionSinhala: 'ඉංජිනේරු තාක්ෂණවේදය, ජෛව පද්ධති තාක්ෂණවේදය, SFT, ICT',
+    color: 'from-cyan-600 to-blue-700'
+  },
+
+  // O/L Streams
+  {
+    id: 'stream_ol_core',
+    categoryId: 'ol',
+    name: 'Core O/L National Subjects',
+    nameSinhala: 'ප්‍රධාන සා.පෙළ විෂය ධාරාව',
+    nameTamil: 'முக்கிய பாடங்கள் (O/L)',
+    icon: 'BookOpen',
+    description: 'Science, Mathematics, History, Sinhala/Tamil Language, English',
+    descriptionSinhala: 'විද්‍යාව, ගණිතය, ඉතිහාසය, සිංහල භාෂාව හා සාහිත්‍යය, ඉංග්‍රීසි',
+    color: 'from-amber-600 to-orange-600'
+  },
+  {
+    id: 'stream_ol_electives',
+    categoryId: 'ol',
+    name: 'Basket & Elective Subjects',
+    nameSinhala: 'කාණ්ඩ හා තේරීම් විෂයයන්',
+    nameTamil: 'தொகுதிப் பாடங்கள் (Electives)',
+    icon: 'Zap',
+    description: 'Commerce & Accounting, ICT, Agriculture, Music & Art',
+    descriptionSinhala: 'ව්‍යාපාර හා ගිණුම්කරණය, තොරතුරු තාක්ෂණය (ICT), කෘෂි විද්‍යාව',
+    color: 'from-indigo-600 to-purple-600'
+  },
+
+  // Junior Streams
+  {
+    id: 'stream_junior_foundation',
+    categoryId: 'junior',
+    name: 'Middle School Foundation (Grades 6-9)',
+    nameSinhala: 'කණිෂ්ඨ පන්ති මූලික විෂයයන් (6-9 ශ්‍රේණි)',
+    nameTamil: 'இடைநிலைப் பொதுப் பாடங்கள்',
+    icon: 'Sparkles',
+    description: 'Mathematics, Science, History, English, Geography',
+    descriptionSinhala: 'ගණිතය, විද්‍යාව, ඉතිහාසය, ඉංග්‍රීසි, භූගෝල විද්‍යාව',
+    color: 'from-emerald-600 to-teal-700'
+  },
+
+  // University Streams
+  {
+    id: 'stream_uni_computing',
+    categoryId: 'uni',
+    name: 'Computing & Software Engineering',
+    nameSinhala: 'පරිගණක විද්‍යාව & මෘදුකාංග ඉංජිනේරු විද්‍යාව',
+    nameTamil: 'கணினி விஞ்ஞானம் & மென்பொருள் பொறியியல்',
+    icon: 'Terminal',
+    description: 'Data Structures, Algorithms, Web Technologies, Database Systems',
+    descriptionSinhala: 'දත්ත ව්‍යුහ, ඇල්ගොරිතම, දත්ත සමුදාය (DBMS) සහ මෘදුකාංග සංවර්ධනය',
+    color: 'from-blue-600 to-violet-800'
+  },
+  {
+    id: 'stream_uni_business',
+    categoryId: 'uni',
+    name: 'Management & Financial Economics',
+    nameSinhala: 'ව්‍යාපාර කළමනාකරණය & මූල්‍ය ආර්ථික විද්‍යාව',
+    nameTamil: 'வணிக முகாமைத்துவம் மற்றும் நிதி',
+    icon: 'Briefcase',
+    description: 'Financial Management, Marketing, Organizational Behavior',
+    descriptionSinhala: 'මූල්‍ය කළමනාකරණය, අලෙවිකරණය සහ උපායමාර්ගික කළමනාකරණය',
+    color: 'from-amber-600 to-emerald-700'
+  }
+];
+
+export const QUIZ_SUBJECTS: QuizSubject[] = [
+  // A/L Maths Stream
+  {
+    id: 'sub_combined_maths',
+    streamId: 'stream_al_maths',
+    categoryId: 'al',
+    name: 'Combined Mathematics',
+    nameSinhala: 'සංයුක්ත ගණිතය',
+    nameTamil: 'இணைந்த கணிதம்',
+    iconName: 'Calculator',
+    color: 'from-blue-600 to-indigo-700',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-MATH-01',
+    descriptionSinhala: 'අවකලනය, අනුකලනය, ත්‍රිකෝණමිතිය, ගති විද්‍යාව සහ ස්ථිති විද්‍යාව'
+  },
+  {
+    id: 'sub_physics',
+    streamId: 'stream_al_maths',
+    categoryId: 'al',
+    name: 'Physics',
+    nameSinhala: 'භෞතික විද්‍යාව',
+    nameTamil: 'பௌதிகவியல்',
+    iconName: 'Zap',
+    color: 'from-amber-600 to-orange-700',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-PHYS-02',
+    descriptionSinhala: 'යාන්ත්‍ර විද්‍යාව, දෝලන හා තරංග, තාපය, ධාරා විද්‍යුතය සහ ඉලෙක්ට්‍රොනික විද්‍යාව'
+  },
+  {
+    id: 'sub_chemistry',
+    streamId: 'stream_al_maths',
+    categoryId: 'al',
+    name: 'Chemistry',
+    nameSinhala: 'රසායන විද්‍යාව',
+    nameTamil: 'இரசாயனவியல்',
+    iconName: 'FlaskConical',
+    color: 'from-emerald-600 to-teal-700',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-CHEM-03',
+    descriptionSinhala: 'කාබනික රසායනය, අකාබනික රසායනය, භෞතික රසායනය සහ සමතුලිතතාව'
+  },
+
+  // A/L Bio Stream
+  {
+    id: 'sub_biology',
+    streamId: 'stream_al_bio',
+    categoryId: 'al',
+    name: 'Biology',
+    nameSinhala: 'ජීව විද්‍යාව',
+    nameTamil: 'உயிரியல்',
+    iconName: 'Dna',
+    color: 'from-green-600 to-emerald-800',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-BIO-04',
+    descriptionSinhala: 'සෛල ජීව විද්‍යාව, ප්‍රවේණිය, ශාක හා සත්ත්ව ආකාර හා ක්‍රියාකාරීත්වය'
+  },
+  {
+    id: 'sub_bio_chem',
+    streamId: 'stream_al_bio',
+    categoryId: 'al',
+    name: 'Chemistry (Bio Science)',
+    nameSinhala: 'රසායන විද්‍යාව (ජීව විද්‍යා ධාරාව)',
+    nameTamil: 'இரசாயனவியல்',
+    iconName: 'FlaskConical',
+    color: 'from-emerald-600 to-teal-700',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-CHEM-03B',
+    descriptionSinhala: 'ජීව රසායන විද්‍යාව, කාබනික යාන්ත්‍රණ සහ අකාබනික විශ්ලේෂණය'
+  },
+
+  // A/L Commerce Stream
+  {
+    id: 'sub_accounting',
+    streamId: 'stream_al_commerce',
+    categoryId: 'al',
+    name: 'Accounting',
+    nameSinhala: 'ගිණුම්කරණය',
+    nameTamil: 'கணக்கீடு',
+    iconName: 'FileText',
+    color: 'from-blue-600 to-cyan-700',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-ACC-05',
+    descriptionSinhala: 'මූල්‍ය ප්‍රකාශන, හවුල් ව්‍යාපාර, සමාගම් ගිණුම් සහ පිරිවැය ගිණුම්කරණය'
+  },
+  {
+    id: 'sub_business_studies',
+    streamId: 'stream_al_commerce',
+    categoryId: 'al',
+    name: 'Business Studies',
+    nameSinhala: 'ව්‍යාපාර අධ්‍යයනය',
+    nameTamil: 'வணிகக் கற்கைகள்',
+    iconName: 'Briefcase',
+    color: 'from-amber-600 to-orange-700',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-BS-06',
+    descriptionSinhala: 'ව්‍යාපාර පරිසරය, කළමනාකරණය, අලෙවිකරණය සහ මානව සම්පත් කළමනාකරණය'
+  },
+  {
+    id: 'sub_economics',
+    streamId: 'stream_al_commerce',
+    categoryId: 'al',
+    name: 'Economics',
+    nameSinhala: 'ආර්ථික විද්‍යාව',
+    nameTamil: 'பொருளியல்',
+    iconName: 'TrendingUp',
+    color: 'from-emerald-600 to-teal-700',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-ECON-07',
+    descriptionSinhala: 'ක්ෂුද්‍ර ආර්ථික විද්‍යාව, සාර්ව ආර්ථික විද්‍යාව, ජාත්‍යන්තර වෙළඳාම සහ මූල්‍ය ප්‍රතිපත්ති'
+  },
+
+  // A/L Arts Stream
+  {
+    id: 'sub_media_studies',
+    streamId: 'stream_al_arts',
+    categoryId: 'al',
+    name: 'Communication & Media Studies',
+    nameSinhala: 'සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය',
+    nameTamil: 'தொடர்பாடலும் ஊடகக் கற்கைகளும்',
+    iconName: 'Layers',
+    color: 'from-amber-600 to-amber-900',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-MEDIA-08',
+    descriptionSinhala: 'සන්නිවේදන ආකෘති, සිනමා ඉතිහාසය, පුවත්පත් කලාව සහ ගුවන්විදුලි/රූපවාහිනී මාධ්‍ය'
+  },
+  {
+    id: 'sub_sinhala_lit',
+    streamId: 'stream_al_arts',
+    categoryId: 'al',
+    name: 'Sinhala Language & Literature',
+    nameSinhala: 'සිංහල භාෂාව හා සාහිත්‍යය (උ/පෙළ)',
+    nameTamil: 'சிங்கள மொழியும் இலக்கியமும்',
+    iconName: 'BookOpen',
+    color: 'from-purple-600 to-indigo-800',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-SINH-09',
+    descriptionSinhala: 'සම්භාව්‍ය ගද්‍ය-පද්‍ය සාහිත්‍යය, භාෂා ව්‍යාකරණ, සාහිත්‍ය විචාරය සහ නූතන නිර්මාණ'
+  },
+
+  // A/L Technology Stream
+  {
+    id: 'sub_engineering_tech',
+    streamId: 'stream_al_tech',
+    categoryId: 'al',
+    name: 'Engineering Technology (ET)',
+    nameSinhala: 'ඉංජිනේරු තාක්ෂණවේදය',
+    nameTamil: 'பொறியியல் தொழில்நுட்பம்',
+    iconName: 'Cpu',
+    color: 'from-cyan-600 to-blue-800',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-ET-10',
+    descriptionSinhala: 'සිවිල්, යාන්ත්‍රික සහ විද්‍යුත් ඉංජිනේරු තාක්ෂණික සිද්ධාන්ත'
+  },
+  {
+    id: 'sub_sft',
+    streamId: 'stream_al_tech',
+    categoryId: 'al',
+    name: 'Science for Technology (SFT)',
+    nameSinhala: 'තාක්ෂණවේදය සඳහා විද්‍යාව (SFT)',
+    nameTamil: 'தொழில்நுட்பத்திற்கான விஞ்ஞானம்',
+    iconName: 'Flame',
+    color: 'from-orange-600 to-red-700',
+    gradeLevels: 'Grade 12 - 13 (A/L)',
+    syllabusCode: 'AL-SFT-11',
+    descriptionSinhala: 'ව්‍යවහාරික භෞතික විද්‍යාව, රසායන විද්‍යාව, ජීව විද්‍යාව සහ ගණිතය'
+  },
+
+  // O/L Core Stream
+  {
+    id: 'sub_ol_science',
+    streamId: 'stream_ol_core',
+    categoryId: 'ol',
+    name: 'Science (O/L)',
+    nameSinhala: 'විද්‍යාව (සා.පෙළ)',
+    nameTamil: 'விஞ்ஞானம் (O/L)',
+    iconName: 'Flame',
+    color: 'from-cyan-600 to-blue-800',
+    gradeLevels: 'Grade 10 - 11 (O/L)',
+    syllabusCode: 'OL-SCI-20',
+    descriptionSinhala: 'ජීව විද්‍යාත්මක ක්‍රියාවලි, පදාර්ථයේ ව්‍යුහය, බලය හා ශක්තිය, පරිසර විද්‍යාව'
+  },
+  {
+    id: 'sub_ol_maths',
+    streamId: 'stream_ol_core',
+    categoryId: 'ol',
+    name: 'Mathematics (O/L)',
+    nameSinhala: 'ගණිතය (සා.පෙළ)',
+    nameTamil: 'கணிதம் (O/L)',
+    iconName: 'Percent',
+    color: 'from-indigo-600 to-purple-800',
+    gradeLevels: 'Grade 10 - 11 (O/L)',
+    syllabusCode: 'OL-MATH-21',
+    descriptionSinhala: 'වර්ගජ සමීකරණ, ජ්‍යාමිතිය, ත්‍රිකෝණමිතිය, සංඛ්‍යානය සහ සම්භාවිතාව'
+  },
+  {
+    id: 'sub_ol_history',
+    streamId: 'stream_ol_core',
+    categoryId: 'ol',
+    name: 'History (O/L)',
+    nameSinhala: 'ඉතිහාසය (සා.පෙළ)',
+    nameTamil: 'வரலாறு (O/L)',
+    iconName: 'Landmark',
+    color: 'from-amber-600 to-yellow-800',
+    gradeLevels: 'Grade 10 - 11 (O/L)',
+    syllabusCode: 'OL-HIST-22',
+    descriptionSinhala: 'අනුරාධපුර, පොළොන්නරුව යුග, යටත් විජිත පාලනය සහ ශ්‍රී ලංකාවේ නිදහස් සටන'
+  },
+
+  // O/L Electives
+  {
+    id: 'sub_ol_ict',
+    streamId: 'stream_ol_electives',
+    categoryId: 'ol',
+    name: 'Information & Communication Tech (ICT)',
+    nameSinhala: 'තොරතුරු හා සන්නිවේදන තාක්ෂණය (ICT)',
+    nameTamil: 'தகவல் தொடர்பாடல் தொழில்நுட்பம்',
+    iconName: 'Terminal',
+    color: 'from-blue-600 to-cyan-700',
+    gradeLevels: 'Grade 10 - 11 (O/L)',
+    syllabusCode: 'OL-ICT-23',
+    descriptionSinhala: 'පරිගණක දෘඩාංග, මෘදුකාංග, ඇල්ගොරිතම, HTML සහ අන්තර්ජාලය'
+  },
+
+  // Junior Foundation
+  {
+    id: 'sub_junior_science',
+    streamId: 'stream_junior_foundation',
+    categoryId: 'junior',
+    name: 'Junior General Science',
+    nameSinhala: 'කණිෂ්ඨ විද්‍යාව (6-9 ශ්‍රේණි)',
+    nameTamil: 'இடைநிலை விஞ்ஞானம்',
+    iconName: 'Sparkles',
+    color: 'from-emerald-600 to-teal-800',
+    gradeLevels: 'Grade 6 - 9',
+    syllabusCode: 'JUN-SCI-30',
+    descriptionSinhala: 'ශාක හා සතුන්, පදාර්ථයේ අවස්ථා, තාපය, ආලෝකය සහ විද්‍යුතය'
+  },
+  {
+    id: 'sub_junior_maths',
+    streamId: 'stream_junior_foundation',
+    categoryId: 'junior',
+    name: 'Junior Mathematics',
+    nameSinhala: 'කණිෂ්ඨ ගණිතය (6-9 ශ්‍රේණි)',
+    nameTamil: 'இடைநிலைக் கணிதம்',
+    iconName: 'Calculator',
+    color: 'from-blue-600 to-indigo-700',
+    gradeLevels: 'Grade 6 - 9',
+    syllabusCode: 'JUN-MATH-31',
+    descriptionSinhala: 'භාග, ප්‍රතිශත, මූලික වීජ ගණිතය, කෝණ සහ පරිමිතිය'
+  },
+
+  // University Undergrad
+  {
+    id: 'sub_uni_dsa',
+    streamId: 'stream_uni_computing',
+    categoryId: 'uni',
+    name: 'Data Structures & Algorithms',
+    nameSinhala: 'දත්ත ව්‍යුහ සහ ඇල්ගොරිතම (DSA)',
+    nameTamil: 'தரவு கட்டமைப்புகள் மற்றும் அல்காரிதம்கள்',
+    iconName: 'Code',
+    color: 'from-blue-600 to-indigo-900',
+    gradeLevels: 'Undergraduate Year 1-2',
+    syllabusCode: 'UNI-CS-101',
+    descriptionSinhala: 'Arrays, Linked Lists, Trees, Graphs, Sorting & Big-O Time Complexity'
+  },
+  {
+    id: 'sub_uni_management',
+    streamId: 'stream_uni_business',
+    categoryId: 'uni',
+    name: 'Principles of Financial Management',
+    nameSinhala: 'මූල්‍ය කළමනාකරණ මූලධර්ම',
+    nameTamil: 'நிதி முகாமைத்துவக் கோட்பாடுகள்',
+    iconName: 'Briefcase',
+    color: 'from-amber-600 to-orange-800',
+    gradeLevels: 'Undergraduate Year 1-2',
+    syllabusCode: 'UNI-MGT-201',
+    descriptionSinhala: 'Time Value of Money, Capital Budgeting, Risk & Return, Capital Structure'
+  }
+];
 
 export const UNIT_QUIZZES_DATA: UnitQuiz[] = [
   // 1. A/L Combined Mathematics - Integration & Calculus
@@ -53,7 +540,9 @@ export const UNIT_QUIZZES_DATA: UnitQuiz[] = [
     subjectName: 'Combined Mathematics',
     subjectSinhala: 'සංයුක්ත ගණිතය',
     grade: 13,
+    category: 'al',
     stream: 'Physical Science (Maths)',
+    streamId: 'stream_al_maths',
     unitNumber: 4,
     timeLimitMinutes: 15,
     totalMarks: 100,
@@ -171,7 +660,9 @@ export const UNIT_QUIZZES_DATA: UnitQuiz[] = [
     subjectName: 'Physics',
     subjectSinhala: 'භෞතික විද්‍යාව',
     grade: 12,
+    category: 'al',
     stream: 'Physical Science (Maths)',
+    streamId: 'stream_al_maths',
     unitNumber: 2,
     timeLimitMinutes: 15,
     totalMarks: 100,
@@ -270,7 +761,9 @@ export const UNIT_QUIZZES_DATA: UnitQuiz[] = [
     subjectName: 'Chemistry',
     subjectSinhala: 'රසායන විද්‍යාව',
     grade: 12,
+    category: 'al',
     stream: 'Physical Science (Maths)',
+    streamId: 'stream_al_maths',
     unitNumber: 3,
     timeLimitMinutes: 15,
     totalMarks: 100,
@@ -350,7 +843,9 @@ export const UNIT_QUIZZES_DATA: UnitQuiz[] = [
     subjectName: 'Biology',
     subjectSinhala: 'ජීව විද්‍යාව',
     grade: 12,
+    category: 'al',
     stream: 'Biological Science (Bio)',
+    streamId: 'stream_al_bio',
     unitNumber: 4,
     timeLimitMinutes: 15,
     totalMarks: 100,
@@ -401,129 +896,158 @@ export const UNIT_QUIZZES_DATA: UnitQuiz[] = [
     ]
   },
 
-  // 5. G.C.E. O/L Science - Electricity & Energy
+  // 5. A/L Commerce - Accounting (ගිණුම්කරණය)
   {
-    id: 'quiz_ol_science_01',
-    title: 'Electricity, Circuits & Magnetism (O/L)',
-    titleSinhala: 'ධාරා විද්‍යුතය, පරිපථ සහ චුම්භකත්වය (සා.පෙළ)',
-    titleTamil: 'மின்னியல் மற்றும் காந்தவியல் (O/L)',
-    subjectId: 'sub_ol_science',
-    subjectName: 'Science',
-    subjectSinhala: 'විද්‍යාව',
-    grade: 11,
-    stream: 'General O/L',
+    id: 'quiz_comm_accounting_01',
+    title: 'Partnerships & Financial Statements Analysis',
+    titleSinhala: 'හවුල් ව්‍යාපාර ගිණුම් සහ මූල්‍ය ප්‍රකාශන විශ්ලේෂණය',
+    titleTamil: 'கூட்டாண்மை கணக்குகள் மற்றும் நிதி அறிக்கைகள்',
+    subjectId: 'sub_accounting',
+    subjectName: 'Accounting',
+    subjectSinhala: 'ගිණුම්කරණය',
+    grade: 13,
+    category: 'al',
+    stream: 'Commerce Stream',
+    streamId: 'stream_al_commerce',
     unitNumber: 3,
-    timeLimitMinutes: 12,
+    timeLimitMinutes: 15,
     totalMarks: 100,
-    xpReward: 100,
-    iconName: 'Flame',
-    color: 'from-cyan-600 to-blue-800',
-    description: 'Test your understanding of Ohm\'s law, series/parallel circuits, and domestic electricity.',
-    descriptionSinhala: 'ඕම්ගේ නියමය, සමාන්තරගත හා ශ්‍රේණිගත ප්‍රතිරෝධ සහ විද්‍යුත් බලය පිළිබඳ ගැටලු.',
+    xpReward: 120,
+    iconName: 'FileText',
+    color: 'from-blue-600 to-cyan-700',
+    description: 'Master partnership appropriation accounts, goodwill adjustment, and liquidity ratios.',
+    descriptionSinhala: 'ලාභ බෙදාහැරීමේ ගිණුම, කීර්තිනාම ගැලපීම් සහ ද්‍රවශීලතා අනුපාත පිළිබඳ බහුවරණ.',
     questions: [
       {
-        id: 'q_ol_sci_1',
+        id: 'q_acc_1',
         questionNumber: 1,
-        questionText: 'Two resistors of 6 Ω and 3 Ω are connected in parallel to a 12V DC power source. What is the total current flowing from the source?',
-        questionTextSinhala: '6 Ω සහ 3 Ω ප්‍රතිරෝධක දෙකක් සමාන්තරගතව 12V බැටරියකට සම්බන්ධ කර ඇත. පරිපථයේ මුළු ධාරාව කොපමණද?',
+        questionText: 'Under the Sri Lanka Accounting Standards (LKAS/SLFRS), what is the formula to calculate Quick Ratio (Acid Test Ratio)?',
+        questionTextSinhala: 'ශ්‍රී ලංකා ගිණුම්කරණ ප්‍රමිති අනුව ද්‍රවශීලතා අනුපාතය (Quick Ratio / Acid Test Ratio) ගණනය කරන්නේ කෙසේද?',
         options: [
-          { id: 'opt_1', text: '6 A', textSinhala: '6 A' },
-          { id: 'opt_2', text: '4 A', textSinhala: '4 A' },
-          { id: 'opt_3', text: '2 A', textSinhala: '2 A' },
-          { id: 'opt_4', text: '9 A', textSinhala: '9 A' },
-          { id: 'opt_5', text: '1.33 A', textSinhala: '1.33 A' },
+          { id: 'opt_1', text: '(Current Assets - Inventories) / Current Liabilities', textSinhala: '(ජංගම වත්කම් - තොග) / ජංගම වගකීම්' },
+          { id: 'opt_2', text: 'Current Assets / Current Liabilities', textSinhala: 'ජංගම වත්කම් / ජංගම වගකීම්' },
+          { id: 'opt_3', text: '(Current Assets + Inventories) / Long Term Debt', textSinhala: '(ජංගම වත්කම් + තොග) / දිගුකාලීන ණය' },
+          { id: 'opt_4', text: 'Cash / Total Assets', textSinhala: 'මුදල් / මුළු වත්කම්' },
+          { id: 'opt_5', text: 'Gross Profit / Current Liabilities', textSinhala: 'දළ ලාභය / ජංගම වගකීම්' },
         ],
         correctOptionId: 'opt_1',
-        explanation: 'Equivalent resistance R_eq = (6*3)/(6+3) = 18/9 = 2 Ω. Current I = V / R_eq = 12 / 2 = 6 A.',
-        explanationSinhala: 'සමාන්තර ප්‍රතිරෝධය R_eq = (6*3)/(6+3) = 18/9 = 2 Ω වේ. මුළු ධාරාව I = V/R = 12/2 = 6 A වේ.',
-        guruPothaRef: 'Grade 11 Science Textbook • Unit 07 Current Electricity',
-        topic: 'Parallel Resistance & Ohm Law',
+        explanation: 'Quick Ratio measures short-term liquidity by excluding inventory (the least liquid current asset): Quick Ratio = (Current Assets - Inventory) / Current Liabilities.',
+        explanationSinhala: 'ද්‍රවශීලතා අනුපාතය = (ජංගම වත්කම් - තොග) / ජංගම වගකීම් සූත්‍රයෙන් ගණනය කරනු ලැබේ.',
+        guruPothaRef: 'A/L Accounting Resource Book • Unit 09 Financial Ratio Analysis',
+        topic: 'Liquidity Ratios',
         difficulty: 'Easy'
       },
       {
-        id: 'q_ol_sci_2',
+        id: 'q_acc_2',
         questionNumber: 2,
-        questionText: 'Which electrical safety device protects appliances from overloading by melting when excessive current passes through?',
-        questionTextSinhala: 'අධික ධාරාවක් ගලා යන විට උණු වී පරිපථය විසන්ධි කර උපකරණ ආරක්ෂා කරන උපාංගය කුමක්ද?',
+        questionText: 'In absence of a partnership agreement (Deed), what rate of interest per annum is allowed on partner loan advances according to the 1890 Partnership Ordinance?',
+        questionTextSinhala: 'හවුල් ගිවිසුමක් නොමැති විට, හවුල්කරුවෙකු විසින් ව්‍යාපාරයට ලබාදුන් අත්තිකාරම් ණය සඳහා හිමිවන වාර්ෂික පොලී අනුපාතිකය කුමක්ද?',
         options: [
-          { id: 'opt_1', text: 'Fuse (ෆියුස් කම්බිය)', textSinhala: 'ෆියුස් කම්බිය (Fuse wire)' },
-          { id: 'opt_2', text: 'Switch (ස්විචය)', textSinhala: 'ස්විචය' },
-          { id: 'opt_3', text: 'Capacitor (ධාරිත්‍රකය)', textSinhala: 'ධාරිත්‍රකය' },
-          { id: 'opt_4', text: 'Voltmeter (වෝල්ට්මීටරය)', textSinhala: 'වෝල්ට්මීටරය' },
-          { id: 'opt_5', text: 'Transformer (පරිණාමකය)', textSinhala: 'පරිණාමකය' },
+          { id: 'opt_1', text: '5% per annum', textSinhala: 'වසරකට 5% ක පොලියක්' },
+          { id: 'opt_2', text: '10% per annum', textSinhala: 'වසරකට 10% ක පොලියක්' },
+          { id: 'opt_3', text: '0% (No interest allowed)', textSinhala: 'පොලී හිමි නොවේ (0%)' },
+          { id: 'opt_4', text: '6% per annum', textSinhala: 'වසරකට 6% ක පොලියක්' },
+          { id: 'opt_5', text: 'Central Bank Base Rate', textSinhala: 'මහ බැංකු පොලී අනුපාතිකය' },
         ],
         correctOptionId: 'opt_1',
-        explanation: 'A fuse wire has a low melting point (lead-tin alloy) and melts safely to break an overloaded circuit.',
-        explanationSinhala: 'ෆියුස් කම්බිය (තූර්ය මිශ්‍ර ලෝහය) අඩු ද්‍රවාංකයක් සහිත බැවින් අධික ධාරාවකදී උණු වී පරිපථය ආරක්ෂා කරයි.',
-        guruPothaRef: 'Grade 11 Science Textbook • Unit 08 Domestic Electricity',
-        topic: 'Electrical Safety',
-        difficulty: 'Easy'
+        explanation: 'Under the 1890 Partnership Ordinance (applicable in SL in absence of agreement), partners are entitled to 5% p.a. interest on loan advances.',
+        explanationSinhala: 'හවුල් ගිවිසුමක් නොමැති විට 1890 හවුල් ව්‍යාපාර ආඥා පනත අනුව හවුල්කරු ණය සඳහා වසරකට 5% ක පොලියක් හිමිවේ.',
+        guruPothaRef: 'A/L Accounting Resource Book • Unit 05 Partnership Accounting',
+        topic: 'Partnership Ordinance 1890',
+        difficulty: 'Medium'
       }
     ]
   },
 
-  // 6. G.C.E. O/L Mathematics - Quadratic Equations & Trigonometry
+  // 6. A/L Commerce - Business Studies (ව්‍යාපාර අධ්‍යයනය)
   {
-    id: 'quiz_ol_maths_01',
-    title: 'Quadratic Equations, Pythagoras & Trigonometry (O/L)',
-    titleSinhala: 'වර්ගජ සමීකරණ, පයිතගරස් ප්‍රමේයය සහ ත්‍රිකෝණමිතිය',
-    titleTamil: 'இருபடிச் சமன்பாடுகள் மற்றும் திரிகோணமிதி (O/L)',
-    subjectId: 'sub_ol_maths',
-    subjectName: 'Mathematics',
-    subjectSinhala: 'ගණිතය',
-    grade: 11,
-    stream: 'General O/L',
+    id: 'quiz_comm_bs_01',
+    title: 'Principles of Management & Organizational Theories',
+    titleSinhala: 'කළමනාකරණ මූලධර්ම සහ සංවිධාන න්‍යාය',
+    titleTamil: 'முகாமைத்துவக் கொள்கைகளும் நிறுவனக் கோட்பாடுகளும்',
+    subjectId: 'sub_business_studies',
+    subjectName: 'Business Studies',
+    subjectSinhala: 'ව්‍යාපාර අධ්‍යයනය',
+    grade: 12,
+    category: 'al',
+    stream: 'Commerce Stream',
+    streamId: 'stream_al_commerce',
     unitNumber: 2,
-    timeLimitMinutes: 12,
+    timeLimitMinutes: 15,
     totalMarks: 100,
-    xpReward: 100,
-    iconName: 'Percent',
-    color: 'from-indigo-600 to-purple-800',
-    description: 'Solve factorizations, sin/cos/tan ratio word problems, and theorem verifications.',
-    descriptionSinhala: 'සාධක සෙවීම, සයින් කොසයින් අනුපාත සහ කෝණ පිළිබඳ විභාග මට්ටමේ බහුවරණ.',
+    xpReward: 120,
+    iconName: 'Briefcase',
+    color: 'from-amber-600 to-orange-700',
+    description: 'Master Henri Fayol 14 principles, Maslow hierarchy of needs, and SWOT analysis.',
+    descriptionSinhala: 'හෙන්රි ෆෙයෝල්ගේ 14 මූලධර්ම, මැස්ලෝගේ අවශ්‍යතා ධුරාවලිය සහ කළමනාකරණ කාර්යයන්.',
     questions: [
       {
-        id: 'q_ol_m_1',
+        id: 'q_bs_1',
         questionNumber: 1,
-        questionText: 'What are the roots of the quadratic equation x² - 5x + 6 = 0 ?',
-        questionTextSinhala: 'x² - 5x + 6 = 0 වර්ගජ සමීකරණයේ විසඳුම් (මූල) මොනවාද?',
+        questionText: 'According to Henri Fayol, which management principle states that an employee should receive orders from one superior only?',
+        questionTextSinhala: 'හෙන්රි ෆෙයෝල්ගේ කළමනාකරණ මූලධර්ම අනුව එක් සේවකයෙකුට උපදෙස් ලැබිය යුත්තේ එක් ප්‍රධානියෙකුගෙන් පමණක් බව දැක්වෙන මූලධර්මය කුමක්ද?',
         options: [
-          { id: 'opt_1', text: 'x = 2 and x = 3', textSinhala: 'x = 2 සහ x = 3' },
-          { id: 'opt_2', text: 'x = -2 and x = -3', textSinhala: 'x = -2 සහ x = -3' },
-          { id: 'opt_3', text: 'x = 1 and x = 6', textSinhala: 'x = 1 සහ x = 6' },
-          { id: 'opt_4', text: 'x = -1 and x = -6', textSinhala: 'x = -1 සහ x = -6' },
-          { id: 'opt_5', text: 'x = 0 and x = 5', textSinhala: 'x = 0 සහ x = 5' },
+          { id: 'opt_1', text: 'Unity of Command (විධාන ඒකීයත්වය)', textSinhala: 'විධාන ඒකීයත්වය (Unity of Command)' },
+          { id: 'opt_2', text: 'Unity of Direction (දිශා ඒකීයත්වය)', textSinhala: 'දිශා ඒකීයත්වය (Unity of Direction)' },
+          { id: 'opt_3', text: 'Scalar Chain (ශ්‍රේණි දාමය)', textSinhala: 'ශ්‍රේණි දාමය (Scalar Chain)' },
+          { id: 'opt_4', text: 'Division of Work (ශ්‍රම විභජනය)', textSinhala: 'ශ්‍රම විභජනය' },
+          { id: 'opt_5', text: 'Espirit de Corps (කණ්ඩායම් හැඟීම)', textSinhala: 'කණ්ඩායම් හැඟීම' },
         ],
         correctOptionId: 'opt_1',
-        explanation: 'Factoring: (x - 2)(x - 3) = 0 => x = 2 or x = 3.',
-        explanationSinhala: 'සාධක වෙන් කිරීමෙන්: (x - 2)(x - 3) = 0 බැවින් x = 2 හෝ x = 3 වේ.',
-        guruPothaRef: 'Grade 11 Mathematics Textbook • Unit 04 Quadratic Equations',
-        topic: 'Factorization',
-        difficulty: 'Easy'
-      },
-      {
-        id: 'q_ol_m_2',
-        questionNumber: 2,
-        questionText: 'In a right-angled triangle, if opposite side = 3 cm and adjacent side = 4 cm, what is the value of sin θ?',
-        questionTextSinhala: 'සෘජුකෝණී ත්‍රිකෝණයක සම්මුඛ පාදය 3 cm සහ බද්ධ පාදය 4 cm නම්, sin θ හි අගය කොපමණද?',
-        options: [
-          { id: 'opt_1', text: '3/5', textSinhala: '3/5' },
-          { id: 'opt_2', text: '4/5', textSinhala: '4/5' },
-          { id: 'opt_3', text: '3/4', textSinhala: '3/4' },
-          { id: 'opt_4', text: '4/3', textSinhala: '4/3' },
-          { id: 'opt_5', text: '5/3', textSinhala: '5/3' },
-        ],
-        correctOptionId: 'opt_1',
-        explanation: 'By Pythagoras: Hypotenuse = √(3² + 4²) = 5 cm. sin θ = Opposite / Hypotenuse = 3/5.',
-        explanationSinhala: 'පයිතගරස් ප්‍රමේයයෙන් කර්ණය = √(3² + 4²) = 5 cm වේ. sin θ = සම්මුඛ පාදය / කර්ණය = 3/5 වේ.',
-        guruPothaRef: 'Grade 11 Mathematics Textbook • Unit 12 Trigonometry',
-        topic: 'Trigonometric Ratios',
+        explanation: 'Unity of Command dictates that an employee receives instructions from and reports to only one direct manager to avoid confusion.',
+        explanationSinhala: 'විධාන ඒකීයත්වය මූලධර්මය මගින් එක් සේවකයෙකු එක් ප්‍රධානියෙකුට පමණක් වගකිව යුතු බව අවධාරණය කෙරේ.',
+        guruPothaRef: 'A/L Business Studies Syllabus • Unit 04 Management Functions',
+        topic: 'Henri Fayol Principles',
         difficulty: 'Easy'
       }
     ]
   },
 
-  // 7. A/L Communication & Media Studies - Theories, Models & Semiotics
+  // 7. A/L Commerce - Economics (ආර්ථික විද්‍යාව)
+  {
+    id: 'quiz_comm_econ_01',
+    title: 'Market Equilibrium, Elasticity & Fiscal Policy',
+    titleSinhala: 'වෙළඳපොළ සමතුලිතතාව, නම්‍යතාව සහ රාජ්‍ය මූල්‍ය ප්‍රතිපත්තිය',
+    titleTamil: 'சந்தைச் சமநிலை மற்றும் நெகிழ்ச்சி',
+    subjectId: 'sub_economics',
+    subjectName: 'Economics',
+    subjectSinhala: 'ආර්ථික විද්‍යාව',
+    grade: 12,
+    category: 'al',
+    stream: 'Commerce Stream',
+    streamId: 'stream_al_commerce',
+    unitNumber: 2,
+    timeLimitMinutes: 15,
+    totalMarks: 100,
+    xpReward: 120,
+    iconName: 'TrendingUp',
+    color: 'from-emerald-600 to-teal-700',
+    description: 'Master price elasticity of demand (PED), cross elasticity, consumer surplus, and monetary tools.',
+    descriptionSinhala: 'ඉල්ලුමේ මිල නම්‍යතාව, පාරිභෝගික අතිරික්තය සහ බදු ප්‍රතිපත්ති ආශ්‍රිත ප්‍රශ්න.',
+    questions: [
+      {
+        id: 'q_econ_1',
+        questionNumber: 1,
+        questionText: 'When the price of a good falls by 10% and the quantity demanded rises by 20%, what is the Price Elasticity of Demand (PED)?',
+        questionTextSinhala: 'භාණ්ඩයක මිල 10% කින් පහත වැටෙන විට ඉල්ලුම් ප්‍රමාණය 20% කින් ඉහළ යයි නම්, ඉල්ලුමේ මිල නම්‍යතාවය (PED) වන්නේ:',
+        options: [
+          { id: 'opt_1', text: '2.0 (Elastic demand)', textSinhala: '2.0 (නම්‍ය ඉල්ලුම)' },
+          { id: 'opt_2', text: '0.5 (Inelastic demand)', textSinhala: '0.5 (අනම්‍ය ඉල්ලුම)' },
+          { id: 'opt_3', text: '1.0 (Unitary elastic)', textSinhala: '1.0 (ඒකීය නම්‍ය)' },
+          { id: 'opt_4', text: '0.0 (Perfectly inelastic)', textSinhala: '0.0 (පූර්ණ අනම්‍ය)' },
+          { id: 'opt_5', text: '200 (Infinity)', textSinhala: '200' },
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'PED = % Change in Quantity Demanded / % Change in Price = 20% / 10% = 2.0. Since PED > 1, demand is price elastic.',
+        explanationSinhala: 'PED = ඉල්ලුම් ප්‍රමාණයේ ප්‍රතිශත වෙනස / මිලෙහි ප්‍රතිශත වෙනස = 20% / 10% = 2.0 (නම්‍ය ඉල්ලුම) වේ.',
+        guruPothaRef: 'A/L Economics Resource Book • Unit 02 Price Mechanism & Elasticity',
+        topic: 'Price Elasticity of Demand',
+        difficulty: 'Easy'
+      }
+    ]
+  },
+
+  // 8. A/L Arts - Communication & Media Studies
   {
     id: 'quiz_al_media_theories_01',
     title: 'Communication Models, Lasswell, Berlo & Semiotics',
@@ -533,7 +1057,9 @@ export const UNIT_QUIZZES_DATA: UnitQuiz[] = [
     subjectName: 'Communication & Media Studies',
     subjectSinhala: 'සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය',
     grade: 13,
-    stream: 'Arts',
+    category: 'al',
+    stream: 'Arts & Humanities',
+    streamId: 'stream_al_arts',
     unitNumber: 1,
     timeLimitMinutes: 15,
     totalMarks: 100,
@@ -603,65 +1129,260 @@ export const UNIT_QUIZZES_DATA: UnitQuiz[] = [
     ]
   },
 
-  // 8. A/L Communication & Media Studies - Sri Lankan Cinema & Film Language
+  // 9. A/L Technology - Science for Technology (SFT)
   {
-    id: 'quiz_al_media_cinema_02',
-    title: 'Sri Lankan Cinema History & Film Language (1947–Present)',
-    titleSinhala: 'ශ්‍රී ලාංකේය සිනමා ඉතිහාසය, රේඛාව සහ සිනමා භාෂාව',
-    titleTamil: 'இலங்கை சினிமா வரலாறு & திரைப்படக் கலை (A/L Media)',
-    subjectId: 'sub_media_studies',
-    subjectName: 'Communication & Media Studies',
-    subjectSinhala: 'සන්නිවේදනය හා මාධ්‍ය අධ්‍යයනය',
-    grade: 13,
-    stream: 'Arts',
-    unitNumber: 4,
+    id: 'quiz_tech_sft_01',
+    title: 'Applied Thermodynamics & Environmental Technology',
+    titleSinhala: 'ව්‍යවහාරික තාපගති විද්‍යාව සහ පාරිසරික තාක්ෂණවේදය',
+    titleTamil: 'பிரயோக வெப்பவியலும் சூழல் தொழினுட்பமும்',
+    subjectId: 'sub_sft',
+    subjectName: 'Science for Technology (SFT)',
+    subjectSinhala: 'තාක්ෂණවේදය සඳහා විද්‍යාව (SFT)',
+    grade: 12,
+    category: 'al',
+    stream: 'Technology Stream',
+    streamId: 'stream_al_tech',
+    unitNumber: 2,
     timeLimitMinutes: 15,
     totalMarks: 100,
     xpReward: 120,
-    iconName: 'Film',
-    color: 'from-blue-700 to-indigo-900',
-    description: 'Assess knowledge on 1947 Kadawunu Poronduwa, Lester James Peries 1956 Rekava, 180-degree rule, and mise-en-scène.',
-    descriptionSinhala: 'කඩවුණු පොරොන්දුව, රේඛාව, ගම්පෙරළිය, 180° රීතිය සහ මිසෝන්සෙන් පිළිබඳ විභාග බහුවරණ.',
+    iconName: 'Flame',
+    color: 'from-orange-600 to-red-700',
+    description: 'Test heat transfer mechanisms, renewable biogas production, and sensor transducers.',
+    descriptionSinhala: 'සන්නයනය, සංවහනය, විකිරණය සහ ජෛව වායු තාක්ෂණය පිළිබඳ SFT ප්‍රශ්නාවලිය.',
     questions: [
       {
-        id: 'q_cin_1',
+        id: 'q_sft_1',
         questionNumber: 1,
-        questionText: 'Why is Dr. Lester James Peries\' film "Rekava" (1956) considered the revolutionary turning point of Sri Lankan cinema?',
-        questionTextSinhala: '1956 දී ආචාර්ය ලෙස්ටර් ජේම්ස් පීරිස් නිර්මාණය කළ "රේඛාව" චිත්‍රපටය ශ්‍රී ලාංකේය සිනමාවේ ඓතිහාසික හැරවුම් ලක්ෂ්‍යය ලෙස සලකන්නේ මන්ද?',
+        questionText: 'What is the primary combustible gas component produced inside an anaerobic biogas digester?',
+        questionTextSinhala: 'නිර්වායු ජෛව වායු නිපදවන ඒකකයක (Biogas Digester) නිපදවෙන ප්‍රධාන දහනශීලී වායුව කුමක්ද?',
         options: [
-          { id: 'opt_1', text: 'First film completely shot outdoors on real locations breaking South Indian studio theatrical formula', textSinhala: 'දකුණු ඉන්දීය චිත්‍රාගාර නාට්‍ය සම්ප්‍රදායෙන් බැහැරව සැබෑ එළිමහන් පරිසරයේ (Outdoor Locations) කැමරාගත කළ ප්‍රථම යථාර්ථවාදී ලාංකේය චිත්‍රපටය වීම' },
-          { id: 'opt_2', text: 'It was the very first film made with Sinhala dialogues', textSinhala: 'එය ප්‍රථම සිංහල දෙබස් සහිත චිත්‍රපටය වූ නිසා' },
-          { id: 'opt_3', text: 'It won the Golden Peacock award at New Delhi', textSinhala: 'එය නවදිල්ලි සිනමා උළෙලේදී රන් මයුර සම්මානය දිනූ නිසා' },
-          { id: 'opt_4', text: 'It was the first film to feature color cinematography in Sri Lanka', textSinhala: 'එය ශ්‍රී ලංකාවේ ප්‍රථම වර්ණ චිත්‍රපටය වූ නිසා' },
-          { id: 'opt_5', text: 'It was produced by the Minerva theatre group in Madras', textSinhala: 'එය මිනර්වා නාට්‍ය කණ්ඩායම මදුරාසියේදී නිෂ්පාදනය කළ නිසා' },
+          { id: 'opt_1', text: 'Methane (CH4) ~ 55-70%', textSinhala: 'මීතේන් (CH4) ~ 55-70%' },
+          { id: 'opt_2', text: 'Carbon Dioxide (CO2)', textSinhala: 'කාබන් ඩයොක්සයිඩ් (CO2)' },
+          { id: 'opt_3', text: 'Hydrogen Sulfide (H2S)', textSinhala: 'හයිඩ්‍රජන් සල්ෆයිඩ්' },
+          { id: 'opt_4', text: 'Nitrogen gas (N2)', textSinhala: 'නයිට්‍රජන් වායුව' },
+          { id: 'opt_5', text: 'Oxygen (O2)', textSinhala: 'ඔක්සිජන්' },
         ],
         correctOptionId: 'opt_1',
-        explanation: 'Rekava (1956) broke away from artificial South Indian studio sets and melodrama, taking the camera outdoors to Sri Lankan villages, establishing indigenous cinematic realism.',
-        explanationSinhala: 'රේඛාව චිත්‍රපටය දකුණු ඉන්දීය මැදිරි සිනමාවේ කෘත්‍රිමත්වයෙන් මිදී කැමරාව සැබෑ ගම්බද එළිමහන් පරිසරයට ගෙන ගොස් ස්වදේශීය සිනමා භාෂාවක් නිර්මාණය කළේය.',
-        guruPothaRef: 'A/L Media Studies Resource Book • Sri Lankan Cinema History',
-        topic: 'Sri Lankan Film History',
+        explanation: 'Biogas consists predominantly of methane (55-70%) and carbon dioxide (30-45%), with methane being the key flammable fuel.',
+        explanationSinhala: 'ජෛව වායුවේ 55-70% පමණ අඩංගු වන්නේ දහනය වන මීතේන් (CH4) වායුවයි.',
+        guruPothaRef: 'A/L SFT Resource Book • Unit 05 Energy & Environment',
+        topic: 'Biogas Technology',
+        difficulty: 'Easy'
+      }
+    ]
+  },
+
+  // 10. G.C.E. O/L Science - Electricity & Energy
+  {
+    id: 'quiz_ol_science_01',
+    title: 'Electricity, Circuits & Magnetism (O/L)',
+    titleSinhala: 'ධාරා විද්‍යුතය, පරිපථ සහ චුම්භකත්වය (සා.පෙළ)',
+    titleTamil: 'மின்னியல் மற்றும் காந்தவியல் (O/L)',
+    subjectId: 'sub_ol_science',
+    subjectName: 'Science',
+    subjectSinhala: 'විද්‍යාව',
+    grade: 11,
+    category: 'ol',
+    stream: 'Core O/L National Subjects',
+    streamId: 'stream_ol_core',
+    unitNumber: 3,
+    timeLimitMinutes: 12,
+    totalMarks: 100,
+    xpReward: 100,
+    iconName: 'Flame',
+    color: 'from-cyan-600 to-blue-800',
+    description: 'Test your understanding of Ohm\'s law, series/parallel circuits, and domestic electricity.',
+    descriptionSinhala: 'ඕම්ගේ නියමය, සමාන්තරගත හා ශ්‍රේණිගත ප්‍රතිරෝධ සහ විද්‍යුත් බලය පිළිබඳ ගැටලු.',
+    questions: [
+      {
+        id: 'q_ol_sci_1',
+        questionNumber: 1,
+        questionText: 'Two resistors of 6 Ω and 3 Ω are connected in parallel to a 12V DC power source. What is the total current flowing from the source?',
+        questionTextSinhala: '6 Ω සහ 3 Ω ප්‍රතිරෝධක දෙකක් සමාන්තරගතව 12V බැටරියකට සම්බන්ධ කර ඇත. පරිපථයේ මුළු ධාරාව කොපමණද?',
+        options: [
+          { id: 'opt_1', text: '6 A', textSinhala: '6 A' },
+          { id: 'opt_2', text: '4 A', textSinhala: '4 A' },
+          { id: 'opt_3', text: '2 A', textSinhala: '2 A' },
+          { id: 'opt_4', text: '9 A', textSinhala: '9 A' },
+          { id: 'opt_5', text: '1.33 A', textSinhala: '1.33 A' },
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'Equivalent resistance R_eq = (6*3)/(6+3) = 18/9 = 2 Ω. Current I = V / R_eq = 12 / 2 = 6 A.',
+        explanationSinhala: 'සමාන්තර ප්‍රතිරෝධය R_eq = (6*3)/(6+3) = 18/9 = 2 Ω වේ. මුළු ධාරාව I = V/R = 12/2 = 6 A වේ.',
+        guruPothaRef: 'Grade 11 Science Textbook • Unit 07 Current Electricity',
+        topic: 'Parallel Resistance & Ohm Law',
         difficulty: 'Easy'
       },
       {
-        id: 'q_cin_2',
+        id: 'q_ol_sci_2',
         questionNumber: 2,
-        questionText: 'What is the primary visual purpose of the "180-Degree Rule" (අංශක 180 රීතිය) in cinematography?',
-        questionTextSinhala: 'සිනමා කැමරාකරණයේදී අංශක 180 රීතිය (180-Degree Rule) අනුගමනය කිරීමේ ප්‍රධාන අරමුණ කුමක්ද?',
+        questionText: 'Which electrical safety device protects appliances from overloading by melting when excessive current passes through?',
+        questionTextSinhala: 'අධික ධාරාවක් ගලා යන විට උණු වී පරිපථය විසන්ධි කර උපකරණ ආරක්ෂා කරන උපාංගය කුමක්ද?',
         options: [
-          { id: 'opt_1', text: 'To maintain consistent screen direction and spatial orientation between characters', textSinhala: 'චරිත අතර අවකාශීය දිශානතිය (Spatial Orientation / Eye-line Match) ප්‍රේක්ෂකයාට නොමඟ නොයන සේ ආරක්ෂා කිරීම' },
-          { id: 'opt_2', text: 'To adjust camera shutter speed according to frame rate', textSinhala: 'කැමරා කපාට වේගය රාමු අනුපාතයට ගැළපීම' },
-          { id: 'opt_3', text: 'To eliminate audio background noise in outdoor filming', textSinhala: 'එළිමහන් රූගත කිරීම් වලදී පසුබිම් ශබ්ද ඉවත් කිරීම' },
-          { id: 'opt_4', text: 'To achieve 3D stereoscopic depth', textSinhala: 'ත්‍රිමාණ දෘශ්‍ය ගැඹුර ලබාගැනීම' },
-          { id: 'opt_5', text: 'To ensure color temperature balance (5600K)', textSinhala: 'වර්ණ උෂ්ණත්වය තුලනය කිරීම' },
+          { id: 'opt_1', text: 'Fuse (ෆියුස් කම්බිය)', textSinhala: 'ෆියුස් කම්බිය (Fuse wire)' },
+          { id: 'opt_2', text: 'Switch (ස්විචය)', textSinhala: 'ස්විචය' },
+          { id: 'opt_3', text: 'Capacitor (ධාරිත්‍රකය)', textSinhala: 'ධාරිත්‍රකය' },
+          { id: 'opt_4', text: 'Voltmeter (වෝල්ට්මීටරය)', textSinhala: 'වෝල්ට්මීටරය' },
+          { id: 'opt_5', text: 'Transformer (පරිණාමකය)', textSinhala: 'පරිණාමකය' },
         ],
         correctOptionId: 'opt_1',
-        explanation: 'The 180-degree rule establishes an imaginary axis of action so characters stay consistently left/right in relation to each other across shots.',
-        explanationSinhala: 'අංශක 180 රීතිය මගින් ක්‍රියාකාරී අක්ෂයක් (Axis of Action) නිර්මාණය කර චරිත එකිනෙකා දෙස බලන දිශානතිය තහවුරු කරයි.',
-        guruPothaRef: 'A/L Media Studies • Film Grammar & Editing',
-        topic: '180-Degree Rule',
+        explanation: 'A fuse wire has a low melting point (lead-tin alloy) and melts safely to break an overloaded circuit.',
+        explanationSinhala: 'ෆියුස් කම්බිය (තූර්ය මිශ්‍ර ලෝහය) අඩු ද්‍රවාංකයක් සහිත බැවින් අධික ධාරාවකදී උණු වී පරිපථය ආරක්ෂා කරයි.',
+        guruPothaRef: 'Grade 11 Science Textbook • Unit 08 Domestic Electricity',
+        topic: 'Electrical Safety',
+        difficulty: 'Easy'
+      }
+    ]
+  },
+
+  // 11. G.C.E. O/L Mathematics
+  {
+    id: 'quiz_ol_maths_01',
+    title: 'Quadratic Equations, Pythagoras & Trigonometry (O/L)',
+    titleSinhala: 'වර්ගජ සමීකරණ, පයිතගරස් ප්‍රමේයය සහ ත්‍රිකෝණමිතිය',
+    titleTamil: 'இருபடிச் சமன்பாடுகள் மற்றும் திரிகோணமிதி (O/L)',
+    subjectId: 'sub_ol_maths',
+    subjectName: 'Mathematics',
+    subjectSinhala: 'ගණිතය',
+    grade: 11,
+    category: 'ol',
+    stream: 'Core O/L National Subjects',
+    streamId: 'stream_ol_core',
+    unitNumber: 2,
+    timeLimitMinutes: 12,
+    totalMarks: 100,
+    xpReward: 100,
+    iconName: 'Percent',
+    color: 'from-indigo-600 to-purple-800',
+    description: 'Solve factorizations, sin/cos/tan ratio word problems, and theorem verifications.',
+    descriptionSinhala: 'සාධක සෙවීම, සයින් කොසයින් අනුපාත සහ කෝණ පිළිබඳ විභාග මට්ටමේ බහුවරණ.',
+    questions: [
+      {
+        id: 'q_ol_m_1',
+        questionNumber: 1,
+        questionText: 'What are the roots of the quadratic equation x² - 5x + 6 = 0 ?',
+        questionTextSinhala: 'x² - 5x + 6 = 0 වර්ගජ සමීකරණයේ විසඳුම් (මූල) මොනවාද?',
+        options: [
+          { id: 'opt_1', text: 'x = 2 and x = 3', textSinhala: 'x = 2 සහ x = 3' },
+          { id: 'opt_2', text: 'x = -2 and x = -3', textSinhala: 'x = -2 සහ x = -3' },
+          { id: 'opt_3', text: 'x = 1 and x = 6', textSinhala: 'x = 1 සහ x = 6' },
+          { id: 'opt_4', text: 'x = -1 and x = -6', textSinhala: 'x = -1 සහ x = -6' },
+          { id: 'opt_5', text: 'x = 0 and x = 5', textSinhala: 'x = 0 සහ x = 5' },
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'Factoring: (x - 2)(x - 3) = 0 => x = 2 or x = 3.',
+        explanationSinhala: 'සාධක වෙන් කිරීමෙන්: (x - 2)(x - 3) = 0 බැවින් x = 2 හෝ x = 3 වේ.',
+        guruPothaRef: 'Grade 11 Mathematics Textbook • Unit 04 Quadratic Equations',
+        topic: 'Factorization',
+        difficulty: 'Easy'
+      },
+      {
+        id: 'q_ol_m_2',
+        questionNumber: 2,
+        questionText: 'In a right-angled triangle, if opposite side = 3 cm and adjacent side = 4 cm, what is the value of sin θ?',
+        questionTextSinhala: 'සෘජුකෝණී ත්‍රිකෝණයක සම්මුඛ පාදය 3 cm සහ බද්ධ පාදය 4 cm නම්, sin θ හි අගය කොපමණද?',
+        options: [
+          { id: 'opt_1', text: '3/5', textSinhala: '3/5' },
+          { id: 'opt_2', text: '4/5', textSinhala: '4/5' },
+          { id: 'opt_3', text: '3/4', textSinhala: '3/4' },
+          { id: 'opt_4', text: '4/3', textSinhala: '4/3' },
+          { id: 'opt_5', text: '5/3', textSinhala: '5/3' },
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'By Pythagoras: Hypotenuse = √(3² + 4²) = 5 cm. sin θ = Opposite / Hypotenuse = 3/5.',
+        explanationSinhala: 'පයිතගරස් ප්‍රමේයයෙන් කර්ණය = √(3² + 4²) = 5 cm වේ. sin θ = සම්මුඛ පාදය / කර්ණය = 3/5 වේ.',
+        guruPothaRef: 'Grade 11 Mathematics Textbook • Unit 12 Trigonometry',
+        topic: 'Trigonometric Ratios',
+        difficulty: 'Easy'
+      }
+    ]
+  },
+
+  // 12. Junior Secondary - Science (6-9 ශ්‍රේණි)
+  {
+    id: 'quiz_jun_sci_01',
+    title: 'States of Matter, Heat & Human Body Systems (Grade 8)',
+    titleSinhala: 'පදාර්ථයේ අවස්ථා, තාපය සහ මිනිස් සිරුරේ පද්ධති',
+    titleTamil: 'பதார்த்த நிலைகள் மற்றும் மனித உடல்',
+    subjectId: 'sub_junior_science',
+    subjectName: 'Junior General Science',
+    subjectSinhala: 'කණිෂ්ඨ විද්‍යාව',
+    grade: 8,
+    category: 'junior',
+    stream: 'Middle School Foundation (Grades 6-9)',
+    streamId: 'stream_junior_foundation',
+    unitNumber: 2,
+    timeLimitMinutes: 10,
+    totalMarks: 100,
+    xpReward: 80,
+    iconName: 'Sparkles',
+    color: 'from-emerald-600 to-teal-800',
+    description: 'Fun, illustrated conceptual quiz on solid/liquid/gas states and digestion.',
+    descriptionSinhala: 'ඝන, ද්‍රව, වායු අංශු ආකෘතිය සහ ජීවී ක්‍රියාකාරකම් පිළිබඳ බහුවරණ.',
+    questions: [
+      {
+        id: 'q_jun_s_1',
+        questionNumber: 1,
+        questionText: 'Which state of matter has a fixed volume but takes the shape of the container it is poured into?',
+        questionTextSinhala: 'නියත පරිමාවක් ඇති නමුත් බහාලන බඳුනේ හැඩය ගන්නා පදාර්ථයේ අවස්ථාව කුමක්ද?',
+        options: [
+          { id: 'opt_1', text: 'Liquid (ද්‍රව)', textSinhala: 'ද්‍රව (Liquid)' },
+          { id: 'opt_2', text: 'Solid (ඝන)', textSinhala: 'ඝන (Solid)' },
+          { id: 'opt_3', text: 'Gas (වායු)', textSinhala: 'වායු (Gas)' },
+          { id: 'opt_4', text: 'Plasma (ප්ලාස්මා)', textSinhala: 'ප්ලාස්මා' },
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'Liquids have a definite volume because intermolecular bonds keep particles together, but they flow to match container shapes.',
+        explanationSinhala: 'ද්‍රව වලට නියත පරිමාවක් පවතින අතර බහාලන භාජනයේ හැඩය ගනී.',
+        guruPothaRef: 'Grade 8 Science Textbook • Unit 03 Matter',
+        topic: 'States of Matter',
+        difficulty: 'Easy'
+      }
+    ]
+  },
+
+  // 13. University Undergrad - Computer Science DSA
+  {
+    id: 'quiz_uni_dsa_01',
+    title: 'Data Structures: Hash Tables, Trees & Big-O',
+    titleSinhala: 'දත්ත ව්‍යුහ: Hash Tables, Binary Search Trees & Big-O කාල සංකීර්ණතාව',
+    titleTamil: 'தரவு கட்டமைப்புகள் மற்றும் அல்காரிதம்கள் (Undergraduate)',
+    subjectId: 'sub_uni_dsa',
+    subjectName: 'Data Structures & Algorithms',
+    subjectSinhala: 'දත්ත ව්‍යුහ සහ ඇල්ගොරිතම (DSA)',
+    grade: 'Undergrad',
+    category: 'uni',
+    stream: 'Computing & Software Engineering',
+    streamId: 'stream_uni_computing',
+    unitNumber: 3,
+    timeLimitMinutes: 15,
+    totalMarks: 100,
+    xpReward: 150,
+    iconName: 'Code',
+    color: 'from-blue-600 to-indigo-900',
+    description: 'Assess asymptotic analysis, search tree heights, collision resolution in hashing, and recursion.',
+    descriptionSinhala: 'Hash collisions, Binary Search Tree (BST) සෙවීම් සහ Time Complexity බහුවරණ.',
+    questions: [
+      {
+        id: 'q_uni_1',
+        questionNumber: 1,
+        questionText: 'What is the average time complexity of searching for an element in a balanced Binary Search Tree (e.g. AVL Tree) with n nodes?',
+        questionTextSinhala: 'n සංඛ්‍යාවක් නෝඩ් (nodes) ඇති තුලිත ද්වීමය සෙවුම් ගසක (Balanced BST / AVL Tree) අගයක් සෙවීමේ සාමාන්‍ය කාල සංකීර්ණතාව (Time Complexity) කුමක්ද?',
+        options: [
+          { id: 'opt_1', text: 'O(log n)', textSinhala: 'O(log n)' },
+          { id: 'opt_2', text: 'O(n)', textSinhala: 'O(n)' },
+          { id: 'opt_3', text: 'O(1)', textSinhala: 'O(1)' },
+          { id: 'opt_4', text: 'O(n log n)', textSinhala: 'O(n log n)' },
+          { id: 'opt_5', text: 'O(n²)', textSinhala: 'O(n²)' },
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'In a balanced binary search tree, the tree height is bounded by log2(n), making both search and insert operations run in O(log n) time.',
+        explanationSinhala: 'තුලිත ද්වීමය සෙවුම් ගසක උස log2(n) වන බැවින් සෙවීමේ සංකීර්ණතාව O(log n) වේ.',
+        guruPothaRef: 'University Computing Curriculum • CS101 Data Structures',
+        topic: 'Binary Search Trees & Big-O',
         difficulty: 'Medium'
       }
     ]
   }
 ];
-

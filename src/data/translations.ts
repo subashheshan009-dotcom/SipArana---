@@ -41,7 +41,11 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
 
     // Navigation
     nav_dashboard: 'පුවරුව (Dashboard)',
+    nav_google_hub: 'ගූගල් අධ්‍යාපන පීඨය (Google Student Hub)',
+    googleHub: 'ගූගල් අධ්‍යාපන පීඨය',
+    nav_free_courses: 'නිදහස් ඔන්ලයින් පාඨමාලා (Free Online Courses)',
     nav_book_shop: 'සිප්අරණ පොත් හල (Book Shop)',
+    freeCourses: 'නිදහස් ඔන්ලයින් පාඨමාලා',
     nav_quizzes: 'බහුවරණ පරීක්ෂණ (MCQ Quizzes)',
     nav_ai_tutor: 'AI ගුරු සහකාර (AI Tutor)',
     nav_analytics: 'ප්‍රගති වාර්තාව (Analytics)',
@@ -207,7 +211,11 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
 
     // Navigation
     nav_dashboard: 'முகப்பு (Dashboard)',
+    nav_google_hub: 'கூகிள் மாணவர் தளம் (Google Student Hub)',
+    googleHub: 'கூகிள் மாணவர் தளம்',
+    nav_free_courses: 'இலவச இணையப் படிப்புகள் (Free Online Courses)',
     nav_book_shop: 'புத்தக சந்தை (Book Shop)',
+    freeCourses: 'இலவச இணையப் படிப்புகள்',
     nav_quizzes: 'பன்மைத் தெரிவு வினாக்கள் (MCQ Quizzes)',
     nav_ai_tutor: 'AI குரல் ஆசிரியர் (AI Tutor)',
     nav_analytics: 'செயல்திறன் பகுப்பாய்வு (Analytics)',
@@ -373,7 +381,11 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
 
     // Navigation
     nav_dashboard: 'Dashboard',
+    nav_google_hub: 'Google Student Hub',
+    googleHub: 'Google Student Hub',
+    nav_free_courses: 'Free Online Courses',
     nav_book_shop: 'SipArana Book Shop',
+    freeCourses: 'Free Online Courses',
     nav_quizzes: 'MCQ Quizzes & Tests',
     nav_ai_tutor: 'AI Tutor & Voice Bot',
     nav_analytics: 'Performance Analytics',

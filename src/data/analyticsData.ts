@@ -11,7 +11,7 @@ export interface TestAttemptRecord {
   timeSpentSeconds: number;
   completedAt: string; // ISO date string
   xpEarned: number;
-  grade: number;
+  grade: number | string;
   weakTopicsDetected: string[];
 }
 

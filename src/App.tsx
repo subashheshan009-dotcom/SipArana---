@@ -20,6 +20,8 @@ import AITutorPage from '@/pages/AITutorPage';
 import PerformanceAnalyticsPage from '@/pages/PerformanceAnalyticsPage';
 import OfflineSyllabusPage from '@/pages/OfflineSyllabusPage';
 import BookShopPage from '@/pages/BookShopPage';
+import FreeCoursesPage from '@/pages/FreeCoursesPage';
+import GoogleStudentHubPage from '@/pages/GoogleStudentHubPage';
 
 function AppContent() {
   const { profile, loading } = useAuth();
@@ -55,6 +57,10 @@ function AppContent() {
     switch (page) {
       case 'dashboard':
         return <Dashboard onNavigate={handleNavigate} />;
+      case 'google_hub':
+        return <GoogleStudentHubPage onNavigate={handleNavigate} />;
+      case 'free_courses':
+        return <FreeCoursesPage onNavigate={handleNavigate} />;
       case 'book_shop':
         return <BookShopPage />;
       case 'quizzes':

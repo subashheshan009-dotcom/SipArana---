@@ -1091,6 +1091,97 @@ export const SUBJECTS_DATA: Subject[] = [
     pastPapers: [
       { id: 'p_bc_2024', subjectId: 'sub_art_bc', year: 2024, part: 'Full Paper', medium: 'Sinhala', pdfUrl: '#' }
     ]
+  },
+
+  // ==========================================
+  // UNIVERSITY & UNDERGRADUATE CURRICULUM
+  // ==========================================
+  {
+    id: 'sub_uni_dsa',
+    titleSinhala: 'දත්ත ව්‍යුහ සහ ඇල්ගොරිතම (Data Structures & Algorithms)',
+    titleEnglish: 'Data Structures & Algorithms (CS/SE)',
+    code: 'UNI-CS-201',
+    stream: 'Higher Education',
+    grades: [],
+    category: 'A/L Stream',
+    guruPothaReference: 'Undergraduate Computer Science & Software Engineering Core Curriculum',
+    iconName: 'Terminal',
+    color: 'from-blue-600 to-indigo-700',
+    description: 'Arrays, Linked Lists, Trees, Graphs, Sorting algorithms, Dynamic Programming, and Asymptotic Complexity (Big-O analysis).',
+    totalModules: 12,
+    completedModules: 7,
+    units: [
+      {
+        id: 'u_uni_dsa_1',
+        unitNumber: 1,
+        title: 'Binary Search Trees & Tree Traversals',
+        titleSinhala: 'ද්විමය සෙවුම් ගස් සහ ගස් සැරිසැරීම (In-order, Pre-order, Post-order)',
+        durationMinutes: 300,
+        lessons: [
+          {
+            id: 'l_uni_dsa_1',
+            title: 'BST Insertion, Deletion & AVL Rotations',
+            titleSinhala: 'BST ඇතුළත් කිරීම්, මකාදැමීම් සහ AVL සමතුලිත කිරීම',
+            duration: '50 mins',
+            summary: 'Left-Right rotations in self-balancing binary search trees (AVL Trees) to guarantee O(log N) operations.',
+            keyPoints: ['Balance factor = height(left) - height(right)', 'Tree rotations maintain in-order traversal property'],
+            isCompleted: true,
+            quiz: [
+              {
+                id: 'q_uni_dsa_1',
+                question: 'What is the worst-case time complexity of searching an unbalanced Binary Search Tree of N nodes?',
+                questionSinhala: 'N ගැට සංඛ්‍යාවක් සහිත අසමතුලිත BST ගසක සෙවීමේ උපරිම කාල සංකීර්ණතාව (Worst-case time complexity) කුමක්ද?',
+                options: ['O(log N)', 'O(N)', 'O(N log N)', 'O(1)'],
+                correctIndex: 1,
+                explanation: 'අසමතුලිත BST ගසක් තනි දාමයක් (skewed tree / linked list) බවට පත් විය හැකි බැවින් worst case කාලය O(N) වේ.'
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    pastPapers: [
+      { id: 'p_unidsa_2024', subjectId: 'sub_uni_dsa', year: 2024, part: 'Full Paper', medium: 'English', pdfUrl: '#' },
+      { id: 'p_unidsa_2023', subjectId: 'sub_uni_dsa', year: 2023, part: 'Full Paper', medium: 'English', pdfUrl: '#' }
+    ]
+  },
+  {
+    id: 'sub_uni_finmgt',
+    titleSinhala: 'මූල්‍ය කළමනාකරණය & ආයෝජන විශ්ලේෂණය',
+    titleEnglish: 'Corporate Finance & Investment Analysis',
+    code: 'UNI-MGT-301',
+    stream: 'Higher Education',
+    grades: [],
+    category: 'A/L Stream',
+    guruPothaReference: 'Undergraduate Faculty of Management & Finance Syllabus',
+    iconName: 'Briefcase',
+    color: 'from-amber-600 to-emerald-700',
+    description: 'Capital budgeting (NPV, IRR), Cost of Capital (WACC), Capital Asset Pricing Model (CAPM), and Portfolio Optimization.',
+    totalModules: 10,
+    completedModules: 5,
+    units: [
+      {
+        id: 'u_uni_fin_1',
+        unitNumber: 1,
+        title: 'Capital Budgeting & Net Present Value (NPV)',
+        titleSinhala: 'ප්‍රාග්ධන අයවැයකරණය සහ ශුද්ධ වර්තමාන අගය (NPV)',
+        durationMinutes: 280,
+        lessons: [
+          {
+            id: 'l_uni_fin_1',
+            title: 'Discounted Cash Flow (DCF) & Internal Rate of Return (IRR)',
+            titleSinhala: 'වට්ටම් කළ මුදල් ප්‍රවාහ (DCF) සහ අභ්‍යන්තර ප්‍රතිලාභ අනුපාතය (IRR)',
+            duration: '45 mins',
+            summary: 'Evaluating capital investment projects using time value of money, discounted cash flows, and cost of capital.',
+            keyPoints: ['Accept project if NPV > 0', 'IRR is the discount rate where NPV equals zero'],
+            isCompleted: true
+          }
+        ]
+      }
+    ],
+    pastPapers: [
+      { id: 'p_unifin_2024', subjectId: 'sub_uni_finmgt', year: 2024, part: 'Full Paper', medium: 'English', pdfUrl: '#' }
+    ]
   }
 ];
 
