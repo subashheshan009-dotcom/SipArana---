@@ -39,7 +39,7 @@ export default function CampusPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8 w-full max-w-full min-w-0 overflow-x-hidden">
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-blue-200">
@@ -54,10 +54,10 @@ export default function CampusPage() {
         </p>
 
         {/* Tab switcher */}
-        <div className="pt-3 flex gap-2">
+        <div className="pt-3 flex flex-wrap sm:flex-nowrap gap-2 overflow-x-auto max-w-full pb-1">
           <button
             onClick={() => setTab('finder')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
               tab === 'finder'
                 ? 'bg-white text-blue-900 shadow-md'
                 : 'bg-white/10 hover:bg-white/20 text-white'
@@ -68,7 +68,7 @@ export default function CampusPage() {
           </button>
           <button
             onClick={() => setTab('directory')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
               tab === 'directory'
                 ? 'bg-white text-blue-900 shadow-md'
                 : 'bg-white/10 hover:bg-white/20 text-white'
@@ -79,7 +79,7 @@ export default function CampusPage() {
           </button>
           <button
             onClick={() => setTab('loans')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
               tab === 'loans'
                 ? 'bg-white text-blue-900 shadow-md'
                 : 'bg-white/10 hover:bg-white/20 text-white'

@@ -41,6 +41,30 @@ html.dyslexia-friendly * {
   letter-spacing: 0.03em;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden !important;
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+/* Responsive safety for media and complex blocks */
+img, video, canvas, svg, table, pre, code, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+pre, code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 @layer base {
   body {
     @apply bg-slate-50 text-slate-900 antialiased selection:bg-blue-500 selection:text-white transition-colors duration-200;

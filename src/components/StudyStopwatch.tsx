@@ -494,13 +494,13 @@ export default function StudyStopwatch() {
           </div>
 
           {/* Centered Digital Stopwatch Counter Display */}
-          <div className="relative py-4 flex flex-col items-center justify-center">
+          <div className="relative py-4 flex flex-col items-center justify-center w-full">
             {/* Glowing Ring Frame */}
-            <div className="relative p-8 sm:p-10 rounded-3xl bg-gradient-to-b from-slate-50 to-blue-50/40 dark:from-slate-800/60 dark:to-slate-900 border-2 border-blue-200/80 dark:border-blue-900/50 shadow-inner flex flex-col items-center justify-center min-w-[280px] sm:min-w-[380px]">
+            <div className="relative p-6 sm:p-10 rounded-3xl bg-gradient-to-b from-slate-50 to-blue-50/40 dark:from-slate-800/60 dark:to-slate-900 border-2 border-blue-200/80 dark:border-blue-900/50 shadow-inner flex flex-col items-center justify-center w-full max-w-sm">
               
               {/* Active Stopwatch Ticker */}
-              <div className="space-y-1 text-center">
-                <div className="flex items-baseline justify-center gap-2 font-mono text-5xl sm:text-7xl font-black tracking-tight text-slate-900 dark:text-white drop-shadow-xs">
+              <div className="space-y-1 text-center w-full">
+                <div className="flex items-baseline justify-center gap-1.5 sm:gap-2 font-mono text-4xl sm:text-7xl font-black tracking-tight text-slate-900 dark:text-white drop-shadow-xs">
                   <div className="flex flex-col items-center">
                     <span className="bg-gradient-to-b from-blue-700 to-indigo-900 dark:from-blue-400 dark:to-indigo-300 bg-clip-text text-transparent">
                       {currentFormatted.hoursStr}
@@ -724,11 +724,11 @@ export default function StudyStopwatch() {
           </div>
 
           {/* Chart View Mode Switcher */}
-          <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 gap-1 text-xs font-bold">
+          <div className="flex flex-wrap sm:flex-nowrap items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 gap-1 text-xs font-bold max-w-full overflow-x-auto">
             <button
               type="button"
               onClick={() => setChartViewMode('breakdown')}
-              className={`px-3 py-1.5 rounded-xl transition ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl transition whitespace-nowrap ${
                 chartViewMode === 'breakdown'
                   ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-black'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
@@ -739,7 +739,7 @@ export default function StudyStopwatch() {
             <button
               type="button"
               onClick={() => setChartViewMode('totalUnits')}
-              className={`px-3 py-1.5 rounded-xl transition ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl transition whitespace-nowrap ${
                 chartViewMode === 'totalUnits'
                   ? 'bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs font-black'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
@@ -750,7 +750,7 @@ export default function StudyStopwatch() {
             <button
               type="button"
               onClick={() => setChartViewMode('subject')}
-              className={`px-3 py-1.5 rounded-xl transition ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl transition whitespace-nowrap ${
                 chartViewMode === 'subject'
                   ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs font-black'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
