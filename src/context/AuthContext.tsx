@@ -3,9 +3,27 @@ import type { UserProfile, Stream, ExamLevel, Medium, SchoolGrade, StudentCatego
 
 export type DemoPresetKey = 'maths' | 'bio' | 'commerce' | 'ol' | 'junior' | 'arts' | 'tech' | 'uni_cse' | 'uni_med' | 'uni_fin';
 
+export interface SimpleLoginParams {
+  name: string;
+  studentCategory: StudentCategory;
+  grade?: SchoolGrade;
+  stream?: Stream;
+  medium?: Medium;
+  district?: string;
+  school?: string;
+  targetYear?: number;
+  university?: string;
+  faculty?: string;
+  degreeProgramme?: string;
+  degreeCode?: string;
+  academicYear?: number;
+  academicSemester?: number;
+}
+
 interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
+  simpleLogin: (params: SimpleLoginParams) => Promise<{ success: boolean; error?: string }>;
   login: (emailOrPhone: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogle: (googleData?: {
     name?: string;
@@ -17,6 +35,7 @@ interface AuthContextType {
     university?: string;
     degreeProgramme?: string;
     district?: string;
+    medium?: Medium;
   }) => Promise<{ success: boolean; error?: string }>;
   loginAsDemo: (presetKey: DemoPresetKey) => void;
   register: (data: Partial<UserProfile> & { password?: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
@@ -24,7 +43,7 @@ interface AuthContextType {
   updateProfile: (data: Partial<UserProfile>) => void;
   setGradeAndStream: (grade: SchoolGrade, stream?: Stream) => void;
   setUniversityAndDegree: (university: string, faculty: string, degreeProgramme: string, degreeCode: string, academicYear?: number, academicSemester?: number) => void;
-  toggleStudentCategory: (category: StudentCategory) => void;
+  toggleStudentCategory: (category?: StudentCategory) => void;
   addXP: (amount: number) => void;
   incrementStreak: () => void;
   toggleBookmarkPaper: (paperId: string) => void;
@@ -302,6 +321,105 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       localStorage.removeItem('siparana_user');
     }
+  };
+
+  const simpleLogin = async (
+    params: SimpleLoginParams
+  ): Promise<{ success: boolean; error?: string }> => {
+    const trimmedName = (params.name || '').trim();
+    if (!trimmedName) {
+      return { success: false, error: 'කරුණාකර නම (Username) ඇතුළත් කරන්න.' };
+    }
+
+    const isUni = params.studentCategory === 'University';
+    let userProfile: UserProfile;
+
+    if (isUni) {
+      const universityName = params.university || 'University of Moratuwa';
+      const shortUniMap: Record<string, string> = {
+        'University of Moratuwa': 'UoM',
+        'University of Colombo': 'UoC',
+        'University of Peradeniya': 'UoP',
+        'University of Sri Jayewardenepura': 'USJ',
+        'University of Kelaniya': 'UoK',
+        'University of Ruhuna': 'UoR',
+        'University of Jaffna': 'UOJ',
+        'Open University of Sri Lanka': 'OUSL'
+      };
+
+      userProfile = {
+        id: `usr_uni_${Date.now()}`,
+        name: trimmedName,
+        email: `${trimmedName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'student'}@siparana.lk`,
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        studentCategory: 'University',
+        level: 'CAMPUS',
+        stream: 'Higher Education',
+        school: universityName,
+        university: universityName,
+        universityShort: shortUniMap[universityName] || 'Uni',
+        faculty: params.faculty || 'Faculty of Engineering',
+        degreeProgramme: params.degreeProgramme || 'B.Sc. (Hons) in Computer Science & Engineering',
+        degreeCode: params.degreeCode || 'ENG-CSE',
+        academicYear: params.academicYear || 1,
+        academicSemester: params.academicSemester || 1,
+        targetYear: 2027,
+        district: params.district || 'Colombo',
+        medium: params.medium || 'English',
+        isPremium: true,
+        xp: 1500,
+        streakDays: 3,
+        lastActiveDate: new Date().toISOString().split('T')[0],
+        completedLessonsCount: 6,
+        solvedDoubtsCount: 3,
+        bookmarkedPaperIds: [],
+        currentGpa: 3.85,
+        targetGpa: 4.0,
+        studentIdNumber: '220459X'
+      };
+    } else {
+      const selectedGrade = params.grade || 12;
+      let calculatedLevel: ExamLevel = 'AL';
+      let calculatedStream: Stream = params.stream || 'Physical Science (Maths)';
+
+      if (selectedGrade <= 9) {
+        calculatedLevel = 'JUNIOR';
+        calculatedStream = 'Junior Secondary (Grade 6-9)';
+      } else if (selectedGrade <= 11) {
+        calculatedLevel = 'OL';
+        calculatedStream = 'General O/L';
+      } else {
+        calculatedLevel = 'AL';
+        if (calculatedStream === 'General O/L' || calculatedStream === 'Junior Secondary (Grade 6-9)') {
+          calculatedStream = 'Physical Science (Maths)';
+        }
+      }
+
+      userProfile = {
+        id: `usr_sch_${Date.now()}`,
+        name: trimmedName,
+        email: `${trimmedName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'student'}@siparana.lk`,
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        studentCategory: 'School',
+        grade: selectedGrade,
+        level: calculatedLevel,
+        stream: calculatedStream,
+        targetYear: params.targetYear || (selectedGrade === 11 ? 2026 : selectedGrade === 13 ? 2026 : 2027),
+        school: params.school || 'Sri Lanka National School',
+        district: params.district || 'Colombo',
+        medium: params.medium || 'Sinhala',
+        isPremium: true,
+        xp: 1200,
+        streakDays: 3,
+        lastActiveDate: new Date().toISOString().split('T')[0],
+        completedLessonsCount: 8,
+        solvedDoubtsCount: 4,
+        bookmarkedPaperIds: []
+      };
+    }
+
+    persistUser(userProfile);
+    return { success: true };
   };
 
   const login = async (
@@ -721,6 +839,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         profile,
         loading,
+        simpleLogin,
         login,
         loginWithGoogle,
         loginAsDemo,
