@@ -28,7 +28,8 @@ import {
   BarChart3,
   HardDriveDownload,
   ShoppingBag,
-  Smile
+  Smile,
+  Headphones
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -256,19 +257,82 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       </section>
 
       {/* 3. HORIZONTAL QUICK-ACTION APP TOOLS BAR */}
-      <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-11 gap-3">
+      <section className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
+        <button
+          onClick={() => onNavigate('planner')}
+          className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600/15 via-white to-indigo-600/15 dark:from-blue-950/50 dark:via-slate-900 dark:to-indigo-950/50 border-2 border-blue-500/80 dark:border-blue-400/70 hover:border-blue-600 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+        >
+          <div className="p-2 rounded-xl bg-blue-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+            <Calendar className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-blue-700 dark:text-blue-300">
+              {language === 'si' ? 'AI කාලසටහන' : language === 'ta' ? 'AI படிப்புத் திட்டம்' : 'AI Study Planner'}
+            </h4>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Auto-Sync Schedule</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => onNavigate('flashcards')}
+          className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-500/15 via-white to-purple-500/15 dark:from-indigo-950/40 dark:via-slate-900 dark:to-purple-950/40 border-2 border-indigo-400/70 dark:border-indigo-500/60 hover:border-indigo-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+        >
+          <div className="p-2 rounded-xl bg-indigo-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+            <Layers className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-indigo-700 dark:text-indigo-300">
+              {language === 'si' ? 'ස්මාර්ට් ෆ්ලෑෂ්කාඩ්' : language === 'ta' ? 'ஃபிளாஷ்கார்டுகள்' : 'Smart Flashcards'}
+            </h4>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Spaced Quick Recall</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => onNavigate('countdown')}
+          className="p-3.5 rounded-2xl bg-gradient-to-br from-rose-500/15 via-white to-orange-500/15 dark:from-rose-950/40 dark:via-slate-900 dark:to-orange-950/40 border-2 border-rose-400/70 dark:border-rose-500/60 hover:border-rose-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+        >
+          <div className="p-2 rounded-xl bg-rose-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+            <Clock className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-rose-700 dark:text-rose-300">
+              {language === 'si' ? 'විභාග ඔරලෝසුව' : language === 'ta' ? 'தேர்வு கடிகாரம்' : 'Exam Countdown'}
+            </h4>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Real-Time & Daily Goals</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => onNavigate('audio')}
+          className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-500/15 via-white to-pink-500/15 dark:from-purple-950/40 dark:via-slate-900 dark:to-pink-950/40 border-2 border-purple-400/70 dark:border-purple-500/60 hover:border-purple-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+        >
+          <div className="p-2 rounded-xl bg-purple-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+            <Headphones className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-purple-700 dark:text-purple-300">
+              {language === 'si' ? 'ශ්‍රව්‍ය සටහන්' : language === 'ta' ? 'குரல் குறிப்புகள்' : 'Audio Summaries'}
+            </h4>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Listen & Revise High-Yield</p>
+          </div>
+        </button>
+      </section>
+
+      {/* 3b. ADDITIONAL APP TOOLS */}
+      <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-6 gap-3">
         <button
           onClick={() => onNavigate('fun_english')}
-          className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/20 via-white to-yellow-500/20 dark:from-amber-950/60 dark:via-slate-900 dark:to-yellow-950/50 border-2 border-amber-400 dark:border-amber-500/70 hover:border-amber-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+          className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-amber-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
         >
-          <div className="p-2 rounded-xl bg-amber-500 text-slate-950 font-bold w-fit group-hover:scale-105 transition shadow-sm">
+          <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 font-bold w-fit group-hover:scale-105 transition shadow-xs">
             <Smile className="w-4 h-4" />
           </div>
           <div>
-            <h4 className="text-xs font-black text-amber-800 dark:text-amber-300">
+            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
               {language === 'si' ? 'ඉංග්‍රීසි & විවේකය' : language === 'ta' ? 'ஆங்கிலம் & ஓய்வு' : 'Fun English'}
             </h4>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Mascot 4-Step Flow</p>
+            <p className="text-[10px] text-slate-400 truncate">Mascot 4-Step Flow</p>
           </div>
         </button>
 

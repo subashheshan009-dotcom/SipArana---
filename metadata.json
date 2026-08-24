@@ -1,6 +1,6 @@
 {
   "name": "SipArana Educational Web App",
-  "description": "Sri Lanka's comprehensive digital learning platform for Grades 6–13 and University Higher Education, featuring Real-time Automated Exam News & Alerts with doenets.lk/moe.gov.lk Live Sync, Animated Cartoon Mascot Notifications, Mascot-guided Fun English & Relax, Google Student Hub, Free Online Courses, SipArana Book Shop marketplace, MCQ quizzes, AI voice tutor, performance analytics, syllabus PDFs, and University Portal.",
+  "description": "Sri Lanka's comprehensive digital learning platform for Grades 6–13 and University Higher Education, featuring Kavi Owl Mascot, AI Study Planner & Timetable Generator, Smart Flashcards, Student Study Group Discussion Corner, Real-Time Exam Countdown & Daily Goal Tracker, Voice Notes & Audio Summaries with live auto-sync, non-intrusive alert system, Google Student Hub, Free Courses radar, SipArana Book Shop, and multilingual support (Sinhala, Tamil, English).",
   "requestFramePermissions": [
     "microphone"
   ],

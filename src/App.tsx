@@ -4,10 +4,16 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { NewsProvider } from '@/context/NewsContext';
 import { CoursesProvider } from '@/context/CoursesContext';
+import { LiveSyncProvider } from '@/context/LiveSyncContext';
 import Layout, { type PageId } from '@/components/Layout';
 import Mascot from '@/components/Mascot';
 import AuthPage from '@/pages/AuthPage';
 import Dashboard from '@/pages/Dashboard';
+import StudyPlannerPage from '@/pages/StudyPlannerPage';
+import FlashcardsPage from '@/pages/FlashcardsPage';
+import StudyGroupPage from '@/pages/StudyGroupPage';
+import ExamCountdownPage from '@/pages/ExamCountdownPage';
+import AudioSummariesPage from '@/pages/AudioSummariesPage';
 import UniversityPortal from '@/pages/UniversityPortal';
 import ClassroomPage from '@/pages/ClassroomPage';
 import SubjectsPage from '@/pages/SubjectsPage';
@@ -60,6 +66,16 @@ function AppContent() {
     switch (page) {
       case 'dashboard':
         return <Dashboard onNavigate={handleNavigate} />;
+      case 'planner':
+        return <StudyPlannerPage />;
+      case 'flashcards':
+        return <FlashcardsPage />;
+      case 'discussion':
+        return <StudyGroupPage />;
+      case 'countdown':
+        return <ExamCountdownPage />;
+      case 'audio':
+        return <AudioSummariesPage />;
       case 'fun_english':
         return <FunEnglishRelaxPage onNavigate={handleNavigate} />;
       case 'google_hub':
@@ -122,7 +138,9 @@ export default function App() {
         <AuthProvider>
           <NewsProvider>
             <CoursesProvider>
-              <AppContent />
+              <LiveSyncProvider>
+                <AppContent />
+              </LiveSyncProvider>
             </CoursesProvider>
           </NewsProvider>
         </AuthProvider>

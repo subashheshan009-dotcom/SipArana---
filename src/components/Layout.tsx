@@ -29,17 +29,28 @@ import {
   HardDriveDownload,
   ShoppingBag,
   Compass,
-  Smile
+  Smile,
+  Calendar,
+  Layers,
+  MessageCircle,
+  Clock,
+  Headphones
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useLanguage, SUPPORTED_LANGUAGES } from '@/context/LanguageContext';
+import { useExamNews } from '@/context/NewsContext';
 import { SCHOOL_GRADES } from '@/data/mockData';
 import type { SchoolGrade, AppLanguage } from '@/types';
 import SiparanaLogo from '@/components/SiparanaLogo';
 
 export type PageId =
   | 'dashboard'
+  | 'planner'
+  | 'flashcards'
+  | 'discussion'
+  | 'countdown'
+  | 'audio'
   | 'fun_english'
   | 'google_hub'
   | 'free_courses'
@@ -79,6 +90,11 @@ interface NavItemDef {
 
 const NAV_ITEMS_CONFIG: NavItemDef[] = [
   { id: 'dashboard', icon: LayoutDashboard, transKey: 'dashboard', enLabel: 'Dashboard', siLabel: 'පුවරුව', taLabel: 'முகப்பு பலகை' },
+  { id: 'planner', icon: Calendar, transKey: 'planner', enLabel: 'AI Study Planner', siLabel: 'AI කාලසටහන', taLabel: 'AI படிப்புத் திட்டம்', badgeText: 'Auto-Sync', highlight: true },
+  { id: 'flashcards', icon: Layers, transKey: 'flashcards', enLabel: 'Smart Flashcards', siLabel: 'ස්මාර්ට් ෆ්ලෑෂ්කාඩ්', taLabel: 'ஃபிளாஷ்கார்டுகள்', badgeText: 'Spaced Recall', highlight: true },
+  { id: 'discussion', icon: MessageCircle, transKey: 'discussion', enLabel: 'Study Group Corner', siLabel: 'ශිෂ්‍ය සංසදය', taLabel: 'மாணவர் தளம்', badgeText: 'Live Peer', highlight: true },
+  { id: 'countdown', icon: Clock, transKey: 'countdown', enLabel: 'Exam Countdown & Goals', siLabel: 'විභාග ඔරලෝසුව & ඉලක්ක', taLabel: 'தேர்வு கடிகாரம்', badgeText: 'Real-Time', highlight: true },
+  { id: 'audio', icon: Headphones, transKey: 'audio', enLabel: 'Voice Notes & Audio', siLabel: 'ශ්‍රව්‍ය සටහන්', taLabel: 'குரல் குறிப்புகள்', badgeText: 'Voice AI', highlight: true },
   { id: 'fun_english', icon: Smile, transKey: 'funEnglish', enLabel: 'Fun English & Relax', siLabel: 'විනෝදජනක ඉංග්‍රීසි & විවේකය', taLabel: 'வேடிக்கையான ஆங்கிலம் & ஓய்வு', badgeText: 'Mascot Flow', highlight: true },
   { id: 'google_hub', icon: Globe, transKey: 'googleHub', enLabel: 'Google Student Hub', siLabel: 'ගූගල් අධ්‍යාපන පීඨය', taLabel: 'கூகிள் மாணவர் தளம்', badgeText: 'In-App Hub', highlight: true },
   { id: 'free_courses', icon: Compass, transKey: 'freeCourses', enLabel: 'Free Online Courses', siLabel: 'නිදහස් ඔන්ලයින් පාඨමාලා', taLabel: 'இலவச இணையப் படிப்புகள்', badgeText: 'Live Radar', highlight: true },
@@ -102,10 +118,24 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
   const { profile, logout, setGradeAndStream, toggleStudentCategory } = useAuth();
   const { theme, toggleTheme, isDark } = useTheme();
   const { language, setLanguage, t } = useLanguage();
+  const { notices, readIds, markAsRead } = useExamNews();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showGradeDropdown, setShowGradeDropdown] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+
+  const unreadNotices = notices.filter(n => !readIds.includes(n.id));
+  const unreadCount = unreadNotices.length;
+
+  const handleMarkAllAsRead = () => {
+    notices.forEach(n => markAsRead(n.id));
+  };
+
+  const handleNotificationClick = (noticeId: string) => {
+    markAsRead(noticeId);
+    setShowNotifications(false);
+    onNavigate('news');
+  };
 
   const isUniversityStudent = profile?.studentCategory === 'University' || profile?.level === 'CAMPUS';
 
@@ -501,55 +531,108 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
               <button
                 id="notifications-toggle-btn"
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 relative transition"
+                className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 relative transition flex items-center justify-center"
                 title={t('notifications')}
               >
                 <Bell className="w-4 h-4" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+                {unreadCount > 0 && (
+                  <span
+                    id="notifications-unread-badge"
+                    className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 rounded-full bg-blue-600 dark:bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-white dark:ring-slate-900"
+                  >
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </button>
 
               {showNotifications && (
                 <div
                   id="notifications-popover"
-                  className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3 z-50 animate-in fade-in slide-in-from-top-2"
+                  className="absolute right-0 mt-2 w-84 sm:w-96 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3.5 z-50 animate-in fade-in slide-in-from-top-2"
                 >
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                    <span className="text-xs font-bold">{t('notifications')}</span>
-                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold cursor-pointer">
-                      Mark all read
-                    </span>
+                  <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {language === 'si' ? 'විභාග සහ අධ්‍යාපනික නිවේදන' : language === 'ta' ? 'தேர்வு மற்றும் கல்வி அறிவிப்புகள்' : 'Exam & Study Alerts'}
+                      </span>
+                      {unreadCount > 0 && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-semibold">
+                          {unreadCount} new
+                        </span>
+                      )}
+                    </div>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllAsRead}
+                        className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
+                      >
+                        {language === 'si' ? 'සියල්ල කියවූ බව සලකුණු කරන්න' : 'Mark all read'}
+                      </button>
+                    )}
                   </div>
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs mt-1">
-                    <div className="py-2">
-                      <p className="font-semibold text-slate-800 dark:text-slate-200">
-                        {language === 'si'
-                          ? '📄 6–13 ශ්‍රේණි නව ගුරු පොත් විෂය නිර්දේශ එක් විය!'
-                          : language === 'ta'
-                          ? '📄 தரம் 6-13 புதிய ஆசிரியர் வழிகாட்டிகள் சேர்க்கப்பட்டன!'
-                          : '📄 Grades 6–13 NIE Teacher Guides Available!'}
-                      </p>
-                      <p className="text-[11px] text-slate-500">
-                        {language === 'si'
-                          ? 'ශ්‍රී ලංකා විෂය මාලාවට අනුකූල සියලු පාඩම් සහ වීඩියෝ දැන් ලබාගත හැක.'
-                          : language === 'ta'
-                          ? 'இலங்கை பாடத்திட்டத்திற்கு அமைவான அனைத்து பாடங்களும் வீடியோக்களும் கிடைக்கின்றன.'
-                          : 'All syllabus modules and video lessons aligned with Sri Lanka national curriculum are live.'}
-                      </p>
-                      <span className="text-[10px] text-slate-400">10m ago</span>
-                    </div>
-                    <div className="py-2">
-                      <p className="font-semibold text-slate-800 dark:text-slate-200">
-                        🔥 Daily Streak Protected!
-                      </p>
-                      <p className="text-[11px] text-slate-500">
-                        {language === 'si'
-                          ? 'අද දින ඔබ අධ්‍යයනය කර ලකුණු 50ක ප්‍රසාද XP උපයා ගත්තේය.'
-                          : language === 'ta'
-                          ? 'இன்று படித்து 50 போனஸ் XP பெற்றுள்ளீர்கள்.'
-                          : 'You studied today and earned 50 bonus XP.'}
-                      </p>
-                      <span className="text-[10px] text-slate-400">2h ago</span>
-                    </div>
+
+                  <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/80 text-xs my-1 pr-1">
+                    {notices.slice(0, 5).map((notice) => {
+                      const isUnread = !readIds.includes(notice.id);
+                      return (
+                        <div
+                          key={notice.id}
+                          onClick={() => handleNotificationClick(notice.id)}
+                          className={`py-2.5 px-2 rounded-xl transition cursor-pointer flex flex-col gap-1 ${
+                            isUnread
+                              ? 'bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/40'
+                              : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                                {notice.authorityCode}
+                              </span>
+                              {notice.isUrgent && (
+                                <span className="px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                                  Urgent
+                                </span>
+                              )}
+                              {notice.isBreaking && (
+                                <span className="px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-950/60 text-[10px] font-bold text-red-700 dark:text-red-400">
+                                  Breaking
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-slate-400">
+                              {notice.publishedDate}
+                            </span>
+                          </div>
+
+                          <p className={`text-xs leading-snug line-clamp-2 ${isUnread ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-700 dark:text-slate-300'}`}>
+                            {language === 'si' ? notice.titleSinhala : language === 'ta' ? notice.tamilSummary : notice.title}
+                          </p>
+
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                            {language === 'si' ? notice.sinhalaSummary : notice.summary}
+                          </p>
+                        </div>
+                      );
+                    })}
+
+                    {notices.length === 0 && (
+                      <div className="py-6 text-center text-slate-400 text-xs">
+                        {language === 'si' ? 'දැනට නව නිවේදන නොමැත' : 'No new notices at this time.'}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <button
+                      onClick={() => {
+                        setShowNotifications(false);
+                        onNavigate('news');
+                      }}
+                      className="w-full py-1.5 text-center text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg transition"
+                    >
+                      {language === 'si' ? 'සියලු විභාග චක්‍රලේඛ සහ නිවේදන බලන්න →' : 'View All Exam Bulletins & Circulars →'}
+                    </button>
                   </div>
                 </div>
               )}
