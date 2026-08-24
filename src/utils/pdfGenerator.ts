@@ -1,14 +1,11 @@
 import type { SyllabusItem } from '@/data/syllabusData';
+import { downloadPrintableHTMLDoc, triggerBlobDownload } from './fileDownloader';
 
 /**
  * Generates and triggers browser download or high-quality printable view for NIE syllabus notes
  */
-export function generateSyllabusPDF(item: SyllabusItem, studentName = 'SipArana Student') {
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) {
-    alert('Please allow popups to download or print this PDF document.');
-    return;
-  }
+export function generateSyllabusPDF(item: SyllabusItem, studentName = 'SipArana Student', directBlobOnly = false) {
+  const filename = `SipArana_NIE_${item.grade}_${item.subjectName.replace(/\s+/g, '_')}_${item.yearPublished}.html`;
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -259,16 +256,22 @@ export function generateSyllabusPDF(item: SyllabusItem, studentName = 'SipArana 
   </div>
 
   <script>
-    // Auto-trigger print dialog after small rendering delay
+    // Auto-trigger print dialog after small rendering delay if not standalone
     setTimeout(() => {
-      window.print();
+      if (window.opener) {
+        window.print();
+      }
     }, 600);
   </script>
 </body>
 </html>
   `;
 
-  printWindow.document.open();
-  printWindow.document.write(htmlContent);
-  printWindow.document.close();
+  if (directBlobOnly) {
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    return triggerBlobDownload(blob, filename);
+  }
+
+  return downloadPrintableHTMLDoc(htmlContent, filename, true);
 }
+

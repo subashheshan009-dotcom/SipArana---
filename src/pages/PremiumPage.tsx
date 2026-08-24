@@ -119,7 +119,7 @@ export default function PremiumPage() {
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span>Basic Student Community Access</span>
+                <span>Full Official Syllabi & PDF Downloads</span>
               </li>
             </ul>
           </div>

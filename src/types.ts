@@ -1,8 +1,9 @@
-export type ExamLevel = 'AL' | 'OL' | 'JUNIOR' | 'CAMPUS';
+export type ExamLevel = 'SCHOLARSHIP' | 'AL' | 'OL' | 'JUNIOR' | 'CAMPUS';
 export type StudentCategory = 'School' | 'University';
 export type AppLanguage = 'si' | 'ta' | 'en';
 
 export type Stream = 
+  | 'Grade 5 Scholarship'
   | 'Physical Science (Maths)' 
   | 'Biological Science (Bio)' 
   | 'Commerce' 
@@ -13,7 +14,7 @@ export type Stream =
   | 'Higher Education';
 export type Medium = 'Sinhala' | 'English' | 'Tamil';
 
-export type SchoolGrade = 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
+export type SchoolGrade = 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
 
 export interface UserProfile {
   id: string;
@@ -37,6 +38,8 @@ export interface UserProfile {
   bookmarkedPaperIds: string[];
   enrolledSubjectIds?: string[];
   authProvider?: 'google' | 'email' | 'demo';
+  isKidMode?: boolean;
+  kidAvatar?: string;
   
   // University Student Specific Attributes
   university?: string;
@@ -58,7 +61,7 @@ export interface Subject {
   code: string;
   stream: Stream;
   grades: SchoolGrade[];
-  category?: 'Core O/L' | 'Basket O/L' | 'A/L Stream' | 'Junior Core';
+  category?: 'Scholarship Core' | 'Core O/L' | 'Basket O/L' | 'A/L Stream' | 'Junior Core';
   guruPothaReference?: string;
   iconName: string;
   color: string;
@@ -102,11 +105,14 @@ export interface QuizQuestion {
 
 export interface PastPaper {
   id: string;
-  subjectId: string;
+  subjectId?: string;
+  title?: string;
   year: number;
-  part: 'Part I (MCQ)' | 'Part II (Structured/Essay)' | 'Full Paper';
+  part?: 'Part I (MCQ)' | 'Part II (Structured/Essay)' | 'Full Paper';
+  paperType?: string;
   medium: Medium;
-  pdfUrl: string;
+  pdfUrl?: string;
+  downloadUrl?: string;
   markingSchemeUrl?: string;
   videoDiscussionUrl?: string;
   solvedPercentage?: number;
@@ -127,35 +133,6 @@ export interface CampusCourse {
   description: string;
   logo: string;
   isStateUni: boolean;
-}
-
-export interface ForumPost {
-  id: string;
-  authorName: string;
-  authorAvatar: string;
-  authorBadge?: string;
-  createdAt: string;
-  stream: Stream;
-  subjectName: string;
-  title: string;
-  content: string;
-  image?: string;
-  upvotes: number;
-  isUpvoted?: boolean;
-  replies: ForumReply[];
-  solved: boolean;
-  tags: string[];
-}
-
-export interface ForumReply {
-  id: string;
-  authorName: string;
-  authorAvatar: string;
-  authorRole: 'Student' | 'Teacher' | 'Campus Senior' | 'AI Tutor';
-  createdAt: string;
-  content: string;
-  upvotes: number;
-  isVerifiedAnswer?: boolean;
 }
 
 export interface NewsArticle {

@@ -44,9 +44,9 @@ const MOTIVATION_MESSAGES: MascotMessage[] = [
     en: '🦉 Kavi: Boost your Z-Score with Smart Flashcards and systematic Past Paper drill!'
   },
   {
-    si: '🦉 කවි: ශිෂ්‍ය සංසදයේ (Study Group) ගැටලු අහන්න, අනෙක් අයටත් විසඳුම් කියලා දෙන්න!',
-    ta: '🦉 கவி: மாணவர் கலந்துரையாடல் தளத்தில் சந்தேகங்களைக் கேட்டு நண்பர்களுடன் பகிருங்கள்!',
-    en: '🦉 Kavi: Share doubts in Student Study Group and solve questions together!'
+    si: '🦉 කවි: AI ගුරු සහකාර (AI Tutor) මගින් අපැහැදිලි සිද්ධාන්ත තත්පරයෙන් නිරවුල් කරගන්න!',
+    ta: '🦉 கவி: AI ஆசிரியர் மூலம் கடினமான பாடக் கருத்துகளை நொடிகளில் தெளிவுபடுத்திக் கொள்ளுங்கள்!',
+    en: '🦉 Kavi: Clarify tough syllabus theories and derivations instantly with your 24/7 AI Tutor!'
   }
 ];
 

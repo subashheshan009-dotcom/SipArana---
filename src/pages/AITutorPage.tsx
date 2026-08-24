@@ -16,10 +16,15 @@ import {
   GraduationCap,
   MessageSquare,
   Bot,
-  User
+  User,
+  FileText,
+  UploadCloud,
+  AlertCircle,
+  X
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import FilePermissionHelperModal from '@/components/FilePermissionHelperModal';
 
 interface ChatMessage {
   id: string;
@@ -28,6 +33,7 @@ interface ChatMessage {
   timestamp: string;
   subjectTag?: string;
   attachedImage?: string;
+  attachedPdfName?: string;
 }
 
 export default function AITutorPage() {
@@ -52,6 +58,10 @@ export default function AITutorPage() {
   const [selectedGrade, setSelectedGrade] = useState<number>(profile?.grade || 12);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [attachedFileName, setAttachedFileName] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -203,14 +213,51 @@ export default function AITutorPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const processIncomingFile = (file: File) => {
+    setFileError(null);
+    if (file.size > 10 * 1024 * 1024) {
+      setFileError('File size is larger than 10MB. Please attach a smaller image or document.');
+      return;
+    }
+
+    const isImage = file.type.startsWith('image/');
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+    if (!isImage && !isPdf) {
+      setFileError('Supported files: Images (JPG, PNG, WEBP) or PDF documents.');
+      setShowPermissionModal(true);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAttachedImage(reader.result as string);
+      setAttachedFileName(file.name);
+    };
+    reader.onerror = () => {
+      setFileError('Failed to read file from your device. Check storage permissions.');
+      setShowPermissionModal(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAttachedImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      processIncomingFile(file);
+    }
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processIncomingFile(file);
     }
   };
 
@@ -393,13 +440,38 @@ export default function AITutorPage() {
 
         {/* Input Bar */}
         <div className="p-4 bg-slate-50/80 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-800 space-y-2">
-          {attachedImage && (
-            <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-950/40 rounded-xl text-xs text-blue-700 dark:text-blue-300">
-              <Camera className="w-4 h-4" />
-              <span className="font-semibold truncate">Diagram Attached for OCR Problem Solving</span>
+          {fileError && (
+            <div className="flex items-center justify-between p-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs">
+              <div className="flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{fileError}</span>
+              </div>
               <button
-                onClick={() => setAttachedImage(null)}
-                className="ml-auto text-rose-500 font-bold px-1.5 py-0.5 rounded hover:bg-rose-100 dark:hover:bg-rose-950/50"
+                type="button"
+                onClick={() => setShowPermissionModal(true)}
+                className="underline font-bold text-[11px]"
+              >
+                Need Help?
+              </button>
+            </div>
+          )}
+
+          {attachedImage && (
+            <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-950/40 rounded-xl text-xs text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+              {attachedFileName?.toLowerCase().endsWith('.pdf') ? (
+                <FileText className="w-4 h-4 text-rose-500" />
+              ) : (
+                <Camera className="w-4 h-4" />
+              )}
+              <span className="font-semibold truncate">
+                {attachedFileName ? `Attached: ${attachedFileName}` : 'Diagram Attached for OCR Problem Solving'}
+              </span>
+              <button
+                onClick={() => {
+                  setAttachedImage(null);
+                  setAttachedFileName(null);
+                }}
+                className="ml-auto text-rose-500 font-bold px-1.5 py-0.5 rounded hover:bg-rose-100 dark:hover:bg-rose-950/50 cursor-pointer"
               >
                 ✕
               </button>
@@ -407,19 +479,21 @@ export default function AITutorPage() {
           )}
 
           <div className="flex items-center gap-2">
-            {/* Hidden file input */}
+            {/* Hidden file input with proper accept attribute */}
             <input
+              id="ai-tutor-file-picker-input"
               type="file"
               ref={fileInputRef}
-              accept="image/*"
+              accept="image/*, application/pdf"
               className="hidden"
               onChange={handleImageUpload}
             />
 
-            {/* Camera / Diagram Attachment */}
+            {/* Camera / Diagram / PDF Attachment */}
             <button
+              id="ai-tutor-camera-btn"
               onClick={() => fileInputRef.current?.click()}
-              title="Attach Problem Diagram or Photo"
+              title="Attach Problem Diagram, Photo, or PDF Notes"
               className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:border-blue-500 transition cursor-pointer"
             >
               <Camera className="w-5 h-5" />
@@ -459,7 +533,7 @@ export default function AITutorPage() {
 
             {/* Send Button */}
             <button
-              disabled={isLoading || (!inputQuery.trim() && !attachedImage)}
+              disabled={isLoading || (!inputQuery.trim() && !attachedImage && !attachedFileName)}
               onClick={() => handleSendMessage()}
               className="px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-500/20 transition transform active:scale-95 cursor-pointer"
             >
@@ -469,6 +543,12 @@ export default function AITutorPage() {
           </div>
         </div>
       </div>
+
+      <FilePermissionHelperModal
+        isOpen={showPermissionModal}
+        onClose={() => setShowPermissionModal(false)}
+        type="upload"
+      />
     </div>
   );
 }

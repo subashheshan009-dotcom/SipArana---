@@ -39,6 +39,7 @@ import type { PageId } from '@/components/Layout';
 import type { StudyTask } from '@/types';
 import SiparanaLogo from '@/components/SiparanaLogo';
 import AranaMascot from '@/components/AranaMascot';
+import Grade5ScholarshipWizard from '@/components/Grade5ScholarshipWizard';
 import { soundFX } from '@/utils/audioUtils';
 
 interface DashboardProps {
@@ -52,6 +53,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const [tasks, setTasks] = useState<StudyTask[]>(INITIAL_STUDY_TASKS);
   const [quizAnswered, setQuizAnswered] = useState<number | null>(null);
   const [quizScore, setQuizScore] = useState<boolean | null>(null);
+  const [isScholarshipWizardOpen, setIsScholarshipWizardOpen] = useState(profile?.grade === 5);
 
   // Daily challenge question adaptive to level and language
   const userGrade = profile?.grade || 11;
@@ -254,6 +256,57 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           mood={quizScore === true ? 'celebrating' : quizScore === false ? 'encouraging' : 'happy'}
           interactive={true}
         />
+      </section>
+
+      {/* 2b. GRADE 5 SCHOLARSHIP SPECIAL BANNER (KAVI MENTOR & INTERACTIVE WIZARD) */}
+      <section
+        id="grade5-scholarship-hero-launcher"
+        className={`p-4 sm:p-5 rounded-3xl border-2 transition-all shadow-md relative overflow-hidden ${
+          userGrade === 5
+            ? 'bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-yellow-500/20 border-amber-400 dark:border-amber-500'
+            : 'bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-yellow-500/10 border-amber-300/60 dark:border-amber-700/60'
+        }`}
+      >
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 p-0.5 shadow-md flex items-center justify-center flex-shrink-0">
+              <span className="text-2xl sm:text-3xl">🦉</span>
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-amber-900 dark:text-amber-300 uppercase tracking-wider bg-amber-200/80 dark:bg-amber-950 px-2 py-0.5 rounded-md">
+                  5 වසර ශිෂ්‍යත්වය (Grade 5)
+                </span>
+                <span className="text-[11px] font-extrabold text-orange-600 dark:text-orange-400">
+                  Step-by-Step Guide
+                </span>
+              </div>
+              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                {language === 'si'
+                  ? 'කවි බකමූණා සමඟ 5 ශිෂ්‍යත්වයට සූදානම් වෙමු! 🌟'
+                  : 'Prepare for Grade 5 Scholarship with Kavi Owl!'}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1">
+                {language === 'si'
+                  ? 'සිංහල, ගණිතය, පරිසරය, බුද්ධි පරීක්ෂණ විනෝද ප්‍රශ්න, දවසේ කාලසටහන සහ ප්‍රශ්න පත්‍ර.'
+                  : 'Sinhala, Maths, Environment, IQ puzzles, color-coded timetable and past papers.'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="open-scholarship-wizard-btn"
+            onClick={() => {
+              soundFX.playCorrect();
+              setIsScholarshipWizardOpen(true);
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs shadow-md hover:shadow-lg transition transform hover:scale-102 flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
+          >
+            <span>{language === 'si' ? 'ශිෂ්‍යත්ව මඟපෙන්වීම විවෘත කරන්න' : 'Launch Scholarship Wizard'}</span>
+            <Sparkles className="w-4 h-4 text-amber-200 animate-spin" />
+          </button>
+        </div>
       </section>
 
       {/* 3. HORIZONTAL QUICK-ACTION APP TOOLS BAR */}
@@ -828,6 +881,16 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           </div>
         </div>
       </div>
+
+      {/* Grade 5 Scholarship Interactive Guided Wizard Modal */}
+      <Grade5ScholarshipWizard
+        isOpen={isScholarshipWizardOpen}
+        onClose={() => setIsScholarshipWizardOpen(false)}
+        onNavigateToSubject={(subjectId) => {
+          setIsScholarshipWizardOpen(false);
+          onNavigate('subjects');
+        }}
+      />
     </div>
   );
 }

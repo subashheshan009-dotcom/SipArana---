@@ -11,14 +11,12 @@ import AuthPage from '@/pages/AuthPage';
 import Dashboard from '@/pages/Dashboard';
 import StudyPlannerPage from '@/pages/StudyPlannerPage';
 import FlashcardsPage from '@/pages/FlashcardsPage';
-import StudyGroupPage from '@/pages/StudyGroupPage';
 import ExamCountdownPage from '@/pages/ExamCountdownPage';
 import AudioSummariesPage from '@/pages/AudioSummariesPage';
 import UniversityPortal from '@/pages/UniversityPortal';
 import ClassroomPage from '@/pages/ClassroomPage';
 import SubjectsPage from '@/pages/SubjectsPage';
 import CampusPage from '@/pages/CampusPage';
-import CommunityPage from '@/pages/CommunityPage';
 import UtilitiesPage from '@/pages/UtilitiesPage';
 import NewsPage from '@/pages/NewsPage';
 import PremiumPage from '@/pages/PremiumPage';
@@ -70,8 +68,6 @@ function AppContent() {
         return <StudyPlannerPage />;
       case 'flashcards':
         return <FlashcardsPage />;
-      case 'discussion':
-        return <StudyGroupPage />;
       case 'countdown':
         return <ExamCountdownPage />;
       case 'audio':
@@ -106,8 +102,6 @@ function AppContent() {
         return <SubjectsPage />;
       case 'campus':
         return <CampusPage />;
-      case 'community':
-        return <CommunityPage />;
       case 'utilities':
         return <UtilitiesPage />;
       case 'news':

@@ -41,6 +41,8 @@ import {
   SunMedium
 } from 'lucide-react';
 import { SUBJECTS_DATA } from '@/data/mockData';
+import { downloadPrintableHTMLDoc, generatePastPaperHTML } from '@/utils/fileDownloader';
+import FilePermissionHelperModal from '@/components/FilePermissionHelperModal';
 import {
   QUIZ_CATEGORIES,
   QUIZ_STREAMS,
@@ -74,6 +76,41 @@ export default function SubjectsPage() {
   // Quiz interactive state inside active lesson
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+
+  // Download & File handling state
+  const [downloadingPaperId, setDownloadingPaperId] = useState<string | null>(null);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [activeDownloadUrl, setActiveDownloadUrl] = useState<string | undefined>(undefined);
+  const [activeDownloadName, setActiveDownloadName] = useState<string | undefined>(undefined);
+
+  const handleDownloadPaper = (paper: any) => {
+    if (!activeSubject) return;
+    setDownloadingPaperId(paper.id);
+
+    const filename = `SipArana_GCE_${activeSubject.titleEnglish.replace(/\s+/g, '_')}_${paper.year}_${paper.part.replace(/\s+/g, '_')}.html`;
+    const html = generatePastPaperHTML(
+      activeSubject.titleEnglish,
+      activeSubject.titleSinhala,
+      paper.year,
+      paper.part,
+      paper.medium,
+      profile?.name || 'SipArana Student'
+    );
+
+    setTimeout(() => {
+      const res = downloadPrintableHTMLDoc(html, filename, true);
+      setDownloadingPaperId(null);
+      addXP(20);
+
+      if (!res.success || res.isPopupBlocked) {
+        if (res.blobUrl) {
+          setActiveDownloadUrl(res.blobUrl);
+          setActiveDownloadName(filename);
+        }
+        setShowPermissionModal(true);
+      }
+    }, 500);
+  };
 
   // Icon renderer helper
   const renderIcon = (iconName: string, className: string = 'w-6 h-6') => {
@@ -1021,19 +1058,15 @@ export default function SubjectsPage() {
                               <Bookmark className="w-4 h-4" />
                             )}
                           </button>
-                          <a
-                            href={paper.pdfUrl}
-                            download
-                            onClick={(e) => {
-                              e.preventDefault();
-                              addXP(20);
-                              alert(`${paper.year} Past Paper PDF download started! (+20 XP)`);
-                            }}
-                            className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition"
+                          <button
+                            id={`download-pastpaper-${paper.id}`}
+                            onClick={() => handleDownloadPaper(paper)}
+                            disabled={downloadingPaperId === paper.id}
+                            className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer disabled:opacity-50"
                           >
-                            <Download className="w-3.5 h-3.5" />
-                            <span>PDF</span>
-                          </a>
+                            <Download className={`w-3.5 h-3.5 ${downloadingPaperId === paper.id ? 'animate-bounce' : ''}`} />
+                            <span>{downloadingPaperId === paper.id ? 'Saving...' : 'PDF'}</span>
+                          </button>
                         </div>
                       </div>
                     );
@@ -1053,6 +1086,14 @@ export default function SubjectsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <FilePermissionHelperModal
+        isOpen={showPermissionModal}
+        onClose={() => setShowPermissionModal(false)}
+        type="download"
+        downloadUrl={activeDownloadUrl}
+        downloadFilename={activeDownloadName}
+      />
     </div>
   );
 }

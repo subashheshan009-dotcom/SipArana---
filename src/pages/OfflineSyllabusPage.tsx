@@ -54,6 +54,7 @@ import { generateSyllabusPDF } from '@/utils/pdfGenerator';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import SyllabusGuideMascot from '@/components/SyllabusGuideMascot';
+import FilePermissionHelperModal from '@/components/FilePermissionHelperModal';
 
 type WizardStep = 'category' | 'stream' | 'subject' | 'documents';
 
@@ -83,6 +84,9 @@ export default function OfflineSyllabusPage() {
 
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [batchDownloading, setBatchDownloading] = useState<boolean>(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [activeDownloadUrl, setActiveDownloadUrl] = useState<string | undefined>(undefined);
+  const [activeDownloadName, setActiveDownloadName] = useState<string | undefined>(undefined);
   const [cachedIds, setCachedIds] = useState<Record<string, boolean>>(() => {
     try {
       const saved = localStorage.getItem('siparana_cached_documents');
@@ -251,10 +255,18 @@ export default function OfflineSyllabusPage() {
   const handleDownloadPDF = (item: SyllabusItem) => {
     setDownloadingId(item.id);
     setTimeout(() => {
-      generateSyllabusPDF(item, profile?.name || 'SipArana Student');
+      const res = generateSyllabusPDF(item, profile?.name || 'SipArana Student');
       setDownloadingId(null);
       setCachedIds((prev) => ({ ...prev, [item.id]: true }));
       addXP(15);
+
+      if (res && (!res.success || res.isPopupBlocked)) {
+        if (res.blobUrl) {
+          setActiveDownloadUrl(res.blobUrl);
+          setActiveDownloadName(`SipArana_NIE_${item.grade}_${item.subjectName.replace(/\s+/g, '_')}_${item.yearPublished}.html`);
+        }
+        setShowPermissionModal(true);
+      }
     }, 600);
   };
 
@@ -1350,6 +1362,14 @@ export default function OfflineSyllabusPage() {
           </div>
         </div>
       )}
+
+      <FilePermissionHelperModal
+        isOpen={showPermissionModal}
+        onClose={() => setShowPermissionModal(false)}
+        type="download"
+        downloadUrl={activeDownloadUrl}
+        downloadFilename={activeDownloadName}
+      />
     </div>
   );
 }

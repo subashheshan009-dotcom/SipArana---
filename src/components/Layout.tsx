@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   BookOpen,
   GraduationCap,
-  Users2,
   Wrench,
   Newspaper,
   Crown,
@@ -32,7 +31,6 @@ import {
   Smile,
   Calendar,
   Layers,
-  MessageCircle,
   Clock,
   Headphones
 } from 'lucide-react';
@@ -48,7 +46,6 @@ export type PageId =
   | 'dashboard'
   | 'planner'
   | 'flashcards'
-  | 'discussion'
   | 'countdown'
   | 'audio'
   | 'fun_english'
@@ -63,7 +60,6 @@ export type PageId =
   | 'classroom'
   | 'subjects'
   | 'campus'
-  | 'community'
   | 'utilities'
   | 'news'
   | 'premium'
@@ -92,7 +88,6 @@ const NAV_ITEMS_CONFIG: NavItemDef[] = [
   { id: 'dashboard', icon: LayoutDashboard, transKey: 'dashboard', enLabel: 'Dashboard', siLabel: 'පුවරුව', taLabel: 'முகப்பு பலகை' },
   { id: 'planner', icon: Calendar, transKey: 'planner', enLabel: 'AI Study Planner', siLabel: 'AI කාලසටහන', taLabel: 'AI படிப்புத் திட்டம்', badgeText: 'Auto-Sync', highlight: true },
   { id: 'flashcards', icon: Layers, transKey: 'flashcards', enLabel: 'Smart Flashcards', siLabel: 'ස්මාර්ට් ෆ්ලෑෂ්කාඩ්', taLabel: 'ஃபிளாஷ்கார்டுகள்', badgeText: 'Spaced Recall', highlight: true },
-  { id: 'discussion', icon: MessageCircle, transKey: 'discussion', enLabel: 'Study Group Corner', siLabel: 'ශිෂ්‍ය සංසදය', taLabel: 'மாணவர் தளம்', badgeText: 'Live Peer', highlight: true },
   { id: 'countdown', icon: Clock, transKey: 'countdown', enLabel: 'Exam Countdown & Goals', siLabel: 'විභාග ඔරලෝසුව & ඉලක්ක', taLabel: 'தேர்வு கடிகாரம்', badgeText: 'Real-Time', highlight: true },
   { id: 'audio', icon: Headphones, transKey: 'audio', enLabel: 'Voice Notes & Audio', siLabel: 'ශ්‍රව්‍ය සටහන්', taLabel: 'குரல் குறிப்புகள்', badgeText: 'Voice AI', highlight: true },
   { id: 'fun_english', icon: Smile, transKey: 'funEnglish', enLabel: 'Fun English & Relax', siLabel: 'විනෝදජනක ඉංග්‍රීසි & විවේකය', taLabel: 'வேடிக்கையான ஆங்கிலம் & ஓய்வு', badgeText: 'Mascot Flow', highlight: true },
@@ -107,7 +102,6 @@ const NAV_ITEMS_CONFIG: NavItemDef[] = [
   { id: 'classroom', icon: Video, transKey: 'classroom', enLabel: 'HD Video Classroom', siLabel: 'වීඩියෝ පන්ති කාමරය', taLabel: 'வீடியோ வகுப்பறை', badgeText: 'HD • 6-13' },
   { id: 'subjects', icon: BookOpen, transKey: 'subjectsPapers', enLabel: 'Subjects & Past Papers', siLabel: 'විෂයන් & ප්‍රශ්න පත්‍ර', taLabel: 'பாடங்கள் & வினாத்தாள்கள்', badgeText: 'Guru Potha' },
   { id: 'campus', icon: GraduationCap, transKey: 'campusZScore', enLabel: 'Campus & Z-Score', siLabel: 'සරසවි & Z-Score', taLabel: 'பல்கலைக்கழகம் & Z-புள்ளி', badgeText: 'Cutoffs' },
-  { id: 'community', icon: Users2, transKey: 'community', enLabel: 'Student Community', siLabel: 'ශිෂ්‍ය සංසදය', taLabel: 'மாணவர் சமூகம்' },
   { id: 'utilities', icon: Wrench, transKey: 'utilities', enLabel: 'Study Utilities', siLabel: 'පාඩම් මෙවලම්', taLabel: 'படிப்பு கருவிகள்', badgeText: 'Stopwatch & Chart' },
   { id: 'news', icon: Newspaper, transKey: 'examNews', enLabel: 'Exam News & Alerts', siLabel: 'විභාග පුවත්', taLabel: 'தேர்வுச் செய்திகள்' },
   { id: 'premium', icon: Crown, transKey: 'proMembership', enLabel: 'SipArana Pro', siLabel: 'ප්‍රෝ සාමාජිකත්වය', taLabel: 'புரோ உறுப்பினர்', isPro: true },

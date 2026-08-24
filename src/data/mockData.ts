@@ -1,4 +1,4 @@
-import type { Subject, CampusCourse, ForumPost, NewsArticle, Flashcard, StudyTask, ClassVideo, SchoolGrade } from '@/types';
+import type { Subject, CampusCourse, NewsArticle, Flashcard, StudyTask, ClassVideo, SchoolGrade } from '@/types';
 
 export const SRI_LANKA_DISTRICTS = [
   'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya',
@@ -12,11 +12,12 @@ export interface GradeInfo {
   grade: SchoolGrade;
   nameSinhala: string;
   nameEnglish: string;
-  stage: 'Junior' | 'O/L' | 'A/L';
+  stage: 'Scholarship' | 'Junior' | 'O/L' | 'A/L';
   description: string;
 }
 
 export const SCHOOL_GRADES: GradeInfo[] = [
+  { grade: 5, nameSinhala: '5 ශ්‍රේණිය (ශිෂ්‍යත්වය)', nameEnglish: 'Grade 5 (Scholarship)', stage: 'Scholarship', description: '5 වසර ශිෂ්‍යත්ව විභාගය (Grade 5 Scholarship Examination)' },
   { grade: 6, nameSinhala: '6 ශ්‍රේණිය', nameEnglish: 'Grade 6', stage: 'Junior', description: 'කනිෂ්ඨ ද්විතීයික මට්ටම (Junior Secondary - Year 1)' },
   { grade: 7, nameSinhala: '7 ශ්‍රේණිය', nameEnglish: 'Grade 7', stage: 'Junior', description: 'කනිෂ්ඨ ද්විතීයික මට්ටම (Junior Secondary - Year 2)' },
   { grade: 8, nameSinhala: '8 ශ්‍රේණිය', nameEnglish: 'Grade 8', stage: 'Junior', description: 'කනිෂ්ඨ ද්විතීයික මට්ටම (Junior Secondary - Year 3)' },
@@ -28,6 +29,255 @@ export const SCHOOL_GRADES: GradeInfo[] = [
 ];
 
 export const SUBJECTS_DATA: Subject[] = [
+  // ==========================================
+  // GRADE 5 SCHOLARSHIP CURRICULUM (5 වසර ශිෂ්‍යත්වය)
+  // National Institute of Education (NIE) Sri Lanka
+  // ==========================================
+  {
+    id: 'sub_sch_sinhala',
+    titleSinhala: 'සිංහල භාෂාව හා සාහිත්‍යය (Sinhala)',
+    titleEnglish: 'Sinhala Language & Reading',
+    code: 'SCH-SIN-01',
+    stream: 'Grade 5 Scholarship',
+    grades: [5],
+    category: 'Scholarship Core',
+    guruPothaReference: 'ශ්‍රී ලංකා ජාතික අධ්‍යාපන ආයතනය (NIE) • 5 ශ්‍රේණිය ශිෂ්‍යත්ව විෂය නිර්දේශය',
+    iconName: 'BookOpen',
+    color: 'from-amber-500 to-rose-500',
+    description: 'ව්‍යාකරණ, නිවැරදි අක්ෂර වින්‍යාසය (ණ/න, ළ/ල, ශ/ෂ/ස), සමාන පද, විරුද්ධ පද, යුගල පද සහ ඡේද කියවා තේරුම් ගැනීමේ විනෝදජනක අභ්‍යාස.',
+    totalModules: 12,
+    completedModules: 9,
+    units: [
+      {
+        id: 'u_sch_sin_1',
+        unitNumber: 1,
+        title: 'Sinhala Grammar & Word Magic (ව්‍යාකරණ හා නිවැරදි වචන)',
+        titleSinhala: 'නාමපද, ක්‍රියාපද සහ නිවැරදි අක්ෂර වින්‍යාසය',
+        durationMinutes: 90,
+        lessons: [
+          {
+            id: 'l_sch_sin_1',
+            title: 'Nouns, Verbs & Gender in Sinhala (නාම, ක්‍රියා සහ ලිංග භේදය)',
+            titleSinhala: 'පුරුෂ ලිංග, ස්ත්‍රී ලිංග සහ නාමපද හඳුනාගනිමු',
+            duration: '25 mins',
+            summary: 'නාමපද සහ ක්‍රියාපද අතර ගැලපීම, ප්‍රාණවාචී හා අප්‍රාණවාචී නාමපද.',
+            keyPoints: ['එක වචන සහ බහු වචන', 'පුරුෂ ලිංග (මුවා) -> ස්ත්‍රී ලිංග (දෙන)', 'ක්‍රියාපද අග (යි / හ / ත්) ගැලපීම'],
+            isCompleted: true,
+            quiz: [
+              {
+                id: 'q_sch_sin_1',
+                question: 'Select the correct opposite word for "ආලෝකය" (Light):',
+                questionSinhala: '"ආලෝකය" යන වචනයේ විරුද්ධ පදය කුමක්ද?',
+                options: ['අන්ධකාරය (Darkness)', 'එළිය', 'දීප්තිය', 'පැහැය'],
+                correctIndex: 0,
+                explanation: 'ආලෝකය යන වචනයේ සෘජු විරුද්ධ පදය "අන්ධකාරය" වේ.'
+              },
+              {
+                id: 'q_sch_sin_2',
+                question: 'Which is the correctly spelled Sinhala word for "School"?',
+                questionSinhala: 'පහත සඳහන් වචන අතුරින් නිවැරදි අක්ෂර වින්‍යාසය සහිත වචනය තෝරන්න:',
+                options: ['පාසල', 'පාසළ', 'පාසලා', 'පාශල'],
+                correctIndex: 0,
+                explanation: 'පාසල යන්නෙහි නිවැරදි අකුර වන්නේ දන්තජ "ල" අකුරයි.'
+              }
+            ]
+          },
+          {
+            id: 'l_sch_sin_2',
+            title: 'Synonyms & Idioms (සමාන පද සහ ප්‍රස්ථාව පිරුළු)',
+            titleSinhala: 'සමාන පද සහ ප්‍රස්ථාව පිරුළු තේරුම් ගනිමු',
+            duration: '30 mins',
+            summary: 'විභාගයට නිතර එන සමාන පද, යුගල පද හා ප්‍රස්ථාව පිරුළු.',
+            keyPoints: ['හිරු = සූර්යයා, දිනකර, භානු', 'සඳ = චන්ද්‍රයා, නිශාකර', 'ගස = වෘක්ෂය, තුරු'],
+            isCompleted: true
+          }
+        ]
+      }
+    ],
+    pastPapers: [
+      {
+        id: 'sch_pp_sin_2025',
+        title: 'Grade 5 Scholarship Sinhala Model Paper 2025',
+        year: 2025,
+        paperType: 'Model',
+        medium: 'Sinhala',
+        downloadUrl: '/mock/scholarship/2025_sinhala_model.pdf'
+      }
+    ]
+  },
+  {
+    id: 'sub_sch_maths',
+    titleSinhala: 'ගණිතය (Mathematics)',
+    titleEnglish: 'Primary Mathematics & Word Problems',
+    code: 'SCH-MAT-02',
+    stream: 'Grade 5 Scholarship',
+    grades: [5],
+    category: 'Scholarship Core',
+    guruPothaReference: 'ශ්‍රී ලංකා ජාතික අධ්‍යාපන ආයතනය (NIE) • 5 ශ්‍රේණිය ගණිත විෂය නිර්දේශය',
+    iconName: 'Calculator',
+    color: 'from-blue-500 to-indigo-600',
+    description: 'ස්ථානීය අගය, ගුණ කිරීම, බෙදීම, භාග, මුදල්, දිග, බර, කාලය සහ ශිෂ්‍යත්ව විභාගයේ සුවිශේෂී ගැටලු විසඳීමේ කෙටි ක්‍රම.',
+    totalModules: 14,
+    completedModules: 10,
+    units: [
+      {
+        id: 'u_sch_mat_1',
+        unitNumber: 1,
+        title: 'Numbers, Patterns & Calculations (සංඛ්‍යා රටා සහ ගණනය)',
+        titleSinhala: 'සංඛ්‍යා රටා, ස්ථානීය අගය සහ සරල ගැටලු',
+        durationMinutes: 100,
+        lessons: [
+          {
+            id: 'l_sch_mat_1',
+            title: 'Number Patterns & Quick Multiplications',
+            titleSinhala: 'සංඛ්‍යා රටා සහ ගුණ කිරීමේ සරල උපක්‍රම',
+            duration: '30 mins',
+            summary: 'සංඛ්‍යා රටාවල ඊළඟ පදය සෙවීම, 5 න් සහ 10 න් ගුණ කිරීම.',
+            keyPoints: ['ඔත්තේ සහ ඉරට්ටේ සංඛ්‍යා', 'ත්‍රිකෝණ සංඛ්‍යා (1, 3, 6, 10, 15)', 'සමචතුරස්‍ර සංඛ්‍යා (1, 4, 9, 16, 25)'],
+            isCompleted: true,
+            quiz: [
+              {
+                id: 'q_sch_mat_1',
+                question: 'What is the next number in sequence: 2, 4, 8, 16, ...?',
+                questionSinhala: '2, 4, 8, 16, ... රටාවේ ඊළඟට එන සංඛ්‍යාව කුමක්ද?',
+                options: ['32', '24', '20', '30'],
+                correctIndex: 0,
+                explanation: 'සෑම සංඛ්‍යාවක්ම 2 න් ගුණ වෙමින් ඉදිරියට යයි (16 x 2 = 32).'
+              },
+              {
+                id: 'q_sch_mat_2',
+                question: 'If 3 pencils cost Rs. 60, how much do 5 pencils cost?',
+                questionSinhala: 'පැන්සල් 3 ක මිල රුපියල් 60 කි. එවැනි පැන්සල් 5 ක මිල කීයද?',
+                options: ['රුපියල් 100', 'රුපියල් 80', 'රුපියල් 90', 'රුපියල් 120'],
+                correctIndex: 0,
+                explanation: 'එක් පැන්සලක මිල = 60 / 3 = රු. 20. පැන්සල් 5 ක මිල = 20 x 5 = රුපියල් 100 කි.'
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    pastPapers: [
+      {
+        id: 'sch_pp_mat_2025',
+        title: 'Grade 5 Scholarship Maths & Logic Paper 2025',
+        year: 2025,
+        paperType: 'Model',
+        medium: 'Sinhala',
+        downloadUrl: '/mock/scholarship/2025_maths_model.pdf'
+      }
+    ]
+  },
+  {
+    id: 'sub_sch_env',
+    titleSinhala: 'පරිසරය ආශ්‍රිත ක්‍රියාකාරකම් (Environmental Studies)',
+    titleEnglish: 'Environmental Studies & Science',
+    code: 'SCH-ENV-03',
+    stream: 'Grade 5 Scholarship',
+    grades: [5],
+    category: 'Scholarship Core',
+    guruPothaReference: 'ශ්‍රී ලංකා ජාතික අධ්‍යාපන ආයතනය (NIE) • 5 ශ්‍රේණිය පරිසරය',
+    iconName: 'Compass',
+    color: 'from-emerald-500 to-teal-600',
+    description: 'ශාක හා සත්ත්ව ලෝකය, කාලගුණය, ජලය, සෞඛ්‍යය, ශ්‍රී ලංකාවේ ප්‍රසිද්ධ ස්ථාන, ඉතිහාසය, ප්‍රවාහනය සහ අපේ සංස්කෘතිය.',
+    totalModules: 15,
+    completedModules: 11,
+    units: [
+      {
+        id: 'u_sch_env_1',
+        unitNumber: 1,
+        title: 'Living World & Nature (ජීවී ලෝකය සහ සොබාදහම)',
+        titleSinhala: 'ශාක, සතුන් සහ ස්වභාවික සම්පත්',
+        durationMinutes: 90,
+        lessons: [
+          {
+            id: 'l_sch_env_1',
+            title: 'Plants, Animals & Sri Lankan Heritage',
+            titleSinhala: 'ශ්‍රී ලංකාවේ ජාතික වෘක්ෂය, පුෂ්පය සහ සත්ත්ව අනුවර්තන',
+            duration: '25 mins',
+            summary: 'ශ්‍රී ලංකාවේ ජාතික සංකේත, සතුන්ගේ ආහාර පුරුදු සහ ශාක කොටස්.',
+            keyPoints: ['ජාතික වෘක්ෂය: නා ගස (Na Tree)', 'ජාතික පුෂ්පය: නිල් මහනෙල් (Blue Water Lily)', 'ජාතික පක්ෂියා: ශ්‍රී ලංකා වලි කුකුළා (Ceylon Junglefowl)'],
+            isCompleted: true,
+            quiz: [
+              {
+                id: 'q_sch_env_1',
+                question: 'What is the National Tree of Sri Lanka?',
+                questionSinhala: 'ශ්‍රී ලංකාවේ ජාතික වෘක්ෂය වන්නේ කුමක්ද?',
+                options: ['නා ගස (Na Tree)', 'බෝ ගස', 'කොස් ගස', 'තල් ගස'],
+                correctIndex: 0,
+                explanation: 'ශ්‍රී ලංකාවේ ජාතික වෘක්ෂය "නා ගස" (Mesua ferrea) වේ.'
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    pastPapers: [
+      {
+        id: 'sch_pp_env_2025',
+        title: 'Grade 5 Scholarship Environment Model Paper 2025',
+        year: 2025,
+        paperType: 'Model',
+        medium: 'Sinhala',
+        downloadUrl: '/mock/scholarship/2025_environment_model.pdf'
+      }
+    ]
+  },
+  {
+    id: 'sub_sch_iq',
+    titleSinhala: 'බුද්ධි පරීක්ෂණය සහ තර්කනය (IQ & Reasoning)',
+    titleEnglish: 'Scholarship Paper 1 - IQ & Reasoning',
+    code: 'SCH-IQ-04',
+    stream: 'Grade 5 Scholarship',
+    grades: [5],
+    category: 'Scholarship Core',
+    guruPothaReference: 'ශ්‍රී ලංකා විභාග දෙපාර්තමේන්තුව • 5 ශ්‍රේණිය ශිෂ්‍යත්ව I පත්‍රය',
+    iconName: 'Sparkles',
+    color: 'from-purple-500 to-pink-600',
+    description: 'රූප රටා, කැට ගණන් කිරීම, කඩදාසි නැමීම්, තාර්කික සබඳතා, කාල ගණනය සහ ශිෂ්‍යත්ව I පත්‍රයේ ඉහළම ලකුණු ගැනීමේ රහස් ක්‍රම.',
+    totalModules: 16,
+    completedModules: 12,
+    units: [
+      {
+        id: 'u_sch_iq_1',
+        unitNumber: 1,
+        title: 'Visual Patterns & Spatial Reasoning (රූප රටා සහ කැට)',
+        titleSinhala: 'රූප රටා, අනුරූප රූප සහ ඝන වස්තු',
+        durationMinutes: 110,
+        lessons: [
+          {
+            id: 'l_sch_iq_1',
+            title: 'Shape Counting & Symmetry (කැට ගණන් කිරීම සහ සමමිතිය)',
+            titleSinhala: 'කැට ගණන් කිරීම සහ දර්පණ ප්‍රතිබිම්බ',
+            duration: '35 mins',
+            summary: 'සැඟවුණු කැට ගණන් කිරීම සහ දර්පණයක පෙනෙන රූප හඳුනාගැනීම.',
+            keyPoints: ['තට්ටු ක්‍රමය (Layer method) මඟින් කැට ගණන් කිරීම', 'දර්පණයක වම සහ දකුණ මාරු වීම', 'කඩදාසි නැමූ විට කැපුම් විවෘත වන ආකාරය'],
+            isCompleted: true,
+            quiz: [
+              {
+                id: 'q_sch_iq_1',
+                question: 'Which object will look exactly identical in a mirror reflection?',
+                questionSinhala: 'පහත සඳහන් අකුරු අතුරින් කණ්ණාඩියකින් බැලූ විටත් නොවෙනස්ව පෙනෙන අකුර කුමක්ද?',
+                options: ['A', 'B', 'P', 'R'],
+                correctIndex: 0,
+                explanation: 'A අකුර සිරස් අක්ෂය වටා සමමිතික බැවින් කණ්ණාඩිය තුළදීත් "A" ලෙසම දිස්වේ.'
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    pastPapers: [
+      {
+        id: 'sch_pp_iq_2025',
+        title: 'Grade 5 Scholarship Paper 1 (IQ) Model Paper 2025',
+        year: 2025,
+        paperType: 'Model',
+        medium: 'Sinhala',
+        downloadUrl: '/mock/scholarship/2025_iq_model.pdf'
+      }
+    ]
+  },
   // ==========================================
   // O/L & JUNIOR CURRICULUM (Grades 6 - 11)
   // Sri Lankan National Curriculum / Guru Potha
@@ -1303,62 +1553,6 @@ export const CAMPUS_COURSES_DATA: CampusCourse[] = [
     description: 'Dedicated technology faculty offering cutting-edge engineering and instrumentation specializations.',
     logo: '⚙️',
     isStateUni: true
-  }
-];
-
-export const FORUM_POSTS_DATA: ForumPost[] = [
-  {
-    id: 'post_1',
-    authorName: 'Nuwan Bandara',
-    authorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100',
-    authorBadge: 'Top Contributor',
-    createdAt: '2 hours ago',
-    stream: 'Physical Science (Maths)',
-    subjectName: 'Combined Mathematics',
-    title: '2022 A/L Applied Maths Rigid Body equilibrium question - doubt on virtual work method?',
-    content: 'Part II question 14(b) එකේ virtual work principle එකෙන් solve කරද්දි string tension එක evaluate කරන්න ඕනෙද නැද්ද? මට answer එකේ small sign difference එකක් එනවා.',
-    upvotes: 24,
-    isUpvoted: false,
-    solved: true,
-    tags: ['A/L 2022', 'Applied Maths', 'Virtual Work', 'Mechanics'],
-    replies: [
-      {
-        id: 'rep_1',
-        authorName: 'Mr. Sarath Wijesinghe (A/L Tutor)',
-        authorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
-        authorRole: 'Teacher',
-        createdAt: '1 hour ago',
-        content: 'Internal tension forces work done = 0 වෙනවා string එක inextensible නම්. But if length variations take place with virtual displacement δθ, express coordinate of midpoint. Check if δy = -a sin θ δθ.',
-        upvotes: 18,
-        isVerifiedAnswer: true
-      }
-    ]
-  },
-  {
-    id: 'post_2',
-    authorName: 'Amasha Gamage',
-    authorAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100',
-    createdAt: '4 hours ago',
-    stream: 'General O/L',
-    subjectName: 'Science (O/L)',
-    title: 'O/L Science 11 ශ්‍රේණිය රසායනික සමීකරණ තුලිත කිරීමේ කෙටි ක්‍රමයක් තියෙනවද?',
-    content: 'සමහර ඓන්ද්‍රීය ප්‍රතික්‍රියාවල O2 සහ H2O පරමාණු තුලනය කරද්දි කාලය යනවා. මේකට පියවරෙන් පියවර ලේසි ක්‍රමයක් පැහැදිලි කරන්න පුළුවන්ද?',
-    upvotes: 38,
-    isUpvoted: true,
-    solved: true,
-    tags: ['O/L Science', 'Chemistry', 'Equation Balancing', 'Guru Potha'],
-    replies: [
-      {
-        id: 'rep_ol_1',
-        authorName: 'SipArana AI Study Bot',
-        authorAvatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100',
-        authorRole: 'AI Tutor',
-        createdAt: '3 hours ago',
-        content: 'පළමුව ලෝහ (Metals), දෙවනුව අලෝහ (Non-metals), තෙවනුව හයිඩ්‍රජන් (H) සහ අවසානයට ඔක්සිජන් (O) තුලනය කරන්න (MINHO Rule: Metals -> Ions -> Non-metals -> Hydrogen -> Oxygen).',
-        upvotes: 29,
-        isVerifiedAnswer: true
-      }
-    ]
   }
 ];
 

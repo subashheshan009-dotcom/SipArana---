@@ -31,6 +31,8 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { useExamNews } from '@/context/NewsContext';
 import { OFFICIAL_AUTHORITIES, type OfficialCircularItem } from '@/data/examNewsData';
+import { downloadPrintableHTMLDoc } from '@/utils/fileDownloader';
+import FilePermissionHelperModal from '@/components/FilePermissionHelperModal';
 
 export default function NewsPage() {
   const { language } = useLanguage();
@@ -62,6 +64,69 @@ export default function NewsPage() {
   const [showOnlyUrgent, setShowOnlyUrgent] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [mascotCheer, setMascotCheer] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [activeDownloadUrl, setActiveDownloadUrl] = useState<string | undefined>(undefined);
+  const [activeDownloadName, setActiveDownloadName] = useState<string | undefined>(undefined);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadOfficialCircular = (article: OfficialCircularItem) => {
+    setIsDownloading(true);
+    const filename = `SipArana_Official_Circular_${article.refNumber.replace(/[^a-zA-Z0-9]/g, '_')}_${article.authorityCode}.html`;
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${article.title} - Official Notice</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Noto+Sans+Sinhala:wght@400;600;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif; color: #0f172a; margin: 0; padding: 28px; line-height: 1.6; }
+    .header { border-bottom: 3px solid #1e3a8a; padding-bottom: 14px; margin-bottom: 20px; }
+    .badge { display: inline-block; background: #1e3a8a; color: #fff; padding: 4px 12px; border-radius: 6px; font-weight: 800; font-size: 13px; }
+    .title { font-size: 20px; font-weight: 800; color: #1e293b; margin-top: 12px; }
+    .ref { font-size: 12px; color: #64748b; font-family: monospace; }
+    .content { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 16px 0; font-size: 13px; white-space: pre-wrap; font-family: monospace; }
+    .footer { font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 24px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="badge">OFFICIAL BULLETIN • ${article.authorityCode}</span>
+    <div class="title">${article.title}</div>
+    <div style="font-size: 16px; font-weight: 700; color: #334155; margin-top: 4px;">${article.titleSinhala}</div>
+    <div class="ref" style="margin-top: 8px;">Ref No: ${article.refNumber} | Published Date: ${article.publishedDate} | Source: ${article.source}</div>
+  </div>
+
+  <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 13px;">
+    <strong>Executive Summary:</strong><br/>
+    ${article.sinhalaSummary}<br/><br/>
+    <em>${article.summary}</em>
+  </div>
+
+  <div class="content">${article.fullContent}</div>
+
+  <div class="footer">
+    Verified by SipArana LK Examination News Radar. Compliant with Sri Lanka Ministry of Education & Dept. of Examinations.
+  </div>
+</body>
+</html>
+    `;
+
+    setTimeout(() => {
+      const res = downloadPrintableHTMLDoc(htmlContent, filename, true);
+      setIsDownloading(false);
+      addXP(15);
+
+      if (!res.success || res.isPopupBlocked) {
+        if (res.blobUrl) {
+          setActiveDownloadUrl(res.blobUrl);
+          setActiveDownloadName(filename);
+        }
+        setShowPermissionModal(true);
+      }
+    }, 400);
+  };
 
   // Filter logic
   const filteredNotices = notices.filter((n) => {
@@ -738,20 +803,18 @@ export default function NewsPage() {
             {/* Modal Bottom Actions */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <a
-                  href={activeArticle.pdfDownloadUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs transition flex items-center justify-center gap-1.5"
+                <button
+                  onClick={() => handleDownloadOfficialCircular(activeArticle)}
+                  disabled={isDownloading}
+                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download Official PDF</span>
-                </a>
+                  <Download className={`w-3.5 h-3.5 ${isDownloading ? 'animate-bounce' : ''}`} />
+                  <span>{isDownloading ? 'Downloading...' : 'Download Official PDF'}</span>
+                </button>
 
                 <button
                   onClick={() => window.print()}
-                  className="px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 font-bold text-xs transition flex items-center gap-1"
+                  className="px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 font-bold text-xs transition flex items-center gap-1 cursor-pointer"
                   title="Print Circular"
                 >
                   <Printer className="w-3.5 h-3.5" />
@@ -768,6 +831,14 @@ export default function NewsPage() {
           </div>
         </div>
       )}
+
+      <FilePermissionHelperModal
+        isOpen={showPermissionModal}
+        onClose={() => setShowPermissionModal(false)}
+        type="download"
+        downloadUrl={activeDownloadUrl}
+        downloadFilename={activeDownloadName}
+      />
     </div>
   );
 }

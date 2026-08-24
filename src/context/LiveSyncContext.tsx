@@ -17,6 +17,9 @@ export interface SyncedDiscussionPost {
   isSolved: boolean;
   verifiedAnswer?: string;
   tags: string[];
+  attachmentUrl?: string;
+  attachmentType?: 'image' | 'pdf';
+  attachmentName?: string;
 }
 
 export interface SyncedReply {
@@ -214,7 +217,7 @@ const INITIAL_STUDY_SLOTS: SyncedStudySlot[] = [
   { id: 's-7', day: 'Thu', time: '06:00 - 07:30 AM', subject: 'Chemistry / Business Studies', topic: 'Organic Pathways & Analysis', type: 'theory', durationMinutes: 90, isDone: false },
   { id: 's-8', day: 'Fri', time: '06:00 - 07:30 AM', subject: 'All Subjects', topic: 'Weekly Revision & Weak Topic Mastery', type: 'revision', durationMinutes: 90, isDone: false },
   { id: 's-9', day: 'Sat', time: '08:00 - 11:00 AM', subject: 'Full Mock Exam', topic: 'Timed 3-Hour Exam Simulation', type: 'past_paper', durationMinutes: 180, isDone: false },
-  { id: 's-10', day: 'Sun', time: '09:00 - 10:30 AM', subject: 'Study Group Review', topic: 'Peer Discussion & AI Question Solving', type: 'revision', durationMinutes: 90, isDone: false }
+  { id: 's-10', day: 'Sun', time: '09:00 - 10:30 AM', subject: 'Weekly Concept Mastery', topic: 'Flashcard Drill & AI Question Solving', type: 'revision', durationMinutes: 90, isDone: false }
 ];
 
 const LiveSyncContext = createContext<LiveSyncContextType | undefined>(undefined);

@@ -19,7 +19,8 @@ import {
   Compass,
   Info,
   ChevronRight,
-  BookMarked
+  BookMarked,
+  Volume2
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -45,11 +46,12 @@ export default function AuthPage() {
   const [studentCategory, setStudentCategory] = useState<StudentCategory>('School');
   
   // School Student State
-  const [grade, setGrade] = useState<SchoolGrade>(12);
-  const [stream, setStream] = useState<Stream>('Physical Science (Maths)');
+  const [grade, setGrade] = useState<SchoolGrade>(5);
+  const [stream, setStream] = useState<Stream>('Grade 5 Scholarship');
   const [district, setDistrict] = useState('Colombo');
   const [medium, setMedium] = useState<Medium>('Sinhala');
   const [schoolName, setSchoolName] = useState('');
+  const [isSpeakingKavi, setIsSpeakingKavi] = useState(false);
 
   // University Student State
   const [selectedUniId, setSelectedUniId] = useState('uom');
@@ -88,14 +90,36 @@ export default function AuthPage() {
 
   const handleGradeChange = (newGrade: SchoolGrade) => {
     setGrade(newGrade);
-    if (newGrade <= 9) {
+    if (newGrade === 5) {
+      setStream('Grade 5 Scholarship');
+    } else if (newGrade <= 9) {
       setStream('Junior Secondary (Grade 6-9)');
     } else if (newGrade <= 11) {
       setStream('General O/L');
     } else {
-      if (stream === 'General O/L' || stream === 'Junior Secondary (Grade 6-9)') {
+      if (stream === 'General O/L' || stream === 'Junior Secondary (Grade 6-9)' || stream === 'Grade 5 Scholarship') {
         setStream('Physical Science (Maths)');
       }
+    }
+  };
+
+  const handleSpeakKaviWelcome = () => {
+    if ('speechSynthesis' in window) {
+      if (isSpeakingKavi) {
+        window.speechSynthesis.cancel();
+        setIsSpeakingKavi(false);
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const txt = 'සුබ දවසක් පුංචි යාළුවේ! මම කවි බකමූණා. 5 වසර ශිෂ්‍යත්වය ලේසියෙන්ම ජයගන්න අද අපි එකට සෙල්ලම් කරමින් පාඩම් කරමු!';
+      const utterance = new SpeechSynthesisUtterance(txt);
+      utterance.rate = 0.95;
+      utterance.pitch = 1.15;
+      utterance.lang = 'si-LK';
+      utterance.onend = () => setIsSpeakingKavi(false);
+      utterance.onerror = () => setIsSpeakingKavi(false);
+      setIsSpeakingKavi(true);
+      window.speechSynthesis.speak(utterance);
     }
   };
 
@@ -110,7 +134,7 @@ export default function AuthPage() {
         language === 'si'
           ? 'කරුණාකර ඔබගේ නම (Username) ඇතුළත් කරන්න.'
           : language === 'ta'
-          ? 'தயவுசெய்து உங்கள் பெயரை (பயனர்பெயர்) உள்ளிடவும்.'
+          ? 'தயவுசெய்து உங்கள் பெயரை (பயனர்பෙயர்) உள்ளிடவும்.'
           : 'Please enter your username / student name.'
       );
       return;
@@ -148,7 +172,8 @@ export default function AuthPage() {
           district,
           medium,
           school: schoolName.trim() || 'Sri Lanka National Model School',
-          targetYear: grade === 11 ? 2026 : grade === 13 ? 2026 : 2027
+          targetYear: grade === 5 ? 2026 : grade === 11 ? 2026 : grade === 13 ? 2026 : 2027,
+          isKidMode: grade === 5
         });
 
         if (!res.success) {
@@ -563,6 +588,29 @@ export default function AuthPage() {
                           <option value="Technology">Technology (තාක්ෂණවේදය - BST / ET / SFT)</option>
                           <option value="Arts">Arts (කලා විෂය ධාරාව)</option>
                         </select>
+                      </div>
+                    ) : grade === 5 ? (
+                      <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 text-amber-950 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-black flex items-center gap-1.5 text-amber-900">
+                            <span className="text-lg">🦉</span>
+                            <span>{language === 'si' ? '5 වසර ශිෂ්‍යත්ව විශේෂ ස්ථරය:' : 'Grade 5 Scholarship Layer:'}</span>
+                          </label>
+                          <span className="text-[11px] font-black text-white bg-gradient-to-r from-amber-500 to-orange-500 px-2.5 py-0.5 rounded-full shadow-xs">
+                            Kid Friendly Mode 🌟
+                          </span>
+                        </div>
+                        <p className="text-[11px] font-medium text-slate-700 leading-tight">
+                          සිංහල, ගණිතය, පරිසරය සහ බුද්ධි පරීක්ෂණ විනෝද ප්‍රශ්න, කවි බකමූණාගේ සරල මඟපෙන්වීම සහ දවසේ විනෝද කාලසටහන.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleSpeakKaviWelcome}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-950 bg-white/80 px-2.5 py-1 rounded-xl border border-amber-200 cursor-pointer shadow-xs"
+                        >
+                          <Volume2 className="w-3.5 h-3.5 text-amber-600" />
+                          <span>{isSpeakingKavi ? 'නවත්වන්න' : 'කවිගේ පිළිගැනීමේ හඬ අසන්න'}</span>
+                        </button>
                       </div>
                     ) : (
                       <div>

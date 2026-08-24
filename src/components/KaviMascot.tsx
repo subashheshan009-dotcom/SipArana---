@@ -7,7 +7,7 @@ import confetti from 'canvas-confetti';
 export interface KaviMascotProps {
   mood?: 'smart' | 'celebrating' | 'thinking' | 'encouraging' | 'reading';
   customMessage?: string;
-  contextPage?: 'planner' | 'flashcards' | 'discussion' | 'countdown' | 'audio' | 'general';
+  contextPage?: 'planner' | 'flashcards' | 'countdown' | 'audio' | 'general';
   size?: 'sm' | 'md' | 'lg' | 'hero';
   showVoiceButton?: boolean;
   className?: string;
@@ -23,11 +23,6 @@ const CONTEXT_TIPS = {
     si: '🦉 කවි මෙහෙම කියනවා: Spaced Repetition (ස්ථානගත ආවර්ජනය) මගින් කෙටි කාලීන මතකය දීර්ඝ කාලීන මතකයට හරවනවා. අපහසු කාඩ්පත් දින 3ක් පුරා නැවත බලන්න!',
     ta: '🦉 கவி சொல்கிறது: Spaced Repetition முறை மூலம் குறுகிய கால நினைவாற்றலை நீண்ட கால நினைவாற்றலாக மாற்றலாம். கடினமான அட்டைகளை 3 நாட்கள் திருப்புங்கள்!',
     en: '🦉 Kavi says: Spaced repetition locks concepts into long-term memory! Flip 15 cards every morning before theory classes.'
-  },
-  discussion: {
-    si: '🦉 කවි මෙහෙම කියනවා: ඔබ තේරුම්ගත් දෙයක් තවත් ශිෂ්‍යයෙකුට පැහැදිලි කර දීම (Feynman Technique) විභාග සමත් වීමේ ඉහළම ක්‍රමයයි!',
-    ta: '🦉 கவி சொல்கிறது: நீங்கள் புரிந்துகொண்டதை மற்றொரு மாணவருக்கு விளக்குவது (Feynman முறை) தேர்வில் அதிக மதிப்பெண் பெற உதவும்!',
-    en: '🦉 Kavi says: Explaining a solution to a peer (Feynman Technique) ensures 90% retention for tough exam derivations!'
   },
   countdown: {
     si: '🦉 කවි මෙහෙම කියනවා: සෑම තත්පරයක්ම ඔබේ ඉලක්කයට ඔබව සමීප කරනවා. දිනපතා කුඩා ඉලක්ක 3ක් සම්පූර්ණ කරන්න!',

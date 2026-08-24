@@ -1,6 +1,6 @@
 {
   "name": "SipArana Educational Web App",
-  "description": "Sri Lanka's comprehensive digital learning platform for Grades 6–13 and University Higher Education, featuring Kavi Owl Mascot, AI Study Planner & Timetable Generator, Smart Flashcards, Student Study Group Discussion Corner, Real-Time Exam Countdown & Daily Goal Tracker, Voice Notes & Audio Summaries with live auto-sync, non-intrusive alert system, Google Student Hub, Free Courses radar, SipArana Book Shop, and multilingual support (Sinhala, Tamil, English).",
+  "description": "Sri Lanka's comprehensive digital learning platform for Grade 5 Scholarship (5 ශිෂ්‍යත්වය), Grades 6–13 (O/L, A/L), and University Higher Education, featuring Kavi Owl Mascot in simple Sinhala, step-by-step kid-friendly wizard, pictorial subject cards, color-coded daily timetable planner, AI Study Planner & Timetable Generator, Smart Flashcards, Real-Time Exam Countdown, Voice Notes & Audio Summaries, Google Student Hub, Free Courses radar, SipArana Book Shop, and multilingual support (Sinhala, Tamil, English).",
   "requestFramePermissions": [
     "microphone"
   ],
