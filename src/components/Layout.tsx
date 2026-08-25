@@ -31,7 +31,6 @@ import {
   Smile,
   Calendar,
   Layers,
-  Clock,
   Headphones
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -46,7 +45,6 @@ export type PageId =
   | 'dashboard'
   | 'planner'
   | 'flashcards'
-  | 'countdown'
   | 'audio'
   | 'fun_english'
   | 'google_hub'
@@ -88,7 +86,6 @@ const NAV_ITEMS_CONFIG: NavItemDef[] = [
   { id: 'dashboard', icon: LayoutDashboard, transKey: 'dashboard', enLabel: 'Dashboard', siLabel: 'පුවරුව', taLabel: 'முகப்பு பலகை' },
   { id: 'planner', icon: Calendar, transKey: 'planner', enLabel: 'AI Study Planner', siLabel: 'AI කාලසටහන', taLabel: 'AI படிப்புத் திட்டம்', badgeText: 'Auto-Sync', highlight: true },
   { id: 'flashcards', icon: Layers, transKey: 'flashcards', enLabel: 'Smart Flashcards', siLabel: 'ස්මාර්ට් ෆ්ලෑෂ්කාඩ්', taLabel: 'ஃபிளாஷ்கார்டுகள்', badgeText: 'Spaced Recall', highlight: true },
-  { id: 'countdown', icon: Clock, transKey: 'countdown', enLabel: 'Exam Countdown & Goals', siLabel: 'විභාග ඔරලෝසුව & ඉලක්ක', taLabel: 'தேர்வு கடிகாரம்', badgeText: 'Real-Time', highlight: true },
   { id: 'audio', icon: Headphones, transKey: 'audio', enLabel: 'Voice Notes & Audio', siLabel: 'ශ්‍රව්‍ය සටහන්', taLabel: 'குரல் குறிப்புகள்', badgeText: 'Voice AI', highlight: true },
   { id: 'fun_english', icon: Smile, transKey: 'funEnglish', enLabel: 'Fun English & Relax', siLabel: 'විනෝදජනක ඉංග්‍රීසි & විවේකය', taLabel: 'வேடிக்கையான ஆங்கிலம் & ஓய்வு', badgeText: 'Mascot Flow', highlight: true },
   { id: 'google_hub', icon: Globe, transKey: 'googleHub', enLabel: 'Google Student Hub', siLabel: 'ගූගල් අධ්‍යාපන පීඨය', taLabel: 'கூகிள் மாணவர் தளம்', badgeText: 'In-App Hub', highlight: true },

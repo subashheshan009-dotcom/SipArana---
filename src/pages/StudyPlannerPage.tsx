@@ -1326,7 +1326,7 @@ export default function StudyPlannerPage() {
                 ? 'ඔබට විභාගයට ඉතිරි දින (Days), මාස (Months), හෝ වසර (Years) අනුව ඉලක්කගත කාලසටහනක් සකස් කරගත හැක. නිශ්චිත කාලයක් නොමැති නම් Skip කළ හැක.'
                 : language === 'ta'
                 ? 'நாட்கள், மாதங்கள் அல்லது வருடங்களின் அடிப்படையில் உங்கள் இலக்கை நிர்ணயிக்கலாம்.'
-                : 'Select or input your countdown timeframe (Days / Months / Years) for specialized pacing, or skip for a standard weekly routine.'}
+                : 'Select or input your study timeframe (Days / Months / Years) for specialized pacing, or skip for a standard weekly routine.'}
             </p>
           </div>
 

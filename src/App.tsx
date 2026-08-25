@@ -11,7 +11,6 @@ import AuthPage from '@/pages/AuthPage';
 import Dashboard from '@/pages/Dashboard';
 import StudyPlannerPage from '@/pages/StudyPlannerPage';
 import FlashcardsPage from '@/pages/FlashcardsPage';
-import ExamCountdownPage from '@/pages/ExamCountdownPage';
 import AudioSummariesPage from '@/pages/AudioSummariesPage';
 import UniversityPortal from '@/pages/UniversityPortal';
 import ClassroomPage from '@/pages/ClassroomPage';
@@ -68,8 +67,6 @@ function AppContent() {
         return <StudyPlannerPage />;
       case 'flashcards':
         return <FlashcardsPage />;
-      case 'countdown':
-        return <ExamCountdownPage />;
       case 'audio':
         return <AudioSummariesPage />;
       case 'fun_english':

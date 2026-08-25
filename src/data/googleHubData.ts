@@ -167,9 +167,9 @@ export const GOOGLE_TOOLS: GoogleToolDef[] = [
         desc: 'Organized stream of classroom announcements, PDF links, and past paper links.'
       },
       {
-        title: 'Exam Countdown & Due Date Alerts',
-        titleSinhala: 'නියමිත දින දැනුම්දීම් සහ දින ගණකය',
-        desc: 'Interactive urgency indicators so you never fall behind.'
+        title: 'Assignment & Due Date Alerts',
+        titleSinhala: 'නියමිත දින දැනුම්දීම් සහ මතක් කිරීම්',
+        desc: 'Interactive schedule reminders so you stay organized.'
       }
     ]
   },

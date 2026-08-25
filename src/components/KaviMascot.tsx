@@ -7,7 +7,7 @@ import confetti from 'canvas-confetti';
 export interface KaviMascotProps {
   mood?: 'smart' | 'celebrating' | 'thinking' | 'encouraging' | 'reading';
   customMessage?: string;
-  contextPage?: 'planner' | 'flashcards' | 'countdown' | 'audio' | 'general';
+  contextPage?: 'planner' | 'flashcards' | 'audio' | 'general';
   size?: 'sm' | 'md' | 'lg' | 'hero';
   showVoiceButton?: boolean;
   className?: string;
@@ -23,11 +23,6 @@ const CONTEXT_TIPS = {
     si: '🦉 කවි මෙහෙම කියනවා: Spaced Repetition (ස්ථානගත ආවර්ජනය) මගින් කෙටි කාලීන මතකය දීර්ඝ කාලීන මතකයට හරවනවා. අපහසු කාඩ්පත් දින 3ක් පුරා නැවත බලන්න!',
     ta: '🦉 கவி சொல்கிறது: Spaced Repetition முறை மூலம் குறுகிய கால நினைவாற்றலை நீண்ட கால நினைவாற்றலாக மாற்றலாம். கடினமான அட்டைகளை 3 நாட்கள் திருப்புங்கள்!',
     en: '🦉 Kavi says: Spaced repetition locks concepts into long-term memory! Flip 15 cards every morning before theory classes.'
-  },
-  countdown: {
-    si: '🦉 කවි මෙහෙම කියනවා: සෑම තත්පරයක්ම ඔබේ ඉලක්කයට ඔබව සමීප කරනවා. දිනපතා කුඩා ඉලක්ක 3ක් සම්පූර්ණ කරන්න!',
-    ta: '🦉 கவி சொல்கிறது: ஒவ்வொரு நொடியும் உங்கள் இலக்கை நெருங்க வைக்கிறது. தினமும் 3 சிறிய இலக்குகளை முடியுங்கள்!',
-    en: '🦉 Kavi says: Every ticking second brings you closer to Island Top Ranks. Conquer your 3 daily milestone goals today!'
   },
   audio: {
     si: '🦉 කවි මෙහෙම කියනවා: බස් රථයේ ගමන් කරන විට හෝ විවේක ගන්නා විට මෙම Audio Summaries වලට සවන් දෙන්න. නින්දට පෙර අසන සටහන් මතකයේ තදින් රැඳේ!',

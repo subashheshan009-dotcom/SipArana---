@@ -157,8 +157,6 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     ? `O/L ${profile?.targetYear || 2026} (9 A's)`
     : `Grade ${userGrade} Term Exam`;
 
-  const daysToExam = Math.max(1, Math.round((new Date(2026, 10, 15).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
-
   return (
     <div className="space-y-6">
       {/* 1. HORIZONTAL HERO BANNER */}
@@ -214,8 +212,8 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                 <span>Target: <strong>{examTargetLabel}</strong></span>
               </div>
               <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl backdrop-blur-xs">
-                <Clock className="w-4 h-4 text-amber-400" />
-                <span>Countdown: <strong>{daysToExam} Days</strong></span>
+                <Flame className="w-4 h-4 text-amber-400" />
+                <span>Streak: <strong>{profile?.streakDays || 1} Days Active</strong></span>
               </div>
             </div>
           </div>
@@ -310,7 +308,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       </section>
 
       {/* 3. HORIZONTAL QUICK-ACTION APP TOOLS BAR */}
-      <section className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <button
           onClick={() => onNavigate('planner')}
           className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600/15 via-white to-indigo-600/15 dark:from-blue-950/50 dark:via-slate-900 dark:to-indigo-950/50 border-2 border-blue-500/80 dark:border-blue-400/70 hover:border-blue-600 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
@@ -338,21 +336,6 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
               {language === 'si' ? 'ස්මාර්ට් ෆ්ලෑෂ්කාඩ්' : language === 'ta' ? 'ஃபிளாஷ்கார்டுகள்' : 'Smart Flashcards'}
             </h4>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Spaced Quick Recall</p>
-          </div>
-        </button>
-
-        <button
-          onClick={() => onNavigate('countdown')}
-          className="p-3.5 rounded-2xl bg-gradient-to-br from-rose-500/15 via-white to-orange-500/15 dark:from-rose-950/40 dark:via-slate-900 dark:to-orange-950/40 border-2 border-rose-400/70 dark:border-rose-500/60 hover:border-rose-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-rose-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
-            <Clock className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-black text-rose-700 dark:text-rose-300">
-              {language === 'si' ? 'විභාග ඔරලෝසුව' : language === 'ta' ? 'தேர்வு கடிகாரம்' : 'Exam Countdown'}
-            </h4>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Real-Time & Daily Goals</p>
           </div>
         </button>
 
