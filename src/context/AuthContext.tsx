@@ -1,7 +1,25 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { UserProfile, Stream, ExamLevel, Medium, SchoolGrade, StudentCategory } from '@/types';
+import type { UserProfile, Stream, ExamLevel, Medium, SchoolGrade, StudentCategory, GlobalCountryCode, AppLanguage } from '@/types';
+import { getCountryByCode, getCurriculumById } from '@/data/globalCurriculumData';
 
-export type DemoPresetKey = 'maths' | 'bio' | 'commerce' | 'ol' | 'junior' | 'arts' | 'tech' | 'uni_cse' | 'uni_med' | 'uni_fin';
+export type DemoPresetKey = 
+  | 'scholarship' 
+  | 'maths' 
+  | 'bio' 
+  | 'commerce' 
+  | 'ol' 
+  | 'junior' 
+  | 'arts' 
+  | 'tech' 
+  | 'uni_cse' 
+  | 'uni_med' 
+  | 'uni_fin'
+  | 'uk_alevel'
+  | 'us_ap'
+  | 'jp_koko'
+  | 'in_jee'
+  | 'au_atar'
+  | 'global_ib';
 
 export interface SimpleLoginParams {
   name: string;
@@ -12,6 +30,18 @@ export interface SimpleLoginParams {
   district?: string;
   school?: string;
   targetYear?: number;
+  isKidMode?: boolean;
+  
+  // Global Country & Multi-Curriculum Core
+  countryCode?: GlobalCountryCode;
+  countryName?: string;
+  countryFlag?: string;
+  curriculumId?: string;
+  curriculumName?: string;
+  gradingSystemId?: string;
+  gradingTarget?: string;
+  nativeLanguage?: AppLanguage;
+  
   university?: string;
   faculty?: string;
   degreeProgramme?: string;
@@ -32,6 +62,8 @@ interface AuthContextType {
     category?: StudentCategory;
     grade?: SchoolGrade;
     stream?: Stream;
+    countryCode?: GlobalCountryCode;
+    curriculumId?: string;
     university?: string;
     degreeProgramme?: string;
     district?: string;
@@ -42,6 +74,7 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (data: Partial<UserProfile>) => void;
   setGradeAndStream: (grade: SchoolGrade, stream?: Stream) => void;
+  setCountryAndCurriculum: (countryCode: GlobalCountryCode, curriculumId?: string) => void;
   setUniversityAndDegree: (university: string, faculty: string, degreeProgramme: string, degreeCode: string, academicYear?: number, academicSemester?: number) => void;
   toggleStudentCategory: (category?: StudentCategory) => void;
   addXP: (amount: number) => void;
@@ -50,6 +83,201 @@ interface AuthContextType {
 }
 
 const DEFAULT_USERS: Record<DemoPresetKey, UserProfile> = {
+  scholarship: {
+    id: 'usr_sch_1',
+    name: 'සෙනුරි පුංචි පැටියා (Senuri)',
+    email: 'senuri.k@siparana.lk',
+    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+    studentCategory: 'School',
+    grade: 5,
+    level: 'SCHOLARSHIP',
+    stream: 'Grade 5 Scholarship',
+    countryCode: 'LK',
+    countryName: 'Sri Lanka',
+    countryFlag: '🇱🇰',
+    curriculumId: 'LK_NIE',
+    curriculumName: 'Sri Lanka National NIE',
+    targetYear: 2026,
+    school: 'Royal Primary School, Colombo',
+    district: 'Colombo',
+    medium: 'Sinhala',
+    isPremium: true,
+    isKidMode: true,
+    xp: 1450,
+    streakDays: 8,
+    lastActiveDate: new Date().toISOString().split('T')[0],
+    completedLessonsCount: 22,
+    solvedDoubtsCount: 12,
+    bookmarkedPaperIds: ['sch_pp_sin_2025', 'sch_pp_mat_2025'],
+  },
+  uk_alevel: {
+    id: 'usr_uk_1',
+    name: 'Alexander Wright',
+    email: 'alex.wright@oxfordprep.uk',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    studentCategory: 'School',
+    grade: 13,
+    level: 'GLOBAL_SENIOR',
+    stream: 'A-Level STEM (Maths, Further Maths, Physics, Chemistry)',
+    countryCode: 'UK',
+    countryName: 'United Kingdom',
+    countryFlag: '🇬🇧',
+    curriculumId: 'UK_GCSE_AL',
+    curriculumName: 'UK National Curriculum (A-Levels)',
+    gradingSystemId: 'UK_9_TO_1',
+    gradingTarget: 'A* A* A* (UCAS 168 pts)',
+    targetYear: 2026,
+    school: 'Westminster School, London',
+    district: 'Greater London',
+    medium: 'English',
+    isPremium: true,
+    xp: 3450,
+    streakDays: 19,
+    lastActiveDate: new Date().toISOString().split('T')[0],
+    completedLessonsCount: 52,
+    solvedDoubtsCount: 24,
+    bookmarkedPaperIds: ['uk_al_maths_2025'],
+  },
+  us_ap: {
+    id: 'usr_us_1',
+    name: 'Emily Zhang',
+    email: 'emily.z@bayacademy.edu',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    studentCategory: 'School',
+    grade: 12,
+    level: 'GLOBAL_SENIOR',
+    stream: 'AP STEM Honours (Calculus BC, Physics C, Chemistry, CS)',
+    countryCode: 'US',
+    countryName: 'United States',
+    countryFlag: '🇺🇸',
+    curriculumId: 'US_COMMON_CORE_AP',
+    curriculumName: 'US K-12 Common Core & AP',
+    gradingSystemId: 'US_GPA_AP',
+    gradingTarget: '4.0 Unweighted GPA / AP 5',
+    targetYear: 2026,
+    school: 'Palo Alto High School, California',
+    district: 'Santa Clara County, CA',
+    medium: 'English',
+    isPremium: true,
+    xp: 4120,
+    streakDays: 22,
+    lastActiveDate: new Date().toISOString().split('T')[0],
+    completedLessonsCount: 61,
+    solvedDoubtsCount: 30,
+    bookmarkedPaperIds: ['us_ap_calc_2025'],
+  },
+  jp_koko: {
+    id: 'usr_jp_1',
+    name: 'Kenji Sato (佐藤 健司)',
+    email: 'kenji.sato@tokyoschool.jp',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    studentCategory: 'School',
+    grade: 12,
+    level: 'GLOBAL_SENIOR',
+    stream: 'Rikei (理系 Science, Math & Engineering)',
+    countryCode: 'JP',
+    countryName: 'Japan',
+    countryFlag: '🇯🇵',
+    curriculumId: 'JP_MEXT',
+    curriculumName: 'Japan MEXT (文部科学省)',
+    gradingSystemId: 'JP_HENSACHI',
+    gradingTarget: '偏差値 72 (東京大学 理科一類)',
+    targetYear: 2026,
+    school: 'Kaisei High School, Tokyo (開成高等学校)',
+    district: 'Tokyo (東京都)',
+    medium: 'Japanese',
+    isPremium: true,
+    xp: 3890,
+    streakDays: 25,
+    lastActiveDate: new Date().toISOString().split('T')[0],
+    completedLessonsCount: 58,
+    solvedDoubtsCount: 27,
+    bookmarkedPaperIds: ['jp_kyotsu_test_2025'],
+  },
+  in_jee: {
+    id: 'usr_in_1',
+    name: 'Aarav Sharma',
+    email: 'aarav.sharma@iitprep.in',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80',
+    studentCategory: 'School',
+    grade: 12,
+    level: 'GLOBAL_SENIOR',
+    stream: 'Science PCM + JEE Mains & Advanced (Engineering Track)',
+    countryCode: 'IN',
+    countryName: 'India',
+    countryFlag: '🇮🇳',
+    curriculumId: 'IN_CBSE_JEE',
+    curriculumName: 'CBSE & JEE / NEET Track',
+    gradingSystemId: 'IN_NTA_PERCENTILE',
+    gradingTarget: '99.95 Percentile (IIT Bombay CSE)',
+    targetYear: 2026,
+    school: 'Delhi Public School, R.K. Puram',
+    district: 'New Delhi',
+    medium: 'English',
+    isPremium: true,
+    xp: 4560,
+    streakDays: 31,
+    lastActiveDate: new Date().toISOString().split('T')[0],
+    completedLessonsCount: 75,
+    solvedDoubtsCount: 38,
+    bookmarkedPaperIds: ['in_jee_adv_2025'],
+  },
+  au_atar: {
+    id: 'usr_au_1',
+    name: 'Liam O\'Connor',
+    email: 'liam.oc@melbournegym.edu.au',
+    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
+    studentCategory: 'School',
+    grade: 12,
+    level: 'GLOBAL_SENIOR',
+    stream: 'Specialist Maths & Physics (ATAR 95+ STEM Track)',
+    countryCode: 'AU',
+    countryName: 'Australia',
+    countryFlag: '🇦🇺',
+    curriculumId: 'AU_ATAR',
+    curriculumName: 'Australian Curriculum & ATAR',
+    gradingSystemId: 'AU_ATAR_SCALE',
+    gradingTarget: 'ATAR 99.85 (Melbourne Uni Chancellor Scholar)',
+    targetYear: 2026,
+    school: 'Melbourne High School, Victoria',
+    district: 'Victoria',
+    medium: 'English',
+    isPremium: true,
+    xp: 3200,
+    streakDays: 15,
+    lastActiveDate: new Date().toISOString().split('T')[0],
+    completedLessonsCount: 45,
+    solvedDoubtsCount: 17,
+    bookmarkedPaperIds: ['au_vce_spec_2025'],
+  },
+  global_ib: {
+    id: 'usr_ib_1',
+    name: 'Sofia Rossi',
+    email: 'sofia.rossi@geneva-academy.ch',
+    avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80',
+    studentCategory: 'School',
+    grade: 12,
+    level: 'GLOBAL_SENIOR',
+    stream: 'IB DP Higher Level (HL) Mathematics AA, Physics & Chemistry',
+    countryCode: 'GLOBAL',
+    countryName: 'International (IB / Cambridge)',
+    countryFlag: '🌍',
+    curriculumId: 'GLOBAL_IB_CAMBRIDGE',
+    curriculumName: 'International Baccalaureate (IB DP)',
+    gradingSystemId: 'GLOBAL_IB_SCALE',
+    gradingTarget: '44 / 45 Points (HL 7 7 7 + TOK/EE A)',
+    targetYear: 2026,
+    school: 'International School of Geneva',
+    district: 'Geneva / Global',
+    medium: 'English',
+    isPremium: true,
+    xp: 4280,
+    streakDays: 24,
+    lastActiveDate: new Date().toISOString().split('T')[0],
+    completedLessonsCount: 66,
+    solvedDoubtsCount: 29,
+    bookmarkedPaperIds: ['ib_math_aa_2025'],
+  },
   maths: {
     id: 'usr_maths_1',
     name: 'Kasun Perera',
@@ -379,42 +607,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
     } else {
       const selectedGrade = params.grade || 12;
+      const targetCountryCode = params.countryCode || 'LK';
+      const targetCountry = getCountryByCode(targetCountryCode);
+      const targetCurriculum = params.curriculumId ? getCurriculumById(params.curriculumId) : targetCountry.curricula[0];
+      
       let calculatedLevel: ExamLevel = 'AL';
-      let calculatedStream: Stream = params.stream || 'Physical Science (Maths)';
+      let calculatedStream: Stream = params.stream || (targetCountry.code === 'LK' ? 'Physical Science (Maths)' : targetCurriculum.subjects[0]?.stream || 'General Academic');
 
-      if (selectedGrade <= 9) {
-        calculatedLevel = 'JUNIOR';
-        calculatedStream = 'Junior Secondary (Grade 6-9)';
-      } else if (selectedGrade <= 11) {
-        calculatedLevel = 'OL';
-        calculatedStream = 'General O/L';
-      } else {
-        calculatedLevel = 'AL';
-        if (calculatedStream === 'General O/L' || calculatedStream === 'Junior Secondary (Grade 6-9)') {
-          calculatedStream = 'Physical Science (Maths)';
+      if (targetCountryCode === 'LK') {
+        if (selectedGrade === 5) {
+          calculatedLevel = 'SCHOLARSHIP';
+          calculatedStream = 'Grade 5 Scholarship';
+        } else if (selectedGrade <= 9) {
+          calculatedLevel = 'JUNIOR';
+          calculatedStream = 'Junior Secondary (Grade 6-9)';
+        } else if (selectedGrade <= 11) {
+          calculatedLevel = 'OL';
+          calculatedStream = 'General O/L';
+        } else {
+          calculatedLevel = 'AL';
+          if (calculatedStream === 'General O/L' || calculatedStream === 'Junior Secondary (Grade 6-9)' || calculatedStream === 'Grade 5 Scholarship') {
+            calculatedStream = 'Physical Science (Maths)';
+          }
         }
+      } else {
+        calculatedLevel = selectedGrade >= 11 ? 'GLOBAL_SENIOR' : 'GLOBAL_SECONDARY';
       }
 
       userProfile = {
         id: `usr_sch_${Date.now()}`,
         name: trimmedName,
         email: `${trimmedName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'student'}@siparana.lk`,
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        avatar: selectedGrade === 5 
+          ? 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80'
+          : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
         studentCategory: 'School',
         grade: selectedGrade,
         level: calculatedLevel,
         stream: calculatedStream,
-        targetYear: params.targetYear || (selectedGrade === 11 ? 2026 : selectedGrade === 13 ? 2026 : 2027),
-        school: params.school || 'Sri Lanka National School',
-        district: params.district || 'Colombo',
-        medium: params.medium || 'Sinhala',
+        countryCode: targetCountry.code,
+        countryName: targetCountry.name,
+        countryFlag: targetCountry.flag,
+        curriculumId: targetCurriculum.id,
+        curriculumName: targetCurriculum.titleEnglish,
+        gradingSystemId: targetCurriculum.gradingSystem.id,
+        gradingTarget: params.gradingTarget || (targetCountry.code === 'LK' ? 'Z-Score 2.10 (Top 100)' : targetCountry.code === 'JP' ? '偏差値 70' : 'A* / Grade 9'),
+        nativeLanguage: params.nativeLanguage || targetCountry.defaultLanguage,
+        targetYear: params.targetYear || (selectedGrade === 5 ? 2026 : selectedGrade === 11 ? 2026 : selectedGrade === 13 ? 2026 : 2027),
+        school: params.school || (targetCountry.code === 'LK' ? (selectedGrade === 5 ? 'Royal Primary School, Colombo' : 'Sri Lanka National School') : `${targetCountry.name} International Academy`),
+        district: params.district || (targetCountry.code === 'LK' ? 'Colombo' : targetCountry.name),
+        medium: params.medium || (targetCountry.code === 'LK' ? 'Sinhala' : targetCountry.code === 'JP' ? 'Japanese' : 'English'),
         isPremium: true,
-        xp: 1200,
-        streakDays: 3,
+        isKidMode: selectedGrade === 5 || params.isKidMode,
+        xp: selectedGrade === 5 ? 1450 : 1200,
+        streakDays: selectedGrade === 5 ? 8 : 3,
         lastActiveDate: new Date().toISOString().split('T')[0],
-        completedLessonsCount: 8,
-        solvedDoubtsCount: 4,
-        bookmarkedPaperIds: []
+        completedLessonsCount: selectedGrade === 5 ? 22 : 8,
+        solvedDoubtsCount: selectedGrade === 5 ? 12 : 4,
+        bookmarkedPaperIds: selectedGrade === 5 ? ['sch_pp_sin_2025', 'sch_pp_mat_2025'] : []
       };
     }
 
@@ -649,7 +899,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let levelVal: ExamLevel = 'AL';
     let streamVal: Stream = data.stream || 'Physical Science (Maths)';
 
-    if (gradeVal <= 9) {
+    if (gradeVal === 5) {
+      levelVal = 'SCHOLARSHIP';
+      streamVal = 'Grade 5 Scholarship';
+    } else if (gradeVal <= 9) {
       levelVal = 'JUNIOR';
       streamVal = 'Junior Secondary (Grade 6-9)';
     } else if (gradeVal <= 11) {
@@ -661,22 +914,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const newUser: UserProfile = {
       id: `usr_${Date.now()}`,
-      name: profileFields.name || 'New Student',
+      name: profileFields.name || (gradeVal === 5 ? 'පුංචි ශිෂ්‍යත්ව යාළුවා' : 'New Student'),
       email: profileFields.email || 'student@siparana.lk',
       avatar:
         profileFields.avatar ||
-        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        (gradeVal === 5 
+          ? 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80'
+          : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'),
       grade: gradeVal,
       level: profileFields.level || levelVal,
       stream: streamVal,
       targetYear:
         profileFields.targetYear ||
-        (gradeVal === 11 ? 2026 : gradeVal === 13 ? 2026 : 2027),
-      school: profileFields.school || 'National School',
+        (gradeVal === 5 ? 2026 : gradeVal === 11 ? 2026 : gradeVal === 13 ? 2026 : 2027),
+      school: profileFields.school || (gradeVal === 5 ? 'Royal Primary School, Colombo' : 'National School'),
       district: profileFields.district || 'Colombo',
       medium: profileFields.medium || 'Sinhala',
       isPremium: false,
-      xp: 250,
+      isKidMode: gradeVal === 5 || profileFields.isKidMode,
+      xp: gradeVal === 5 ? 1000 : 250,
       streakDays: 1,
       lastActiveDate: new Date().toISOString().split('T')[0],
       completedLessonsCount: 0,
@@ -704,7 +960,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let level: ExamLevel = 'AL';
     let stream: Stream = customStream || profile.stream;
 
-    if (newGrade <= 9) {
+    if (newGrade === 5) {
+      level = 'SCHOLARSHIP';
+      stream = 'Grade 5 Scholarship';
+    } else if (newGrade <= 9) {
       level = 'JUNIOR';
       stream = 'Junior Secondary (Grade 6-9)';
     } else if (newGrade <= 11) {
@@ -712,7 +971,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       stream = 'General O/L';
     } else {
       level = 'AL';
-      if (stream === 'General O/L' || stream === 'Junior Secondary (Grade 6-9)') {
+      if (stream === 'General O/L' || stream === 'Junior Secondary (Grade 6-9)' || stream === 'Grade 5 Scholarship') {
         stream = 'Physical Science (Maths)';
       }
     }
@@ -722,6 +981,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       grade: newGrade,
       level,
       stream,
+      isKidMode: newGrade === 5,
+    };
+    persistUser(updated);
+  };
+
+  const setCountryAndCurriculum = (countryCode: GlobalCountryCode, curriculumId?: string) => {
+    if (!profile) return;
+    const country = getCountryByCode(countryCode);
+    const curriculum = curriculumId ? getCurriculumById(curriculumId) : country.curricula[0];
+    const defaultStream = countryCode === 'LK' ? 'Physical Science (Maths)' : curriculum.subjects[0]?.stream || 'General Academic';
+    
+    const updated: UserProfile = {
+      ...profile,
+      countryCode: country.code,
+      countryName: country.name,
+      countryFlag: country.flag,
+      curriculumId: curriculum.id,
+      curriculumName: curriculum.titleEnglish,
+      gradingSystemId: curriculum.gradingSystem.id,
+      gradingTarget: countryCode === 'LK' ? 'Z-Score 2.10 (Top 100)' : countryCode === 'JP' ? '偏差値 70' : 'A* / Grade 9',
+      nativeLanguage: country.defaultLanguage,
+      stream: profile.stream && countryCode === 'LK' ? profile.stream : defaultStream,
+      medium: countryCode === 'LK' ? (profile.medium || 'Sinhala') : countryCode === 'JP' ? 'Japanese' : 'English',
+      school: countryCode === 'LK' ? profile.school : `${country.name} High School`,
+      district: countryCode === 'LK' ? profile.district : country.name
     };
     persistUser(updated);
   };
@@ -847,6 +1131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         updateProfile,
         setGradeAndStream,
+        setCountryAndCurriculum,
         setUniversityAndDegree,
         toggleStudentCategory,
         addXP,

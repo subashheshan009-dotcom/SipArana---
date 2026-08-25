@@ -1,6 +1,8 @@
-export type ExamLevel = 'SCHOLARSHIP' | 'AL' | 'OL' | 'JUNIOR' | 'CAMPUS';
+export type ExamLevel = 'SCHOLARSHIP' | 'AL' | 'OL' | 'JUNIOR' | 'CAMPUS' | 'GLOBAL_SECONDARY' | 'GLOBAL_SENIOR';
 export type StudentCategory = 'School' | 'University';
-export type AppLanguage = 'si' | 'ta' | 'en';
+export type AppLanguage = 'si' | 'ta' | 'en' | 'ja' | 'es' | 'de' | 'fr' | 'hi';
+
+export type GlobalCountryCode = 'LK' | 'UK' | 'US' | 'AU' | 'JP' | 'IN' | 'CA' | 'SG' | 'DE' | 'GLOBAL';
 
 export type Stream = 
   | 'Grade 5 Scholarship'
@@ -11,10 +13,12 @@ export type Stream =
   | 'Arts' 
   | 'General O/L' 
   | 'Junior Secondary (Grade 6-9)'
-  | 'Higher Education';
-export type Medium = 'Sinhala' | 'English' | 'Tamil';
+  | 'Higher Education'
+  | string; // Support global streams (AP, GCSE, JEE, EJU, IB, etc.)
 
-export type SchoolGrade = 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
+export type Medium = 'Sinhala' | 'English' | 'Tamil' | 'Japanese' | 'Spanish' | 'German' | 'French' | 'Hindi' | string;
+
+export type SchoolGrade = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
 
 export interface UserProfile {
   id: string;
@@ -40,6 +44,16 @@ export interface UserProfile {
   authProvider?: 'google' | 'email' | 'demo';
   isKidMode?: boolean;
   kidAvatar?: string;
+  
+  // Global Country & Multi-Curriculum Core Attributes
+  countryCode?: GlobalCountryCode;
+  countryName?: string;
+  countryFlag?: string;
+  curriculumId?: string;
+  curriculumName?: string;
+  gradingSystemId?: string;
+  gradingTarget?: string;
+  nativeLanguage?: AppLanguage;
   
   // University Student Specific Attributes
   university?: string;

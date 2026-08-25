@@ -62,13 +62,33 @@ export default function SubjectsPage() {
   const { profile, toggleBookmarkPaper, addXP } = useAuth();
   const { language } = useLanguage();
 
+  const isGrade5 =
+    profile?.grade === 5 ||
+    profile?.level === 'SCHOLARSHIP' ||
+    profile?.stream === 'Grade 5 Scholarship' ||
+    !!profile?.isKidMode;
+
+  const scholarshipCategory = QUIZ_CATEGORIES.find((c) => c.id === 'scholarship') || QUIZ_CATEGORIES[0];
+  const scholarshipStream = QUIZ_STREAMS.find((s) => s.id === 'stream_scholarship_core') || QUIZ_STREAMS[0];
+
   // Wizard state
-  const [currentStep, setCurrentStep] = useState<WizardStep>('category');
-  const [selectedCategory, setSelectedCategory] = useState<QuizCategory | null>(null);
-  const [selectedStream, setSelectedStream] = useState<QuizStream | null>(null);
+  const [currentStep, setCurrentStep] = useState<WizardStep>(isGrade5 ? 'subject' : 'category');
+  const [selectedCategory, setSelectedCategory] = useState<QuizCategory | null>(isGrade5 ? scholarshipCategory : null);
+  const [selectedStream, setSelectedStream] = useState<QuizStream | null>(isGrade5 ? scholarshipStream : null);
   const [activeSubject, setActiveSubject] = useState<Subject | null>(null);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [activeTab, setActiveTab] = useState<'syllabus' | 'papers'>('syllabus');
+
+  // Ensure Grade 5 isolation state sync
+  React.useEffect(() => {
+    if (isGrade5) {
+      setSelectedCategory(scholarshipCategory);
+      setSelectedStream(scholarshipStream);
+      if (currentStep === 'category' || currentStep === 'stream') {
+        setCurrentStep('subject');
+      }
+    }
+  }, [isGrade5]);
 
   // Search filter inside subject list
   const [searchQuery, setSearchQuery] = useState('');
@@ -152,6 +172,9 @@ export default function SubjectsPage() {
   // Helper: Get subjects for selected stream & category
   const getSubjectsForStream = (streamId: string, categoryId: string): Subject[] => {
     return SUBJECTS_DATA.filter((sub) => {
+      if (categoryId === 'scholarship') {
+        return ['sub_sch_sinhala', 'sub_sch_maths', 'sub_sch_env', 'sub_sch_iq'].includes(sub.id);
+      }
       if (categoryId === 'al') {
         if (streamId === 'stream_al_maths') {
           return ['sub_maths', 'sub_physics', 'sub_chemistry', 'sub_ict'].includes(sub.id);
@@ -255,6 +278,10 @@ export default function SubjectsPage() {
       setActiveSubject(null);
       setActiveLesson(null);
     } else if (currentStep === 'subject') {
+      if (isGrade5) {
+        // Keep in scholarship subjects
+        return;
+      }
       const matchingStreams = selectedCategory
         ? QUIZ_STREAMS.filter((s) => s.categoryId === selectedCategory.id)
         : [];
@@ -267,12 +294,25 @@ export default function SubjectsPage() {
         setSelectedStream(null);
       }
     } else if (currentStep === 'stream') {
+      if (isGrade5) {
+        setCurrentStep('subject');
+        return;
+      }
       setCurrentStep('category');
       setSelectedCategory(null);
     }
   };
 
   const handleResetFlow = () => {
+    if (isGrade5) {
+      setSelectedCategory(scholarshipCategory);
+      setSelectedStream(scholarshipStream);
+      setCurrentStep('subject');
+      setActiveSubject(null);
+      setActiveLesson(null);
+      setSearchQuery('');
+      return;
+    }
     setCurrentStep('category');
     setSelectedCategory(null);
     setSelectedStream(null);
@@ -281,60 +321,86 @@ export default function SubjectsPage() {
     setSearchQuery('');
   };
 
+  const displayCategories = isGrade5
+    ? QUIZ_CATEGORIES.filter((c) => c.id === 'scholarship')
+    : QUIZ_CATEGORIES.filter((c) => c.id !== 'scholarship');
+
   // Count total past papers in active subject
   const activeSubjectPastPapersCount = activeSubject ? activeSubject.pastPapers.length : 0;
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
       {/* 1. Header Hero Banner */}
-      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div
+        className={`rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden ${
+          isGrade5
+            ? 'bg-gradient-to-r from-amber-600 via-orange-600 to-yellow-600 border border-amber-400/50'
+            : 'bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900'
+        }`}
+      >
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 space-y-4 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-xs font-extrabold backdrop-blur-sm">
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>National Curriculum & Guru Potha Aligned • Grades 6 - 13 & Campus</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-extrabold backdrop-blur-sm">
+            {isGrade5 ? <Sparkles className="w-3.5 h-3.5 text-amber-200" /> : <BookOpen className="w-3.5 h-3.5 text-amber-300" />}
+            <span>
+              {isGrade5
+                ? 'ශ්‍රී ලංකා ජාතික අධ්‍යාපන ආයතනය (NIE) • 5 ශ්‍රේණිය ගුරු පොත සහ විෂය නිර්දේශය'
+                : 'National Curriculum & Guru Potha Aligned • Grades 6 - 13 & Campus'}
+            </span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
-            විෂය නිර්දේශය සහ පසුගිය විභාග ප්‍රශ්න පත්‍ර
+            {isGrade5
+              ? (language === 'si' ? '5 වසර ශිෂ්‍යත්ව විෂයයන් සහ ගුරු පොත්' : 'Grade 5 Scholarship Subjects & Guru Potha')
+              : (language === 'si' ? 'විෂය නිර්දේශය සහ පසුගිය විභාග ප්‍රශ්න පත්‍ර' : 'Curriculum & Past Papers')}
           </h1>
-          <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-            ඔබේ අධ්‍යාපන මට්ටම හා විෂය ධාරාව අනුව පහසුවෙන් ඒකක පාඩම්, සූත්‍ර සටහන්, ස්වයං ඇගයීම් සහ Marking Schemes සහිත විභාග ප්‍රශ්න පත්‍ර පරිශීලනය කරන්න.
+          <p className="text-sm sm:text-base text-slate-100 dark:text-slate-200 leading-relaxed">
+            {isGrade5
+              ? 'සිංහල භාෂාව, ප්‍රාථමික ගණිතය, පරිසරය ආශ්‍රිත ක්‍රියාකාරකම් සහ බුද්ධි පරීක්ෂණ (IQ) විෂයන් සඳහා ඒකක පාඩම්, විනෝද අභ්‍යාස සහ ආදර්ශ ප්‍රශ්න පත්‍ර.'
+              : 'ඔබේ අධ්‍යාපන මට්ටම හා විෂය ධාරාව අනුව පහසුවෙන් ඒකක පාඩම්, සූත්‍ර සටහන්, ස්වයං ඇගයීම් සහ Marking Schemes සහිත විභාග ප්‍රශ්න පත්‍ර පරිශීලනය කරන්න.'}
           </p>
 
           {/* Breadcrumb Steps indicator */}
-          <div className="flex flex-wrap items-center gap-2 pt-2 text-xs font-bold text-slate-300">
-            <button
-              onClick={() => handleResetFlow()}
-              className={`px-3 py-1 rounded-lg transition ${
-                currentStep === 'category'
-                  ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                  : 'bg-white/10 hover:bg-white/20'
-              }`}
-            >
-              1. අධ්‍යාපන මට්ටම (Category)
-            </button>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+          <div className="flex flex-wrap items-center gap-2 pt-2 text-xs font-bold text-slate-100">
+            {!isGrade5 ? (
+              <>
+                <button
+                  onClick={() => handleResetFlow()}
+                  className={`px-3 py-1 rounded-lg transition ${
+                    currentStep === 'category'
+                      ? 'bg-amber-400 text-slate-950 font-black shadow-md'
+                      : 'bg-white/10 hover:bg-white/20'
+                  }`}
+                >
+                  1. අධ්‍යාපන මට්ටම (Category)
+                </button>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
 
-            <button
-              disabled={!selectedCategory}
-              onClick={() => {
-                if (selectedCategory) {
-                  setCurrentStep('stream');
-                  setActiveSubject(null);
-                }
-              }}
-              className={`px-3 py-1 rounded-lg transition disabled:opacity-40 ${
-                currentStep === 'stream'
-                  ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                  : 'bg-white/10 hover:bg-white/20'
-              }`}
-            >
-              2. විෂය ධාරාව (Stream)
-              {selectedStream && ` (${selectedStream.nameSinhala.split(' ')[0]})`}
-            </button>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                <button
+                  disabled={!selectedCategory}
+                  onClick={() => {
+                    if (selectedCategory) {
+                      setCurrentStep('stream');
+                      setActiveSubject(null);
+                    }
+                  }}
+                  className={`px-3 py-1 rounded-lg transition disabled:opacity-40 ${
+                    currentStep === 'stream'
+                      ? 'bg-amber-400 text-slate-950 font-black shadow-md'
+                      : 'bg-white/10 hover:bg-white/20'
+                  }`}
+                >
+                  2. විෂය ධාරාව (Stream)
+                  {selectedStream && ` (${selectedStream.nameSinhala.split(' ')[0]})`}
+                </button>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              </>
+            ) : (
+              <span className="px-3 py-1 rounded-lg bg-white/20 text-white font-extrabold flex items-center gap-1">
+                <span>🦉 5 වසර ශිෂ්‍යත්වය (Guru Potha)</span>
+              </span>
+            )}
 
             <button
               disabled={!selectedStream}
@@ -346,18 +412,18 @@ export default function SubjectsPage() {
               }}
               className={`px-3 py-1 rounded-lg transition disabled:opacity-40 ${
                 currentStep === 'subject'
-                  ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                  : 'bg-white/10 hover:bg-white/20'
+                  ? 'bg-white text-amber-900 font-black shadow-md'
+                  : 'bg-white/20 hover:bg-white/30 text-white'
               }`}
             >
-              3. විෂයය (Subject)
+              {isGrade5 ? 'ප්‍රධාන විෂයයන් (Subjects)' : '3. විෂයය (Subject)'}
             </button>
 
             {currentStep === 'details' && activeSubject && (
               <>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
                 <span className="px-3 py-1 rounded-lg bg-emerald-500 text-white font-black shadow-md">
-                  4. {activeSubject.titleSinhala.split(' ')[0]} (පාඩම් & ප්‍රශ්න පත්‍ර)
+                  {isGrade5 ? `📖 ${activeSubject.titleSinhala}` : `4. ${activeSubject.titleSinhala.split(' ')[0]} (පාඩම් & ප්‍රශ්න පත්‍ර)`}
                 </span>
               </>
             )}
@@ -421,7 +487,7 @@ export default function SubjectsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {QUIZ_CATEGORIES.map((category) => {
+              {displayCategories.map((category) => {
                 return (
                   <motion.div
                     key={category.id}

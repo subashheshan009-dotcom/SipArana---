@@ -8,9 +8,9 @@ export interface SyllabusItem {
   subjectSinhala: string;
   subjectId: string;
   streamId: string;
-  categoryId: 'al' | 'ol' | 'junior' | 'uni';
+  categoryId: 'scholarship' | 'al' | 'ol' | 'junior' | 'uni';
   grade: number | string;
-  level: 'AL' | 'OL' | 'JUNIOR' | 'CAMPUS';
+  level: 'SCHOLARSHIP' | 'AL' | 'OL' | 'JUNIOR' | 'CAMPUS';
   stream: string;
   yearPublished: number;
   fileType: 'NIE Syllabus' | 'Guru Potha (Teacher Guide)' | 'Resource Book' | 'Summary Notes' | 'Past Paper PDF';
@@ -32,6 +32,243 @@ export interface SyllabusItem {
 }
 
 export const SYLLABUS_CATALOG_DATA: SyllabusItem[] = [
+  // ==========================================
+  // 0. GRADE 5 SCHOLARSHIP (5 වසර ශිෂ්‍යත්වය)
+  // ==========================================
+  {
+    id: 'syl_sch_sinhala_gurupotha',
+    title: 'Grade 5 Sinhala Language Official NIE Teacher Guide (Guru Potha)',
+    titleSinhala: '5 ශ්‍රේණිය සිංහල භාෂාව ජාතික අධ්‍යාපන ආයතන ගුරු මාර්ගෝපදේශය (ගුරු පොත)',
+    titleTamil: 'தரம் 5 சிங்கள மொழி ஆசிரியர் வழிகாட்டி',
+    subjectCode: 'SCH-SIN-01GP',
+    subjectName: 'Sinhala Language & Reading',
+    subjectSinhala: 'සිංහල භාෂාව හා සාහිත්‍යය',
+    subjectId: 'sub_sch_sinhala',
+    streamId: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    grade: 5,
+    level: 'SCHOLARSHIP',
+    stream: 'Grade 5 Scholarship',
+    yearPublished: 2024,
+    fileType: 'Guru Potha (Teacher Guide)',
+    fileSize: '5.2 MB',
+    pageCount: 168,
+    downloadCount: 52400,
+    color: 'from-amber-500 to-rose-600',
+    competencyCount: 14,
+    summary: 'Official NIE Teacher Instructional Manual for Primary Grade 5 Sinhala containing grammar rules, essay writing formats, and reading comprehension exercises.',
+    summarySinhala: 'ජාතික අධ්‍යාපන ආයතනයේ නිල 5 ශ්‍රේණි සිංහල ගුරු අත්පොත. ව්‍යාකරණ, නිවැරදි අක්ෂර වින්‍යාසය, සමාන පද, විරුද්ධ පද, යුගල පද සහ වාක්‍ය රටා.',
+    competencies: [
+      { competencyNo: '1.0', description: 'Correct Spelling & Grammar Rules (න/ණ, ල/ළ භේදය)', descriptionSinhala: 'නිවැරදි අක්ෂර වින්‍යාසය සහ න/ණ, ල/ළ භේදය', periods: 25 },
+      { competencyNo: '2.0', description: 'Synonyms, Antonyms, Compound Words & Idioms', descriptionSinhala: 'සමාන පද, විරුද්ධ පද, යුගල පද සහ ප්‍රස්ථාව පිරුළු', periods: 30 },
+      { competencyNo: '3.0', description: 'Paragraph Comprehension & Model Essay Writing', descriptionSinhala: 'ඡේද කියවා ප්‍රශ්න වලට පිළිතුරු ලිවීම සහ කෙටි රචනා', periods: 35 }
+    ],
+    keyFormulasAndConcepts: [
+      'න/ණ සහ ල/ළ භාවිත නීති රීති',
+      'උක්ත-ආඛ්‍යාත පද සම්බන්ධය',
+      'ශිෂ්‍යත්ව ප්‍රශ්න පත්‍රයේ නිතර අසන ප්‍රස්ථාව පිරුළු 50'
+    ]
+  },
+  {
+    id: 'syl_sch_sinhala_shortnotes',
+    title: 'Grade 5 Sinhala High-Yield Revision Vocabulary & Grammar Notes',
+    titleSinhala: '5 වසර සිංහල සම්පූර්ණ ව්‍යාකරණ නීති, සමාන පද සහ යුගල පද කෙටි සටහන් පොත',
+    titleTamil: 'தரம் 5 சிங்கள இலக்கணம் மற்றும் சொல்வளம் சுருக்கக் குறிப்புகள்',
+    subjectCode: 'SCH-SIN-SN',
+    subjectName: 'Sinhala Language & Reading',
+    subjectSinhala: 'සිංහල භාෂාව හා සාහිත්‍යය',
+    subjectId: 'sub_sch_sinhala',
+    streamId: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    grade: 5,
+    level: 'SCHOLARSHIP',
+    stream: 'Grade 5 Scholarship',
+    yearPublished: 2024,
+    fileType: 'Summary Notes',
+    fileSize: '3.1 MB',
+    pageCount: 64,
+    downloadCount: 48900,
+    color: 'from-rose-500 to-amber-600',
+    competencyCount: 12,
+    summary: 'Complete quick-revision booklet containing all key Sinhala idioms, collective nouns, animal sounds, and spellings for Grade 5.',
+    summarySinhala: 'විභාගයට පෙර කඩිනමින් පාඩම් කරගත හැකි සමාන පද 200ක්, විරුද්ධ පද, සතුන්ගේ හඬවල්, පැටවුන්ගේ නම් සහ සන්ධි කෙටි සටහන්.',
+    competencies: [
+      { competencyNo: 'SN-1', description: '200 Essential Synonyms and Antonyms Directory', descriptionSinhala: 'අත්‍යවශ්‍ය සමාන පද සහ විරුද්ධ පද නාමාවලිය', periods: 15 },
+      { competencyNo: 'SN-2', description: 'Collective Nouns and Animal Sounds Guide', descriptionSinhala: 'සමූහ වාචී නාම සහ සත්ත්ව හඬවල්', periods: 15 }
+    ],
+    keyFormulasAndConcepts: [
+      'ඇත් රංචුව, මුව රැළ, ගව පට්ටිය, කුරුලු රෑන',
+      'ඇතුන් කුංචනාද කරයි, සිංහයන් ගොරවයි, බල්ලන් බුරයි'
+    ]
+  },
+  {
+    id: 'syl_sch_maths_gurupotha',
+    title: 'Grade 5 Primary Mathematics Official NIE Teacher Guide (Guru Potha)',
+    titleSinhala: '5 ශ්‍රේණිය ප්‍රාථමික ගණිතය ජාතික අධ්‍යාපන ආයතන නිල ගුරු පොත',
+    titleTamil: 'தரம் 5 கணிதம் ஆசிரியர் வழிகாட்டி',
+    subjectCode: 'SCH-MAT-02GP',
+    subjectName: 'Primary Mathematics & Word Problems',
+    subjectSinhala: 'ගණිතය හා ප්‍රශ්න විසඳීම',
+    subjectId: 'sub_sch_maths',
+    streamId: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    grade: 5,
+    level: 'SCHOLARSHIP',
+    stream: 'Grade 5 Scholarship',
+    yearPublished: 2024,
+    fileType: 'Guru Potha (Teacher Guide)',
+    fileSize: '5.8 MB',
+    pageCount: 180,
+    downloadCount: 56100,
+    color: 'from-blue-600 to-indigo-700',
+    competencyCount: 15,
+    summary: 'Official NIE Teacher Instructional Manual covering place values, rapid multiplication/division methods, fractions, perimeter, time & calendar word problems.',
+    summarySinhala: 'ස්ථානීය අගය, ඉක්මන් ගුණ කිරීම් සහ බෙදීම් ක්‍රම, භාග, පරිමිතිය, වර්ගඵලය, කාලය, බර, මිල ගණන් සහ ප්‍රායෝගික ගැටළු විසඳීමේ ගුරු අත්පොත.',
+    competencies: [
+      { competencyNo: '1.0', description: 'Number Concept, Place Value & Rapid Calculation Tricks', descriptionSinhala: 'සංඛ්‍යා සංකල්පය, ස්ථානීය අගය සහ ඉක්මන් ගණනය ක්‍රම', periods: 30 },
+      { competencyNo: '2.0', description: 'Fractions, Decimals, Measurements (Length, Mass, Volume)', descriptionSinhala: 'භාග, දශම සහ මිණුම් (දිග, ස්කන්ධය, පරිමාව)', periods: 35 },
+      { competencyNo: '3.0', description: 'Time, Clocks, Calendar & Practical Word Problems', descriptionSinhala: 'කාලය, ඔරලෝසුව, දින දර්ශනය සහ ප්‍රායෝගික ගැටළු', periods: 30 }
+    ],
+    keyFormulasAndConcepts: [
+      'පරිමිතිය = වටේ ඇති සියලු පැතිවල එකතුව',
+      'සෘජුකෝණාස්‍රයක වර්ගඵලය = දිග × පළල',
+      '1 km = 1000 m, 1 kg = 1000 g, 1 L = 1000 mL'
+    ]
+  },
+  {
+    id: 'syl_sch_maths_shortnotes',
+    title: 'Grade 5 Mathematics Speed Formula Book & Short Tricks (කෙටි ක්‍රම)',
+    titleSinhala: '5 වසර ගණිතය ඉක්මන් කෙටි ක්‍රම, සූත්‍ර සහ ආදර්ශ ගැටළු විසඳුම් පොත',
+    titleTamil: 'தரம் 5 கணித சுருக்க வழிகள் மற்றும் சூத்திரங்கள்',
+    subjectCode: 'SCH-MAT-SN',
+    subjectName: 'Primary Mathematics & Word Problems',
+    subjectSinhala: 'ගණිතය හා ප්‍රශ්න විසඳීම',
+    subjectId: 'sub_sch_maths',
+    streamId: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    grade: 5,
+    level: 'SCHOLARSHIP',
+    stream: 'Grade 5 Scholarship',
+    yearPublished: 2024,
+    fileType: 'Summary Notes',
+    fileSize: '3.4 MB',
+    pageCount: 56,
+    downloadCount: 51200,
+    color: 'from-cyan-500 to-blue-700',
+    competencyCount: 12,
+    summary: 'Illustrated step-by-step shortcuts for Grade 5 Scholarship mathematics problems (fence posts, trees, handshakes, work & days).',
+    summarySinhala: 'කණු සහ පරතර ගැටළු, අතට අත දීම්, වැඩ සහ දින, ඔරලෝසු කටු සහ සංඛ්‍යා රටා තත්පර 10න් විසඳන කෙටි ක්‍රම සටහන.',
+    competencies: [
+      { competencyNo: 'SN-1', description: 'Fence Post and Interval Problems Shortcuts', descriptionSinhala: 'කණු සහ පරතර ගැටළු කෙටි ක්‍රම', periods: 15 },
+      { competencyNo: 'SN-2', description: 'Handshake and Round-Table Patterns', descriptionSinhala: 'අතට අත දීම් සහ වටමේස රටා සූත්‍ර', periods: 15 }
+    ],
+    keyFormulasAndConcepts: [
+      'කණු ගණන = පරතර ගණන + 1 (විවෘත මාර්ගයකදී)',
+      'අතට අත දීම් ගණන = n × (n - 1) ÷ 2',
+      'වෘත්තයක කණු ගණන = පරතර ගණන'
+    ]
+  },
+  {
+    id: 'syl_sch_env_gurupotha',
+    title: 'Grade 5 Environmental Studies Official NIE Teacher Guide (Guru Potha)',
+    titleSinhala: '5 ශ්‍රේණිය පරිසරය ආශ්‍රිත ක්‍රියාකාරකම් ජාතික අධ්‍යාපන ආයතන නිල ගුරු පොත',
+    titleTamil: 'தரம் 5 சுற்றாடல் சார் செயற்பாடுகள் ஆசிரியர் வழிகாட்டி',
+    subjectCode: 'SCH-ENV-03GP',
+    subjectName: 'Environmental Studies & Science',
+    subjectSinhala: 'පරිසරය ආශ්‍රිත ක්‍රියාකාරකම්',
+    subjectId: 'sub_sch_env',
+    streamId: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    grade: 5,
+    level: 'SCHOLARSHIP',
+    stream: 'Grade 5 Scholarship',
+    yearPublished: 2024,
+    fileType: 'Guru Potha (Teacher Guide)',
+    fileSize: '6.4 MB',
+    pageCount: 210,
+    downloadCount: 54300,
+    color: 'from-emerald-600 to-teal-700',
+    competencyCount: 16,
+    summary: 'Complete guide for flora, fauna, national heritage, historic kings, natural resources, water cycle, weather, and science experiments.',
+    summarySinhala: 'ශාක හා සතුන්, ජාතික උරුමයන්, ඓතිහාසික රජවරු, ශ්‍රී ලංකාවේ වරායවල්, ගංගා සහ කඳු, කාලගුණය සහ පරිසර විද්‍යා පරීක්ෂණ සම්පූර්ණ ගුරු පොත.',
+    competencies: [
+      { competencyNo: '1.0', description: 'Living World: Plants, Flowers, Seeds & Animal Adaptations', descriptionSinhala: 'ශාක, මල්, බීජ සහ සතුන්ගේ අනුවර්තන', periods: 35 },
+      { competencyNo: '2.0', description: 'Sri Lankan Heritage, Historic Forts, Kings & National Symbols', descriptionSinhala: 'ශ්‍රී ලංකාවේ ඉතිහාසය, රජවරු සහ ජාතික සංකේත', periods: 40 },
+      { competencyNo: '3.0', description: 'Water, Atmosphere, Solar System & Simple Energy Machines', descriptionSinhala: 'ජලය, වාතය, සෞරග්‍රහ මණ්ඩලය සහ සරල යන්ත්‍ර', periods: 35 }
+    ],
+    keyFormulasAndConcepts: [
+      'ජාතික වෘක්ෂය: නා ගස, ජාතික පුෂ්පය: මානෙල් මල, ජාතික පක්ෂියා: වලි කුකුළා',
+      'දිගම ගඟ: මහවැලි ගඟ (335 km), උසම කන්ද: පිදුරුතලාගල (2524 m)',
+      'බීජ ප්‍රචාරණ ක්‍රම: සුළඟින්, ජලයෙන්, සතුන්ගෙන්, පුපුරා යාමෙන්'
+    ]
+  },
+  {
+    id: 'syl_sch_env_shortnotes',
+    title: 'Grade 5 Environmental Studies Illustrated Summary Pocket Guide',
+    titleSinhala: '5 වසර පරිසරය සියලු ඒකක විභාග සාරාංශ සටහන් සහ රූපසටහන් පොත',
+    titleTamil: 'தரம் 5 சுற்றாடல் படங்களுடன் கூடிய சுருக்கக் குறிப்புகள்',
+    subjectCode: 'SCH-ENV-SN',
+    subjectName: 'Environmental Studies & Science',
+    subjectSinhala: 'පරිසරය ආශ්‍රිත ක්‍රියාකාරකම්',
+    subjectId: 'sub_sch_env',
+    streamId: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    grade: 5,
+    level: 'SCHOLARSHIP',
+    stream: 'Grade 5 Scholarship',
+    yearPublished: 2024,
+    fileType: 'Summary Notes',
+    fileSize: '4.2 MB',
+    pageCount: 78,
+    downloadCount: 49800,
+    color: 'from-teal-500 to-emerald-700',
+    competencyCount: 14,
+    summary: 'Full color illustrated review charts for quick revision of all 32 Grade 5 environmental studies competencies.',
+    summarySinhala: 'ශිෂ්‍යත්ව විභාගයේ II පත්‍රයට අවශ්‍ය සියලුම පරිසර පාඩම් වල සාරාංශ, ප්‍රසිද්ධ ස්ථාන සහ ජාතික තොරතුරු එකතුව.',
+    competencies: [
+      { competencyNo: 'SN-1', description: 'Full Directory of National Symbols and Monuments', descriptionSinhala: 'ජාතික සංකේත සහ ඓතිහාසික සිහිවටන', periods: 15 },
+      { competencyNo: 'SN-2', description: 'Animal & Plant Classification Visual Cheat Sheet', descriptionSinhala: 'සතුන් සහ ශාක වර්ගීකරණ කෙටි සටහන්', periods: 15 }
+    ],
+    keyFormulasAndConcepts: [
+      'ආවේණික පක්ෂීන් (හබන් කුකුළා, අළු කෑදැත්තා, හිස කළු කොණ්ඩයා)',
+      'ශ්‍රී ලංකාවේ ප්‍රධාන වරායවල්: කොළඹ, ත්‍රිකුණාමලය, හම්බන්තොට, ගාල්ල'
+    ]
+  },
+  {
+    id: 'syl_sch_iq_puzzles',
+    title: 'Grade 5 Scholarship Paper I IQ, Reasoning & Pattern Guidebook',
+    titleSinhala: '5 ශ්‍රේණිය I පත්‍රය බුද්ධි පරීක්ෂණ, රූප රටා සහ තර්කන මාර්ගෝපදේශය',
+    titleTamil: 'தரம் 5 புலமைப்பரிசில் நுண்ணறிவு வழிகாட்டி',
+    subjectCode: 'SCH-IQ-04GP',
+    subjectName: 'IQ & Mental Reasoning',
+    subjectSinhala: 'බුද්ධි පරීක්ෂණය සහ තර්කනය (I පත්‍රය)',
+    subjectId: 'sub_sch_iq',
+    streamId: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    grade: 5,
+    level: 'SCHOLARSHIP',
+    stream: 'Grade 5 Scholarship',
+    yearPublished: 2024,
+    fileType: 'Guru Potha (Teacher Guide)',
+    fileSize: '5.5 MB',
+    pageCount: 150,
+    downloadCount: 57800,
+    color: 'from-purple-600 to-pink-600',
+    competencyCount: 15,
+    summary: 'Complete guide for solving Paper 1 visual patterns, dice, 3D cube counts, paper folding, mirror images, sequences and analogies.',
+    summarySinhala: 'ශිෂ්‍යත්ව I පත්‍රයේ ලකුණු 100න් උපරිමය ලබා ගැනීම සඳහා කැට ගණන් කිරීම, කඩදාසි නැමීම්, දර්පණ ඡායා, රූප අනුපිළිවෙල සහ තාර්කික ප්‍රහේලිකා විසඳුම්.',
+    competencies: [
+      { competencyNo: '1.0', description: 'Visual Pattern Recognition & Missing Shape Detection', descriptionSinhala: 'රූප රටා හඳුනාගැනීම සහ අතුරුදහන් රූප සෙවීම', periods: 30 },
+      { competencyNo: '2.0', description: '3D Cube Counting, Dice Faces & Paper Folding Logic', descriptionSinhala: 'ත්‍රිමාන කැට ගණන් කිරීම, දාදු කැට සහ කඩදාසි නැමීම්', periods: 35 },
+      { competencyNo: '3.0', description: 'Word Analogies, Mathematical Logic & Time Sequences', descriptionSinhala: 'වචන සබඳතා, ගණිතමය තර්කනය සහ කාල අනුපිළිවෙල', periods: 30 }
+    ],
+    keyFormulasAndConcepts: [
+      'කැට ගණන් කිරීමේදී සැඟවුණු කැට මට්ටම් අනුව ගණන් කිරීම',
+      'දර්පණ ඡායා වලදී වම සහ දකුණ මාරු වීම (උඩ සහ යට නොවෙනස් වේ)',
+      'කඩදාසිය දෙකට නැමූ විට සිදුරු ගණන දෙගුණ වීම'
+    ]
+  },
+
   // ==========================================
   // 1. A/L COMBINED MATHEMATICS (Maths Stream)
   // ==========================================

@@ -31,7 +31,9 @@ import {
   Smile,
   Calendar,
   Layers,
-  Headphones
+  Headphones,
+  Languages,
+  Cpu
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -40,12 +42,14 @@ import { useExamNews } from '@/context/NewsContext';
 import { SCHOOL_GRADES } from '@/data/mockData';
 import type { SchoolGrade, AppLanguage } from '@/types';
 import SiparanaLogo from '@/components/SiparanaLogo';
+import AutonomousCurriculumSyncModal from '@/components/AutonomousCurriculumSyncModal';
 
 export type PageId =
   | 'dashboard'
   | 'planner'
   | 'flashcards'
   | 'audio'
+  | 'modern_languages'
   | 'fun_english'
   | 'google_hub'
   | 'free_courses'
@@ -84,6 +88,7 @@ interface NavItemDef {
 
 const NAV_ITEMS_CONFIG: NavItemDef[] = [
   { id: 'dashboard', icon: LayoutDashboard, transKey: 'dashboard', enLabel: 'Dashboard', siLabel: 'පුවරුව', taLabel: 'முகப்பு பலகை' },
+  { id: 'modern_languages', icon: Languages, transKey: 'modernLanguages', enLabel: 'Modern & Foreign Languages', siLabel: 'නවීන & විදේශ භාෂා', taLabel: 'நவீன & வெளிநாட்டு மொழிகள்', badgeText: 'Reforms 2026', highlight: true },
   { id: 'planner', icon: Calendar, transKey: 'planner', enLabel: 'AI Study Planner', siLabel: 'AI කාලසටහන', taLabel: 'AI படிப்புத் திட்டம்', badgeText: 'Auto-Sync', highlight: true },
   { id: 'flashcards', icon: Layers, transKey: 'flashcards', enLabel: 'Smart Flashcards', siLabel: 'ස්මාර්ට් ෆ්ලෑෂ්කාඩ්', taLabel: 'ஃபிளாஷ்கார்டுகள்', badgeText: 'Spaced Recall', highlight: true },
   { id: 'audio', icon: Headphones, transKey: 'audio', enLabel: 'Voice Notes & Audio', siLabel: 'ශ්‍රව්‍ය සටහන්', taLabel: 'குரல் குறிப்புகள்', badgeText: 'Voice AI', highlight: true },
@@ -102,7 +107,7 @@ const NAV_ITEMS_CONFIG: NavItemDef[] = [
   { id: 'utilities', icon: Wrench, transKey: 'utilities', enLabel: 'Study Utilities', siLabel: 'පාඩම් මෙවලම්', taLabel: 'படிப்பு கருவிகள்', badgeText: 'Stopwatch & Chart' },
   { id: 'news', icon: Newspaper, transKey: 'examNews', enLabel: 'Exam News & Alerts', siLabel: 'විභාග පුවත්', taLabel: 'தேர்வுச் செய்திகள்' },
   { id: 'premium', icon: Crown, transKey: 'proMembership', enLabel: 'SipArana Pro', siLabel: 'ප්‍රෝ සාමාජිකත්වය', taLabel: 'புரோ உறுப்பினர்', isPro: true },
-  { id: 'settings', icon: Settings, transKey: 'settings', enLabel: 'Settings', siLabel: 'සැකසුම්', taLabel: 'அமைப்புகள்' },
+  { id: 'settings', icon: Settings, transKey: 'settings', enLabel: 'Settings', siLabel: 'සැකසුම්', taLabel: 'அமைப்புகள்' }
 ];
 
 export default function Layout({ current, onNavigate, children }: LayoutProps) {
@@ -114,6 +119,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showGradeDropdown, setShowGradeDropdown] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const [showAutonomousModal, setShowAutonomousModal] = useState(false);
 
   const unreadNotices = notices.filter(n => !readIds.includes(n.id));
   const unreadCount = unreadNotices.length;
@@ -129,6 +135,71 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
   };
 
   const isUniversityStudent = profile?.studentCategory === 'University' || profile?.level === 'CAMPUS';
+  const isGrade5 = profile?.grade === 5 || profile?.level === 'SCHOLARSHIP' || profile?.stream === 'Grade 5 Scholarship' || !!profile?.isKidMode;
+
+  const GRADE5_ALLOWED_PAGES: PageId[] = [
+    'dashboard',
+    'subjects',
+    'planner',
+    'flashcards',
+    'audio',
+    'fun_english',
+    'quizzes',
+    'ai_tutor',
+    'offline_syllabus',
+    'settings'
+  ];
+
+  // Strictly enforce page isolation if user is on a forbidden page
+  React.useEffect(() => {
+    if (isGrade5 && !GRADE5_ALLOWED_PAGES.includes(current)) {
+      onNavigate('dashboard');
+    }
+  }, [isGrade5, current, onNavigate]);
+
+  const activeNavItems: NavItemDef[] = React.useMemo(() => {
+    if (isGrade5) {
+      return NAV_ITEMS_CONFIG.filter((item) => GRADE5_ALLOWED_PAGES.includes(item.id)).map((item) => {
+        if (item.id === 'dashboard') {
+          return { ...item, enLabel: 'Scholarship Dashboard', siLabel: '5 වසර ශිෂ්‍යත්ව පුවරුව', taLabel: 'புலமைப்பரிசில் பலகை', badgeText: 'Kid Portal 🌟' };
+        }
+        if (item.id === 'subjects') {
+          return { ...item, enLabel: '4 Core Subjects & Guru Potha', siLabel: '5 වසර විෂයන් & ගුරු පොත', taLabel: '4 பாடங்கள் & ஆசிரியர் வழிகாட்டி', badgeText: 'NIE Guru Potha' };
+        }
+        if (item.id === 'planner') {
+          return { ...item, enLabel: 'My Study Routine & Timetable', siLabel: 'මගේ පාඩම් කාලසටහන', taLabel: 'படிப்பு அட்டவணை', badgeText: 'Daily Routine' };
+        }
+        if (item.id === 'flashcards') {
+          return { ...item, enLabel: 'Scholarship Flashcards', siLabel: 'මතක කාඩ්පත්', taLabel: 'நினைவு அட்டைகள்', badgeText: 'Fun Cards' };
+        }
+        if (item.id === 'audio') {
+          return { ...item, enLabel: 'Voice Stories & Audio Notes', siLabel: 'ශ්‍රව්‍ය සටහන් & කතා', taLabel: 'குரல் குறிப்புகள்', badgeText: 'Audio Stories' };
+        }
+        if (item.id === 'fun_english') {
+          return { ...item, enLabel: 'Fun English & Relax', siLabel: 'විනෝදජනක ඉංග්‍රීසි & විවේකය', taLabel: 'வேடிக்கையான ஆங்கிலம்', badgeText: 'Kavi Games' };
+        }
+        if (item.id === 'quizzes') {
+          return { ...item, enLabel: 'IQ & Scholarship Quizzes', siLabel: 'බුද්ධි පරීක්ෂණ & ප්‍රශ්න', taLabel: 'புலமைப்பரிசில் வினாக்கள்', badgeText: 'Brain IQ' };
+        }
+        if (item.id === 'ai_tutor') {
+          return { ...item, enLabel: 'Kavi Owl AI Tutor', siLabel: 'කවි බකමූණා AI ගුරු', taLabel: 'கவி ஆந்தை ஆசிரியர்', badgeText: 'Kavi Voice' };
+        }
+        if (item.id === 'offline_syllabus') {
+          return { ...item, enLabel: 'Grade 5 Teacher Guides (PDF)', siLabel: '5 වසර ගුරු පොත් & PDF', taLabel: 'ஆசிரியர் வழிகாட்டிகள்', badgeText: 'NIE PDF' };
+        }
+        if (item.id === 'settings') {
+          return { ...item, enLabel: 'Profile & Settings', siLabel: 'මගේ පැතිකඩ & සැකසුම්', taLabel: 'சுயவிவரம் & அமைப்புகள்' };
+        }
+        return item;
+      });
+    }
+
+    if (isUniversityStudent) {
+      return NAV_ITEMS_CONFIG.filter((item) => !['classroom', 'campus', 'utilities'].includes(item.id));
+    }
+
+    return NAV_ITEMS_CONFIG.filter((item) => !['university'].includes(item.id));
+  }, [isGrade5, isUniversityStudent]);
 
   const daysToExam = Math.max(1, Math.round((new Date(2026, 10, 15).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
   const currentGradeInfo = SCHOOL_GRADES.find(g => g.grade === profile?.grade);
@@ -258,7 +329,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
 
         {/* Navigation items */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {NAV_ITEMS_CONFIG.map((item) => {
+          {activeNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = current === item.id;
             return (
@@ -268,7 +339,9 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                 onClick={() => onNavigate(item.id)}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30'
+                    ? isGrade5
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm shadow-orange-500/30'
+                      : 'bg-blue-600 text-white shadow-sm shadow-blue-500/30'
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'
                 }`}
               >
@@ -279,14 +352,16 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                         ? 'text-white'
                         : item.isPro
                         ? 'text-amber-500'
+                        : isGrade5
+                        ? 'text-amber-600 dark:text-amber-400'
                         : 'text-slate-400 dark:text-slate-400'
                     }`}
                   />
                   <div className="text-left leading-tight">
-                    <div>{getNavLabel(item)}</div>
+                    <div className="font-bold">{getNavLabel(item)}</div>
                     <span
-                      className={`text-[10px] block opacity-70 ${
-                        isActive ? 'text-blue-100' : 'text-slate-400'
+                      className={`text-[10px] block opacity-75 ${
+                        isActive ? 'text-white' : 'text-slate-400'
                       }`}
                     >
                       {getSubLabel(item)}
@@ -298,7 +373,9 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                   <span
                     className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                       isActive
-                        ? 'bg-blue-500 text-white'
+                        ? 'bg-black/20 text-white'
+                        : isGrade5
+                        ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-bold'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                     }`}
                   >
@@ -427,6 +504,20 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                 )}
               </div>
             )}
+
+            {/* Autonomous NIE Sync & Health Hub Trigger */}
+            <button
+              id="header-autonomous-sync-btn"
+              onClick={() => setShowAutonomousModal(true)}
+              className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-gradient-to-r from-amber-500/15 via-blue-500/10 to-emerald-500/15 dark:from-amber-950/40 dark:via-blue-950/30 dark:to-emerald-950/40 border border-amber-400/60 dark:border-amber-500/50 rounded-xl text-amber-800 dark:text-amber-300 text-xs font-black hover:border-amber-500 transition shadow-2xs cursor-pointer"
+              title="Autonomous NIE Syllabus & Real-Time Sync Hub"
+            >
+              <Cpu className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 animate-pulse" />
+              <span className="hidden sm:inline">
+                {language === 'si' ? 'ස්වයංක්‍රීය AI විෂය පියස' : 'Autonomous AI Core'}
+              </span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+            </button>
 
             {/* Streak indicator */}
             {profile && (
@@ -697,7 +788,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
               </div>
 
               <div className="flex-1 py-3 space-y-1 overflow-y-auto">
-                {NAV_ITEMS_CONFIG.map((item) => {
+                {activeNavItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = current === item.id;
                   return (
@@ -707,18 +798,26 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                         onNavigate(item.id);
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium ${
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                         isActive
-                          ? 'bg-blue-600 text-white'
+                          ? isGrade5
+                            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold'
+                            : 'bg-blue-600 text-white font-bold'
                           : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className="w-4 h-4" />
+                        <Icon className={`w-4 h-4 ${isActive ? 'text-white' : isGrade5 ? 'text-amber-600' : 'text-slate-500'}`} />
                         <span>{getNavLabel(item)}</span>
                       </div>
                       {item.badgeText && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                          isActive 
+                            ? 'bg-black/20 text-white' 
+                            : isGrade5 
+                            ? 'bg-amber-100 text-amber-800' 
+                            : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300'
+                        }`}>
                           {item.badgeText}
                         </span>
                       )}
@@ -745,6 +844,13 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
           {children}
         </main>
       </div>
+
+      {/* Autonomous NIE Curriculum Sync & Diagnostics Modal */}
+      <AutonomousCurriculumSyncModal
+        isOpen={showAutonomousModal}
+        onClose={() => setShowAutonomousModal(false)}
+        onNavigate={onNavigate}
+      />
     </div>
   );
 }

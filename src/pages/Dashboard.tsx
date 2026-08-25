@@ -29,7 +29,8 @@ import {
   HardDriveDownload,
   ShoppingBag,
   Smile,
-  Headphones
+  Headphones,
+  Languages
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -40,6 +41,9 @@ import type { StudyTask } from '@/types';
 import SiparanaLogo from '@/components/SiparanaLogo';
 import AranaMascot from '@/components/AranaMascot';
 import Grade5ScholarshipWizard from '@/components/Grade5ScholarshipWizard';
+import StudentRoleIsolationBanner from '@/components/StudentRoleIsolationBanner';
+import KaviStepByStepMentor from '@/components/KaviStepByStepMentor';
+import AutonomousCurriculumSyncModal from '@/components/AutonomousCurriculumSyncModal';
 import { soundFX } from '@/utils/audioUtils';
 
 interface DashboardProps {
@@ -54,12 +58,30 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const [quizAnswered, setQuizAnswered] = useState<number | null>(null);
   const [quizScore, setQuizScore] = useState<boolean | null>(null);
   const [isScholarshipWizardOpen, setIsScholarshipWizardOpen] = useState(profile?.grade === 5);
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
   // Daily challenge question adaptive to level and language
   const userGrade = profile?.grade || 11;
+  const isGrade5 =
+    profile?.grade === 5 ||
+    profile?.level === 'SCHOLARSHIP' ||
+    profile?.stream === 'Grade 5 Scholarship' ||
+    !!profile?.isKidMode;
   const isOLOrJunior = userGrade <= 11;
 
-  const dailyQuiz = isOLOrJunior
+  const dailyQuiz = isGrade5
+    ? {
+        subject: language === 'si' ? '5 වසර බුද්ධි පරීක්ෂණ (Scholarship IQ)' : 'Grade 5 Scholarship IQ & Puzzles',
+        question: language === 'si'
+          ? 'රූප රටාවේ මීළඟට එන සංඛ්‍යාව කුමක්ද?  2,  4,  8,  16,  ?'
+          : 'What is the next number in the pattern?  2,  4,  8,  16,  ?',
+        options: ['20', '24', '32', '64'],
+        correct: 2,
+        explanation: language === 'si'
+          ? 'සෑම සංඛ්‍යාවක්ම පෙර සංඛ්‍යාව 2 න් ගුණ කිරීමෙන් (දෙගුණ වීමෙන්) ලැබේ. 16 x 2 = 32.'
+          : 'Each number is doubled (multiplied by 2). 16 x 2 = 32.'
+      }
+    : isOLOrJunior
     ? {
         subject: language === 'si' 
           ? (userGrade <= 9 ? 'විද්‍යාව (Science)' : 'ගණිතය (Mathematics - O/L)')
@@ -142,16 +164,18 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const taskProgressPercent = Math.round((completedTasksCount / tasks.length) * 100);
 
   // Filter subjects matching student's grade
-  const streamSubjects = SUBJECTS_DATA.filter(
-    s => s.grades.includes(userGrade)
-  ).slice(0, 3);
+  const streamSubjects = isGrade5
+    ? SUBJECTS_DATA.filter((s) => ['sub_sch_sinhala', 'sub_sch_maths', 'sub_sch_env', 'sub_sch_iq'].includes(s.id))
+    : SUBJECTS_DATA.filter((s) => s.grades.includes(userGrade)).slice(0, 3);
 
   const displaySubjects = streamSubjects.length > 0
     ? streamSubjects
-    : SUBJECTS_DATA.filter(s => !profile || s.stream === profile.stream).slice(0, 3);
+    : SUBJECTS_DATA.filter((s) => !profile || s.stream === profile.stream).slice(0, 3);
 
-  const gradeInfo = SCHOOL_GRADES.find(g => g.grade === userGrade);
-  const examTargetLabel = userGrade >= 12
+  const gradeInfo = SCHOOL_GRADES.find((g) => g.grade === userGrade);
+  const examTargetLabel = isGrade5
+    ? '5 වසර ශිෂ්‍යත්වය (160+ Target)'
+    : userGrade >= 12
     ? `A/L ${profile?.targetYear || 2026} (3 A's)`
     : userGrade >= 10
     ? `O/L ${profile?.targetYear || 2026} (9 A's)`
@@ -247,7 +271,13 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         </div>
       </section>
 
-      {/* 2. ARANA 3D MASCOT MENTOR & STUDY ADVISOR */}
+      {/* 2. DYNAMIC STUDENT ROLE ISOLATION & CONTEXTUAL BANNER */}
+      <StudentRoleIsolationBanner onOpenSyncModal={() => setShowSyncModal(true)} />
+
+      {/* 2b. KAVI THE OWL STEP-BY-STEP ADAPTIVE MENTOR (SINHALA VOICE & SCRIPT) */}
+      <KaviStepByStepMentor onNavigate={onNavigate} />
+
+      {/* 2c. ARANA 3D MASCOT MENTOR & STUDY ADVISOR */}
       <section id="arana-mascot-mentor-card" className="bg-gradient-to-r from-amber-500/10 via-blue-500/10 to-indigo-500/10 border-2 border-amber-400/40 dark:border-amber-500/30 rounded-3xl p-4 sm:p-5 shadow-lg backdrop-blur-xs">
         <AranaMascot
           size="md"
@@ -256,7 +286,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         />
       </section>
 
-      {/* 2b. GRADE 5 SCHOLARSHIP SPECIAL BANNER (KAVI MENTOR & INTERACTIVE WIZARD) */}
+      {/* 2d. GRADE 5 SCHOLARSHIP SPECIAL BANNER (KAVI MENTOR & INTERACTIVE WIZARD) */}
       <section
         id="grade5-scholarship-hero-launcher"
         className={`p-4 sm:p-5 rounded-3xl border-2 transition-all shadow-md relative overflow-hidden ${
@@ -308,235 +338,321 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       </section>
 
       {/* 3. HORIZONTAL QUICK-ACTION APP TOOLS BAR */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <button
-          onClick={() => onNavigate('planner')}
-          className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600/15 via-white to-indigo-600/15 dark:from-blue-950/50 dark:via-slate-900 dark:to-indigo-950/50 border-2 border-blue-500/80 dark:border-blue-400/70 hover:border-blue-600 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-blue-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
-            <Calendar className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-black text-blue-700 dark:text-blue-300">
-              {language === 'si' ? 'AI කාලසටහන' : language === 'ta' ? 'AI படிப்புத் திட்டம்' : 'AI Study Planner'}
-            </h4>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Auto-Sync Schedule</p>
-          </div>
-        </button>
+      {isGrade5 ? (
+        <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <button
+            onClick={() => onNavigate('subjects')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/20 via-orange-500/15 to-yellow-500/20 dark:from-amber-950/60 dark:to-orange-950/50 border-2 border-amber-400 dark:border-amber-500/60 hover:shadow-lg transition text-left space-y-2 group cursor-pointer"
+          >
+            <div className="p-2 rounded-xl bg-amber-500 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-black text-amber-900 dark:text-amber-300">
+                5 වසර විෂයයන්
+              </h4>
+              <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 font-semibold">ගුරු පොත සහ පාඩම්</p>
+            </div>
+          </button>
 
-        <button
-          onClick={() => onNavigate('flashcards')}
-          className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-500/15 via-white to-purple-500/15 dark:from-indigo-950/40 dark:via-slate-900 dark:to-purple-950/40 border-2 border-indigo-400/70 dark:border-indigo-500/60 hover:border-indigo-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-indigo-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
-            <Layers className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-black text-indigo-700 dark:text-indigo-300">
-              {language === 'si' ? 'ස්මාර්ට් ෆ්ලෑෂ්කාඩ්' : language === 'ta' ? 'ஃபிளாஷ்கார்டுகள்' : 'Smart Flashcards'}
-            </h4>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Spaced Quick Recall</p>
-          </div>
-        </button>
+          <button
+            onClick={() => onNavigate('quizzes')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/20 via-indigo-500/15 to-cyan-500/20 dark:from-blue-950/60 dark:to-indigo-950/50 border-2 border-blue-400 dark:border-blue-500/60 hover:shadow-lg transition text-left space-y-2 group cursor-pointer"
+          >
+            <div className="p-2 rounded-xl bg-blue-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+              <FileQuestion className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-black text-blue-900 dark:text-blue-300">
+                විනෝද ප්‍රශ්න & IQ
+              </h4>
+              <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 font-semibold">ලකුණු සහ තරඟ</p>
+            </div>
+          </button>
 
-        <button
-          onClick={() => onNavigate('audio')}
-          className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-500/15 via-white to-pink-500/15 dark:from-purple-950/40 dark:via-slate-900 dark:to-pink-950/40 border-2 border-purple-400/70 dark:border-purple-500/60 hover:border-purple-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-purple-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
-            <Headphones className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-black text-purple-700 dark:text-purple-300">
-              {language === 'si' ? 'ශ්‍රව්‍ය සටහන්' : language === 'ta' ? 'குரல் குறிப்புகள்' : 'Audio Summaries'}
-            </h4>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Listen & Revise High-Yield</p>
-          </div>
-        </button>
-      </section>
+          <button
+            onClick={() => onNavigate('ai_tutor')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 via-teal-500/15 to-green-500/20 dark:from-emerald-950/60 dark:to-teal-950/50 border-2 border-emerald-400 dark:border-emerald-500/60 hover:shadow-lg transition text-left space-y-2 group cursor-pointer"
+          >
+            <div className="p-2 rounded-xl bg-emerald-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+              <Bot className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-black text-emerald-900 dark:text-emerald-300">
+                කවි AI ගුරුතුමා
+              </h4>
+              <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 font-semibold">හඬින් ප්‍රශ්න අහන්න</p>
+            </div>
+          </button>
 
-      {/* 3b. ADDITIONAL APP TOOLS */}
-      <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-6 gap-3">
-        <button
-          onClick={() => onNavigate('fun_english')}
-          className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-amber-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 font-bold w-fit group-hover:scale-105 transition shadow-xs">
-            <Smile className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {language === 'si' ? 'ඉංග්‍රීසි & විවේකය' : language === 'ta' ? 'ஆங்கிலம் & ஓய்வு' : 'Fun English'}
-            </h4>
-            <p className="text-[10px] text-slate-400 truncate">Mascot 4-Step Flow</p>
-          </div>
-        </button>
+          <button
+            onClick={() => onNavigate('fun_english')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/20 via-pink-500/15 to-rose-500/20 dark:from-purple-950/60 dark:to-pink-950/50 border-2 border-purple-400 dark:border-purple-500/60 hover:shadow-lg transition text-left space-y-2 group cursor-pointer"
+          >
+            <div className="p-2 rounded-xl bg-purple-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+              <Smile className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-black text-purple-900 dark:text-purple-300">
+                ඉංග්‍රීසි & විවේකය
+              </h4>
+              <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 font-semibold">කවි කතා & ක්‍රීඩා</p>
+            </div>
+          </button>
+        </section>
+      ) : (
+        <>
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <button
+              onClick={() => onNavigate('modern_languages')}
+              className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/15 via-white to-blue-500/15 dark:from-amber-950/50 dark:via-slate-900 dark:to-blue-950/50 border-2 border-amber-400/80 dark:border-amber-400/70 hover:border-amber-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer relative overflow-hidden"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 font-bold w-fit group-hover:scale-105 transition shadow-sm">
+                  <Languages className="w-4 h-4 text-white" />
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-800 dark:text-amber-300 font-extrabold text-[9px] border border-amber-400/40">
+                  Reforms 2026
+                </span>
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-amber-800 dark:text-amber-300">
+                  {language === 'si' ? 'නවීන & විදේශ භාෂා' : language === 'ta' ? 'நவீன & வெளிநாட்டு மொழிகள்' : 'Modern & Foreign Languages'}
+                </h4>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Japanese, Korean, French, ICT</p>
+              </div>
+            </button>
 
-        <button
-          onClick={() => onNavigate('google_hub')}
-          className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600/15 via-white to-indigo-600/15 dark:from-blue-950/50 dark:via-slate-900 dark:to-indigo-950/50 border-2 border-blue-500/80 dark:border-blue-400/70 hover:border-blue-600 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-blue-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
-            <Globe className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-black text-blue-700 dark:text-blue-300">
-              {language === 'si' ? 'ගූගල් අධ්‍යාපන' : language === 'ta' ? 'கூகிள் தளம்' : 'Google Hub'}
-            </h4>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">7 In-App Tools</p>
-          </div>
-        </button>
+            <button
+              onClick={() => onNavigate('planner')}
+              className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600/15 via-white to-indigo-600/15 dark:from-blue-950/50 dark:via-slate-900 dark:to-indigo-950/50 border-2 border-blue-500/80 dark:border-blue-400/70 hover:border-blue-600 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-blue-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+                <Calendar className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-blue-700 dark:text-blue-300">
+                  {language === 'si' ? 'AI කාලසටහන' : language === 'ta' ? 'AI படிப்புத் திட்டம்' : 'AI Study Planner'}
+                </h4>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Auto-Sync Schedule</p>
+              </div>
+            </button>
 
-        <button
-          onClick={() => onNavigate('free_courses')}
-          className="p-3.5 rounded-2xl bg-gradient-to-br from-cyan-500/15 via-white to-blue-500/15 dark:from-cyan-950/40 dark:via-slate-900 dark:to-blue-950/40 border-2 border-cyan-400/70 dark:border-cyan-500/60 hover:border-cyan-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-cyan-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
-            <Compass className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-black text-cyan-700 dark:text-cyan-300">
-              {language === 'si' ? 'නිදහස් පාඨමාලා' : language === 'ta' ? 'இலவச படிப்புகள்' : 'Free Courses'}
-            </h4>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Harvard, Google & UoM</p>
-          </div>
-        </button>
+            <button
+              onClick={() => onNavigate('flashcards')}
+              className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-500/15 via-white to-purple-500/15 dark:from-indigo-950/40 dark:via-slate-900 dark:to-purple-950/40 border-2 border-indigo-400/70 dark:border-indigo-500/60 hover:border-indigo-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-indigo-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+                <Layers className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-indigo-700 dark:text-indigo-300">
+                  {language === 'si' ? 'ස්මාර්ට් ෆ්ලෑෂ්කාඩ්' : language === 'ta' ? 'ஃபிளாஷ்கார்டுகள்' : 'Smart Flashcards'}
+                </h4>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Spaced Quick Recall</p>
+              </div>
+            </button>
 
-        <button
-          onClick={() => onNavigate('book_shop')}
-          className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-white to-blue-500/10 dark:from-amber-950/30 dark:via-slate-900 dark:to-blue-950/30 border-2 border-amber-400/60 dark:border-amber-500/50 hover:border-amber-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-amber-500 text-slate-950 font-bold w-fit group-hover:scale-105 transition shadow-sm">
-            <ShoppingBag className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-black text-amber-700 dark:text-amber-300">
-              {language === 'si' ? 'සිප්අරණ පොත් හල' : language === 'ta' ? 'புத்தக சந்தை' : 'Book Shop'}
-            </h4>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Buy & Sell Books</p>
-          </div>
-        </button>
+            <button
+              onClick={() => onNavigate('audio')}
+              className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-500/15 via-white to-pink-500/15 dark:from-purple-950/40 dark:via-slate-900 dark:to-pink-950/40 border-2 border-purple-400/70 dark:border-purple-500/60 hover:border-purple-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-purple-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+                <Headphones className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-purple-700 dark:text-purple-300">
+                  {language === 'si' ? 'ශ්‍රව්‍ය සටහන්' : language === 'ta' ? 'குரல் குறிப்புகள்' : 'Audio Summaries'}
+                </h4>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Listen & Revise High-Yield</p>
+              </div>
+            </button>
+          </section>
 
-        <button
-          onClick={() => onNavigate('quizzes')}
-          className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-blue-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 w-fit group-hover:scale-105 transition">
-            <FileQuestion className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {language === 'si' ? 'MCQ පරීක්ෂණ' : language === 'ta' ? 'MCQ வினாக்கள்' : 'MCQ Quizzes'}
-            </h4>
-            <p className="text-[10px] text-slate-400 truncate">Auto-Marked Tests</p>
-          </div>
-        </button>
+          {/* 3b. ADDITIONAL APP TOOLS */}
+          <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-6 gap-3">
+            <button
+              onClick={() => onNavigate('fun_english')}
+              className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-amber-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 font-bold w-fit group-hover:scale-105 transition shadow-xs">
+                <Smile className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {language === 'si' ? 'ඉංග්‍රීසි & විවේකය' : language === 'ta' ? 'ஆங்கிலம் & ஓய்வு' : 'Fun English'}
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate">Mascot 4-Step Flow</p>
+              </div>
+            </button>
 
-        <button
-          onClick={() => onNavigate('ai_tutor')}
-          className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-amber-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 w-fit group-hover:scale-105 transition">
-            <Bot className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {language === 'si' ? 'AI ගුරු සහකාර' : language === 'ta' ? 'AI ஆசிரியர்' : 'AI Voice Tutor'}
-            </h4>
-            <p className="text-[10px] text-slate-400 truncate">Ask Doubts & Voice</p>
-          </div>
-        </button>
+            <button
+              onClick={() => onNavigate('google_hub')}
+              className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600/15 via-white to-indigo-600/15 dark:from-blue-950/50 dark:via-slate-900 dark:to-indigo-950/50 border-2 border-blue-500/80 dark:border-blue-400/70 hover:border-blue-600 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-blue-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+                <Globe className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-blue-700 dark:text-blue-300">
+                  {language === 'si' ? 'ගූගල් අධ්‍යාපන' : language === 'ta' ? 'கூகிள் தளம்' : 'Google Hub'}
+                </h4>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">7 In-App Tools</p>
+              </div>
+            </button>
 
-        <button
-          onClick={() => onNavigate('analytics')}
-          className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 w-fit group-hover:scale-105 transition">
-            <BarChart3 className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {language === 'si' ? 'ප්‍රගති වාර්තාව' : language === 'ta' ? 'பகுப்பாய்வு' : 'Analytics'}
-            </h4>
-            <p className="text-[10px] text-slate-400 truncate">Weak Points & Charts</p>
-          </div>
-        </button>
+            <button
+              onClick={() => onNavigate('free_courses')}
+              className="p-3.5 rounded-2xl bg-gradient-to-br from-cyan-500/15 via-white to-blue-500/15 dark:from-cyan-950/40 dark:via-slate-900 dark:to-blue-950/40 border-2 border-cyan-400/70 dark:border-cyan-500/60 hover:border-cyan-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-cyan-600 text-white font-bold w-fit group-hover:scale-105 transition shadow-sm">
+                <Compass className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-cyan-700 dark:text-cyan-300">
+                  {language === 'si' ? 'නිදහස් පාඨමාලා' : language === 'ta' ? 'இலவச படிப்புகள்' : 'Free Courses'}
+                </h4>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Harvard, Google & UoM</p>
+              </div>
+            </button>
 
-        <button
-          onClick={() => onNavigate('offline_syllabus')}
-          className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-cyan-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-cyan-50 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 w-fit group-hover:scale-105 transition">
-            <HardDriveDownload className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {language === 'si' ? 'විෂය නිර්දේශ PDF' : language === 'ta' ? 'பாடத்திட்டம்' : 'Offline PDFs'}
-            </h4>
-            <p className="text-[10px] text-slate-400 truncate">NIE Syllabi & Notes</p>
-          </div>
-        </button>
+            <button
+              onClick={() => onNavigate('book_shop')}
+              className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-white to-blue-500/10 dark:from-amber-950/30 dark:via-slate-900 dark:to-blue-950/30 border-2 border-amber-400/60 dark:border-amber-500/50 hover:border-amber-500 hover:shadow-lg transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-amber-500 text-slate-950 font-bold w-fit group-hover:scale-105 transition shadow-sm">
+                <ShoppingBag className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-amber-700 dark:text-amber-300">
+                  {language === 'si' ? 'සිප්අරණ පොත් හල' : language === 'ta' ? 'புத்தக சந்தை' : 'Book Shop'}
+                </h4>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Buy & Sell Books</p>
+              </div>
+            </button>
 
-        <button
-          onClick={() => onNavigate('classroom')}
-          className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-blue-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 w-fit group-hover:scale-105 transition">
-            <Video className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {language === 'si' ? 'වීඩියෝ පන්ති' : language === 'ta' ? 'வீடியோ வகுப்புகள்' : 'Classroom'}
-            </h4>
-            <p className="text-[10px] text-slate-400 truncate">HD Video lessons</p>
-          </div>
-        </button>
+            <button
+              onClick={() => onNavigate('quizzes')}
+              className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-blue-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 w-fit group-hover:scale-105 transition">
+                <FileQuestion className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {language === 'si' ? 'MCQ පරීක්ෂණ' : language === 'ta' ? 'MCQ வினாக்கள்' : 'MCQ Quizzes'}
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate">Auto-Marked Tests</p>
+              </div>
+            </button>
 
-        <button
-          onClick={() => onNavigate('subjects')}
-          className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 w-fit group-hover:scale-105 transition">
-            <BookOpen className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {language === 'si' ? 'විෂයන් & ගුරු පොත්' : language === 'ta' ? 'பாடங்கள்' : 'Subjects'}
-            </h4>
-            <p className="text-[10px] text-slate-400 truncate">NIE Curriculum</p>
-          </div>
-        </button>
+            <button
+              onClick={() => onNavigate('ai_tutor')}
+              className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-amber-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 w-fit group-hover:scale-105 transition">
+                <Bot className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {language === 'si' ? 'AI ගුරු සහකාර' : language === 'ta' ? 'AI ஆசிரியர்' : 'AI Voice Tutor'}
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate">Ask Doubts & Voice</p>
+              </div>
+            </button>
 
-        <button
-          onClick={() => onNavigate('campus')}
-          className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-purple-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 w-fit group-hover:scale-105 transition">
-            <Calculator className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {language === 'si' ? 'Z-Score & Cutoffs' : language === 'ta' ? 'Z-Score கணிப்பான்' : 'Z-Score Guide'}
-            </h4>
-            <p className="text-[10px] text-slate-400 truncate">UGC Cutoffs</p>
-          </div>
-        </button>
+            <button
+              onClick={() => onNavigate('analytics')}
+              className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 w-fit group-hover:scale-105 transition">
+                <BarChart3 className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {language === 'si' ? 'ප්‍රගති වාර්තාව' : language === 'ta' ? 'பகுப்பாய்வு' : 'Analytics'}
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate">Weak Points & Charts</p>
+              </div>
+            </button>
 
-        <button
-          onClick={() => onNavigate('utilities')}
-          className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-red-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
-        >
-          <div className="p-2 rounded-xl bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 w-fit group-hover:scale-105 transition">
-            <Clock className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {language === 'si' ? 'Stopwatch & Chart' : language === 'ta' ? 'கடிகாரம்' : 'Study Timer'}
-            </h4>
-            <p className="text-[10px] text-slate-400 truncate">Bar Chart Track</p>
-          </div>
-        </button>
-      </section>
+            <button
+              onClick={() => onNavigate('offline_syllabus')}
+              className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-cyan-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-cyan-50 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 w-fit group-hover:scale-105 transition">
+                <HardDriveDownload className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {language === 'si' ? 'විෂය නිර්දේශ PDF' : language === 'ta' ? 'பாடத்திட்டம்' : 'Offline PDFs'}
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate">NIE Syllabi & Notes</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => onNavigate('classroom')}
+              className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-blue-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 w-fit group-hover:scale-105 transition">
+                <Video className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {language === 'si' ? 'වීඩියෝ පන්ති' : language === 'ta' ? 'வீடியோ வகுப்புகள்' : 'Classroom'}
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate">HD Video lessons</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => onNavigate('subjects')}
+              className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 w-fit group-hover:scale-105 transition">
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {language === 'si' ? 'විෂයන් & ගුරු පොත්' : language === 'ta' ? 'பாடங்கள்' : 'Subjects'}
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate">NIE Curriculum</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => onNavigate('campus')}
+              className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-purple-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 w-fit group-hover:scale-105 transition">
+                <Calculator className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {language === 'si' ? 'Z-Score & Cutoffs' : language === 'ta' ? 'Z-Score கணிப்பான்' : 'Z-Score Guide'}
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate">UGC Cutoffs</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => onNavigate('utilities')}
+              className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-red-500 hover:shadow-md transition text-left space-y-1.5 group cursor-pointer"
+            >
+              <div className="p-2 rounded-xl bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 w-fit group-hover:scale-105 transition">
+                <Clock className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {language === 'si' ? 'Stopwatch & Chart' : language === 'ta' ? 'கடிகாரம்' : 'Study Timer'}
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate">Bar Chart Track</p>
+              </div>
+            </button>
+          </section>
+        </>
+      )}
 
       {/* 3. METRICS ROW */}
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
@@ -873,6 +989,13 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           setIsScholarshipWizardOpen(false);
           onNavigate('subjects');
         }}
+      />
+
+      {/* Autonomous Curriculum & Self-Healing Sync Modal */}
+      <AutonomousCurriculumSyncModal
+        isOpen={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        onNavigate={onNavigate}
       />
     </div>
   );

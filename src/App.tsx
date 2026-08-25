@@ -28,6 +28,7 @@ import BookShopPage from '@/pages/BookShopPage';
 import FreeCoursesPage from '@/pages/FreeCoursesPage';
 import GoogleStudentHubPage from '@/pages/GoogleStudentHubPage';
 import FunEnglishRelaxPage from '@/pages/FunEnglishRelaxPage';
+import ModernLanguagesPage from '@/pages/ModernLanguagesPage';
 
 function AppContent() {
   const { profile, loading } = useAuth();
@@ -69,6 +70,8 @@ function AppContent() {
         return <FlashcardsPage />;
       case 'audio':
         return <AudioSummariesPage />;
+      case 'modern_languages':
+        return <ModernLanguagesPage onNavigate={handleNavigate} />;
       case 'fun_english':
         return <FunEnglishRelaxPage onNavigate={handleNavigate} />;
       case 'google_hub':

@@ -30,7 +30,7 @@ export interface UnitQuiz {
   subjectName: string;
   subjectSinhala: string;
   grade: number | string;
-  category: 'al' | 'ol' | 'junior' | 'uni';
+  category: 'scholarship' | 'al' | 'ol' | 'junior' | 'uni';
   stream: string;
   streamId: string;
   unitNumber: number;
@@ -45,7 +45,7 @@ export interface UnitQuiz {
 }
 
 export interface QuizCategory {
-  id: 'al' | 'ol' | 'junior' | 'uni';
+  id: 'scholarship' | 'al' | 'ol' | 'junior' | 'uni';
   name: string;
   nameSinhala: string;
   nameTamil: string;
@@ -58,7 +58,7 @@ export interface QuizCategory {
 
 export interface QuizStream {
   id: string;
-  categoryId: 'al' | 'ol' | 'junior' | 'uni';
+  categoryId: 'scholarship' | 'al' | 'ol' | 'junior' | 'uni';
   name: string;
   nameSinhala: string;
   nameTamil: string;
@@ -71,7 +71,7 @@ export interface QuizStream {
 export interface QuizSubject {
   id: string;
   streamId: string;
-  categoryId: 'al' | 'ol' | 'junior' | 'uni';
+  categoryId: 'scholarship' | 'al' | 'ol' | 'junior' | 'uni';
   name: string;
   nameSinhala: string;
   nameTamil: string;
@@ -83,6 +83,17 @@ export interface QuizSubject {
 }
 
 export const QUIZ_CATEGORIES: QuizCategory[] = [
+  {
+    id: 'scholarship',
+    name: 'Grade 5 Scholarship (5 වසර ශිෂ්‍යත්වය)',
+    nameSinhala: '5 වසර ශිෂ්‍යත්ව විභාගය (ගුරු පොත අනුකූලයි)',
+    nameTamil: 'தரம் 5 புலமைப்பரிசில் (ஆசிரியர் வழிகாட்டி)',
+    description: 'Sinhala, Mathematics, Environment & IQ Puzzles tailored for primary kids with Kavi Owl guide',
+    descriptionSinhala: 'සිංහල, ගණිතය, පරිසරය සහ බුද්ධි පරීක්ෂණ විනෝද ප්‍රශ්න (කවි බකමූණාගේ සරල මඟපෙන්වීම)',
+    badge: 'Grade 5 • NIE Guru Potha',
+    icon: 'Sparkles',
+    gradient: 'from-amber-500 to-orange-600'
+  },
   {
     id: 'al',
     name: 'G.C.E. Advanced Level (A/L)',
@@ -130,6 +141,19 @@ export const QUIZ_CATEGORIES: QuizCategory[] = [
 ];
 
 export const QUIZ_STREAMS: QuizStream[] = [
+  // Grade 5 Scholarship Stream
+  {
+    id: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    name: 'Grade 5 Primary Curriculum',
+    nameSinhala: '5 ශිෂ්‍යත්ව ප්‍රධාන විෂය ධාරාව (ගුරු පොත)',
+    nameTamil: 'தரம் 5 முதன்மை பாடங்கள்',
+    icon: 'Sparkles',
+    description: 'Sinhala, Primary Mathematics, Environmental Studies & IQ Puzzles',
+    descriptionSinhala: 'සිංහල භාෂාව, ප්‍රාථමික ගණිතය, පරිසරය සහ බුද්ධි පරීක්ෂණය',
+    color: 'from-amber-500 to-orange-600'
+  },
+
   // A/L Streams
   {
     id: 'stream_al_maths',
@@ -250,6 +274,60 @@ export const QUIZ_STREAMS: QuizStream[] = [
 ];
 
 export const QUIZ_SUBJECTS: QuizSubject[] = [
+  // Grade 5 Scholarship Subjects
+  {
+    id: 'sub_sch_sinhala',
+    streamId: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    name: 'Sinhala Language & Reading',
+    nameSinhala: 'සිංහල භාෂාව හා සාහිත්‍යය',
+    nameTamil: 'சிங்கள மொழி மற்றும் இலக்கியம்',
+    iconName: 'BookOpen',
+    color: 'from-amber-500 to-rose-500',
+    gradeLevels: 'Grade 5 Scholarship',
+    syllabusCode: 'SCH-SIN-01',
+    descriptionSinhala: 'ව්‍යාකරණ, නිවැරදි අක්ෂර වින්‍යාසය, සමාන පද, විරුද්ධ පද, යුගල පද සහ ඡේද කියවීම'
+  },
+  {
+    id: 'sub_sch_maths',
+    streamId: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    name: 'Primary Mathematics & Word Problems',
+    nameSinhala: 'ගණිතය හා ප්‍රශ්න විසඳීම',
+    nameTamil: 'கணிதம் மற்றும் சிக்கல் தீர்க்கும் முறை',
+    iconName: 'Calculator',
+    color: 'from-blue-500 to-indigo-600',
+    gradeLevels: 'Grade 5 Scholarship',
+    syllabusCode: 'SCH-MAT-02',
+    descriptionSinhala: 'ස්ථානීය අගය, සංඛ්‍යා රටා, ගුණ කිරීම, බෙදීම, භාග, දිග, බර, කාලය සහ කෙටි ක්‍රම'
+  },
+  {
+    id: 'sub_sch_env',
+    streamId: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    name: 'Environmental Studies & Science',
+    nameSinhala: 'පරිසරය ආශ්‍රිත ක්‍රියාකාරකම්',
+    nameTamil: 'சுற்றாடல் சார் செயற்பாடுகள்',
+    iconName: 'Compass',
+    color: 'from-emerald-500 to-teal-600',
+    gradeLevels: 'Grade 5 Scholarship',
+    syllabusCode: 'SCH-ENV-03',
+    descriptionSinhala: 'ශාක හා සතුන්, සොබාදහම, කාලගුණය, ශ්‍රී ලංකාවේ ප්‍රසිද්ධ ස්ථාන සහ අපේ උරුමය'
+  },
+  {
+    id: 'sub_sch_iq',
+    streamId: 'stream_scholarship_core',
+    categoryId: 'scholarship',
+    name: 'IQ & Mental Reasoning',
+    nameSinhala: 'බුද්ධි පරීක්ෂණය සහ තර්කනය (I පත්‍රය)',
+    nameTamil: 'நுண்ணறிவு மற்றும் தர்க்கம்',
+    iconName: 'Sparkles',
+    color: 'from-purple-500 to-pink-600',
+    gradeLevels: 'Grade 5 Scholarship',
+    syllabusCode: 'SCH-IQ-04',
+    descriptionSinhala: 'රූප රටා, කැට ගණන් කිරීම, කඩදාසි නැමීම්, තාර්කික සබඳතා සහ කාල ගණනය'
+  },
+
   // A/L Maths Stream
   {
     id: 'sub_combined_maths',
@@ -530,6 +608,85 @@ export const QUIZ_SUBJECTS: QuizSubject[] = [
 ];
 
 export const UNIT_QUIZZES_DATA: UnitQuiz[] = [
+  // 0. Grade 5 Scholarship - IQ & Mental Ability (I පත්‍රය)
+  {
+    id: 'quiz_sch_iq_01',
+    title: 'Grade 5 Scholarship IQ & Mental Ability Challenge',
+    titleSinhala: '5 ශිෂ්‍යත්ව බුද්ධි පරීක්ෂණ සහ තර්කන අභ්‍යාසය (I පත්‍රය)',
+    titleTamil: 'தரம் 5 நுண்ணறிவு வினாத்தாள் 1',
+    subjectId: 'sub_sch_iq',
+    subjectName: 'IQ & Mental Reasoning',
+    subjectSinhala: 'බුද්ධි පරීක්ෂණය (I පත්‍රය)',
+    grade: 5,
+    category: 'scholarship',
+    stream: 'Grade 5 Primary Curriculum',
+    streamId: 'stream_scholarship_core',
+    unitNumber: 1,
+    timeLimitMinutes: 12,
+    totalMarks: 100,
+    xpReward: 100,
+    iconName: 'Sparkles',
+    color: 'from-amber-500 to-orange-600',
+    description: 'Solve fun pattern sequences, cube counting, and logical riddles guided by Kavi the Owl.',
+    descriptionSinhala: 'කවි බකමූණා සමඟ රූප රටා, කැට ගණන් කිරීම සහ ශිෂ්‍යත්ව I පත්‍රයේ කෙටි ක්‍රම පුහුණු වෙමු.',
+    questions: [
+      {
+        id: 'q_sch_iq_1',
+        questionNumber: 1,
+        questionText: 'What is the next number in sequence: 3, 6, 12, 24, ...?',
+        questionTextSinhala: '3, 6, 12, 24, ... රටාවේ ඊළඟට ලැබෙන සංඛ්‍යාව කුමක්ද?',
+        options: [
+          { id: 'opt_1', text: '48', textSinhala: '48' },
+          { id: 'opt_2', text: '36', textSinhala: '36' },
+          { id: 'opt_3', text: '30', textSinhala: '30' },
+          { id: 'opt_4', text: '50', textSinhala: '50' }
+        ],
+        correctOptionId: 'opt_1',
+        explanation: 'Each number is doubled (x 2). 24 x 2 = 48.',
+        explanationSinhala: 'සෑම සංඛ්‍යාවක්ම 2 න් ගුණ වෙමින් වැඩි වේ. එබැවින් 24 x 2 = 48 කි.',
+        guruPothaRef: '5 ශ්‍රේණිය ශිෂ්‍යත්ව ගුරු මාර්ගෝපදේශය - සංඛ්‍යා රටා',
+        topic: 'Number Sequences',
+        difficulty: 'Easy'
+      },
+      {
+        id: 'q_sch_iq_2',
+        questionNumber: 2,
+        questionText: 'Which animal in Sri Lanka has the highest speed on ground?',
+        questionTextSinhala: 'ශ්‍රී ලංකාවේ වෙසෙන සතුන් අතරින් ගොඩබිම වේගයෙන්ම දිව යා හැකි සත්ත්වයා කවුද?',
+        options: [
+          { id: 'opt_1', text: 'Sri Lankan Leopard (දිවියා)', textSinhala: 'ශ්‍රී ලංකා කොටියා / දිවියා' },
+          { id: 'opt_2', text: 'Spotted Deer (තිත් මුවා)', textSinhala: 'තිත් මුවා' },
+          { id: 'opt_3', text: 'Wild Boar (වල් ඌරා)', textSinhala: 'වල් ඌරා' },
+          { id: 'opt_4', text: 'Elephant (අලියා)', textSinhala: 'අලියා' }
+        ],
+        correctOptionId: 'opt_2',
+        explanation: 'The Spotted Deer runs exceptionally fast to escape predators.',
+        explanationSinhala: 'තිත් මුවා පැයට කි.මී. 70 කට වඩා වැඩි වේගයකින් දිව යා හැක.',
+        guruPothaRef: '5 ශ්‍රේණිය පරිසරය - අපේ සත්ත්ව ලෝකය',
+        topic: 'Animal Adaptations',
+        difficulty: 'Medium'
+      },
+      {
+        id: 'q_sch_iq_3',
+        questionNumber: 3,
+        questionText: 'Select the correctly spelled Sinhala word for "Sun":',
+        questionTextSinhala: '"සූර්යයා" යන තේරුම දෙන නිවැරදි සමාන පදය තෝරන්න:',
+        options: [
+          { id: 'opt_1', text: 'දිනකර (Dinakara)', textSinhala: 'දිනකර' },
+          { id: 'opt_2', text: 'නිශාකර', textSinhala: 'නිශාකර' },
+          { id: 'opt_3', text: 'තාරකා', textSinhala: 'තාරකා' },
+          { id: 'opt_4', text: 'මේඝය', textSinhala: 'මේඝය' }
+        ],
+        correctOptionId: 'opt_1',
+        explanation: '"දිනකර" means the maker of the day (the Sun). "නිශාකර" is the Moon.',
+        explanationSinhala: 'දිනකර යනු හිරුට/සූර්යයාට සමාන පදයකි. නිශාකර යනු සඳට සමාන පදයයි.',
+        guruPothaRef: '5 ශ්‍රේණිය සිංහල - සමාන පද',
+        topic: 'Sinhala Vocabulary',
+        difficulty: 'Easy'
+      }
+    ]
+  },
+
   // 1. A/L Combined Mathematics - Integration & Calculus
   {
     id: 'quiz_cm_calculus_01',
