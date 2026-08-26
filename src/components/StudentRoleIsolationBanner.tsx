@@ -14,9 +14,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { SCHOOL_GRADES } from '@/data/mockData';
+import { useCountry } from '@/context/CountryContext';
 import { soundFX } from '@/utils/audioUtils';
 import type { SchoolGrade, Stream } from '@/types';
+import type { GlobalEducationStage } from '@/data/globalCurriculumData';
 
 interface StudentRoleIsolationBannerProps {
   onOpenSyncModal?: () => void;
@@ -29,61 +30,74 @@ export default function StudentRoleIsolationBanner({
 }: StudentRoleIsolationBannerProps) {
   const { profile, setGradeAndStream, loginAsDemo } = useAuth();
   const { language } = useLanguage();
+  const { country, curriculum, dictionary, stages } = useCountry();
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
 
   const grade = profile?.grade || 11;
-  const isGrade5 = grade === 5 || profile?.level === 'SCHOLARSHIP';
-  const isAL = grade >= 12;
-  const isOL = grade >= 10 && grade <= 11;
-  const isJunior = grade >= 6 && grade <= 9;
+  const isSriLanka = country.code === 'LK';
 
-  const currentRoleTier = isGrade5
-    ? {
-        nameSi: '5 වසර ප්‍රාථමික ශිෂ්‍යත්ව මාදිලිය (Grade 5 Primary Isolated)',
-        nameEn: 'Grade 5 Primary Scholarship Isolated Tier',
-        badge: 'Kid-Mode & Voice First',
-        color: 'from-amber-500 to-orange-500',
-        bgColor: 'bg-amber-500/10 border-amber-400/50 dark:border-amber-500/40',
-        textColor: 'text-amber-900 dark:text-amber-300',
-        activeFilterDescSi: 'උසස් පෙළ Z-Score වැනි අනවශ්‍ය දෑ ස්වයංක්‍රීයව අගුලු දමා (Locked out), 5 වසර විෂයයන් සහ කවි බකමූණා පමණක් සක්‍රීය කර ඇත.',
-        activeFilterDescEn: 'A/L Z-Score & complex senior modules locked out. Rendered child-friendly Sinhala interface & primary syllabus.'
-      }
-    : isAL
-    ? {
-        nameSi: `උසස් පෙළ (${profile?.stream || 'Physical Science'}) මාදිලිය`,
-        nameEn: `G.C.E. A/L (${profile?.stream || 'Physical Science'}) Senior Tier`,
-        badge: 'A/L Stream Isolated',
-        color: 'from-blue-600 to-indigo-600',
-        bgColor: 'bg-blue-500/10 border-blue-400/50 dark:border-blue-500/40',
-        textColor: 'text-blue-900 dark:text-blue-300',
-        activeFilterDescSi: `ඔබගේ ${profile?.stream || 'Physical Science'} ධාරාවට අදාළ විෂයයන්, Z-Score සහ පසුගිය ප්‍රශ්න පත්‍ර පමණක් සක්‍රීයයි.`,
-        activeFilterDescEn: `Custom-tailored to ${profile?.stream || 'Physical Science'} stream. Irrelevant grade content isolated.`
-      }
-    : isOL
-    ? {
-        nameSi: 'සාමාන්‍ය පෙළ 10-11 ශ්‍රේණි මාදිලිය (G.C.E. O/L Isolated)',
-        nameEn: 'G.C.E. O/L (Grades 10-11) Target Tier',
-        badge: 'O/L 9-A Target',
-        color: 'from-emerald-600 to-teal-600',
-        bgColor: 'bg-emerald-500/10 border-emerald-400/50 dark:border-emerald-500/40',
-        textColor: 'text-emerald-900 dark:text-emerald-300',
-        activeFilterDescSi: 'සාමාන්‍ය පෙළ විෂයන් 9 සහ ආදර්ශ ප්‍රශ්න පත්‍ර පද්ධතිය සක්‍රීය කර ඇත.',
-        activeFilterDescEn: 'Optimized for 9 O/L core and basket subjects with auto-marked MCQ diagnostics.'
-      }
-    : {
-        nameSi: 'කනිෂ්ඨ ද්විතීයික 6-9 ශ්‍රේණි මාදිලිය (Junior Secondary)',
-        nameEn: 'Junior Secondary (Grades 6-9) Tier',
-        badge: 'Junior Secondary',
-        color: 'from-purple-600 to-pink-600',
-        bgColor: 'bg-purple-500/10 border-purple-400/50 dark:border-purple-500/40',
-        textColor: 'text-purple-900 dark:text-purple-300',
-        activeFilterDescSi: '6-9 ශ්‍රේණිවල පාසල් විෂය මාලාවට අදාළ මූලික සංකල්ප සහ ප්‍රායෝගික පැවරුම් සක්‍රීයයි.',
-        activeFilterDescEn: 'Foundational secondary curriculum active with interactive lessons and STEM activities.'
+  // Find the active stage dynamically from stages list
+  const activeStage: GlobalEducationStage = React.useMemo(() => {
+    if (!stages || stages.length === 0) {
+      return {
+        id: 'default_stage',
+        name: 'General Academic',
+        gradeRangeLabel: `Grade ${grade}`,
+        typicalAge: 'Standard School Age',
+        targetGrades: [grade],
+        defaultStream: profile?.stream || 'General Academic',
+        streams: [profile?.stream || 'General Academic']
       };
+    }
 
-  const handleSelectGrade = (newGrade: SchoolGrade, newStream?: Stream) => {
+    const matched = stages.find(s => s.targetGrades.includes(grade));
+    return matched || stages[stages.length - 1];
+  }, [stages, grade, profile?.stream]);
+
+  // Stage tier styling and copy helper
+  const currentRoleTier = React.useMemo(() => {
+    const stageName = (language === 'si' && activeStage.nameLocal) ? activeStage.nameLocal : activeStage.name;
+    const stageIndex = stages.findIndex(s => s.id === activeStage.id);
+
+    let color = 'from-blue-600 to-indigo-600';
+    let bgColor = 'bg-blue-500/10 border-blue-400/50 dark:border-blue-500/40';
+    let textColor = 'text-blue-900 dark:text-blue-300';
+
+    if (stageIndex === 0) {
+      color = 'from-amber-500 to-orange-500';
+      bgColor = 'bg-amber-500/10 border-amber-400/50 dark:border-amber-500/40';
+      textColor = 'text-amber-900 dark:text-amber-300';
+    } else if (stageIndex === 1) {
+      color = 'from-purple-600 to-pink-600';
+      bgColor = 'bg-purple-500/10 border-purple-400/50 dark:border-purple-500/40';
+      textColor = 'text-purple-900 dark:text-purple-300';
+    } else if (stageIndex === 2) {
+      color = 'from-emerald-600 to-teal-600';
+      bgColor = 'bg-emerald-500/10 border-emerald-400/50 dark:border-emerald-500/40';
+      textColor = 'text-emerald-900 dark:text-emerald-300';
+    }
+
+    const streamLabel = profile?.stream || activeStage.defaultStream || dictionary.activeStreamName;
+
+    return {
+      title: `${dictionary.flag} ${country.name} • ${stageName}`,
+      subtitle: `${activeStage.gradeRangeLabel} (${activeStage.typicalAge}) • ${streamLabel}`,
+      badge: `${country.code} ${activeStage.name.split(' ')[0]} Tier`,
+      color,
+      bgColor,
+      textColor,
+      activeFilterDesc: language === 'si' && isSriLanka
+        ? `${stageName} විෂය නිර්දේශය සහ ${dictionary.ministryShort} ප්‍රමිතීන් සක්‍රීය කර ඇත.`
+        : language === 'ja'
+        ? `${country.name} ${curriculum.authorityBoard} 指導要領に完全準拠 (${activeStage.gradeRangeLabel})。`
+        : `Aligned with ${curriculum.authorityBoard} official curriculum standards for ${activeStage.gradeRangeLabel}.`
+    };
+  }, [country, curriculum, dictionary, activeStage, stages, language, isSriLanka, profile?.stream]);
+
+  const handleSelectStage = (stage: GlobalEducationStage) => {
     soundFX.playClick();
-    setGradeAndStream(newGrade, newStream);
+    const targetGrade = stage.targetGrades[stage.targetGrades.length - 1] as SchoolGrade;
+    setGradeAndStream(targetGrade, stage.defaultStream as Stream);
     setIsSwitcherOpen(false);
   };
 
@@ -102,14 +116,17 @@ export default function StudentRoleIsolationBanner({
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                {language === 'si' ? currentRoleTier.nameSi : currentRoleTier.nameEn}
+                <span>{currentRoleTier.title}</span>
               </span>
               <span className="px-2 py-0.5 rounded-full bg-slate-900/80 text-amber-300 text-[10px] font-bold">
                 {currentRoleTier.badge}
               </span>
+              <span className="px-2 py-0.5 rounded-full bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-[10px] font-extrabold">
+                {activeStage.typicalAge}
+              </span>
             </div>
-            <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1">
-              {language === 'si' ? currentRoleTier.activeFilterDescSi : currentRoleTier.activeFilterDescEn}
+            <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+              {currentRoleTier.activeFilterDesc}
             </p>
           </div>
         </div>
@@ -135,94 +152,52 @@ export default function StudentRoleIsolationBanner({
               className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs shadow-xs hover:border-amber-500 transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
             >
               <Filter className="w-3.5 h-3.5 text-blue-500" />
-              <span>{language === 'si' ? 'ශ්‍රේණිය මාරු කරන්න' : 'Switch Grade Role'}</span>
+              <span>{language === 'si' ? 'අධ්‍යාපන මට්ටම මාරු කරන්න' : 'Switch Education Stage'}</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isSwitcherOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isSwitcherOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 p-2 rounded-2xl bg-white dark:bg-slate-900 border-2 border-amber-400 shadow-2xl z-30 space-y-1 text-xs">
-                <div className="p-2 text-[11px] font-black text-slate-500 uppercase tracking-wide border-b border-slate-100 dark:border-slate-800">
-                  {language === 'si' ? 'ශ්‍රේණි භූමිකාව තෝරන්න (Role Isolation)' : 'Select Role Isolation Tier'}
+              <div className="absolute right-0 top-full mt-2 w-80 p-2 rounded-2xl bg-white dark:bg-slate-900 border-2 border-amber-400 shadow-2xl z-30 space-y-1 text-xs">
+                <div className="p-2 text-[11px] font-black text-slate-500 uppercase tracking-wide border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <span>{country.name} Official Stages</span>
+                  <span className="text-amber-500 font-bold">{country.code}</span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleSelectGrade(5, 'Grade 5 Scholarship')}
-                  className="w-full p-2 rounded-xl text-left hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center justify-between group transition cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🦉</span>
-                    <div>
-                      <div className="font-bold text-amber-900 dark:text-amber-300">5 වසර ශිෂ්‍යත්වය (Scholarship)</div>
-                      <div className="text-[10px] text-slate-500">Kid Mode, Puzzles, Primary Sinhala</div>
-                    </div>
-                  </div>
-                  {isGrade5 && <CheckCircle2 className="w-4 h-4 text-amber-500" />}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSelectGrade(9)}
-                  className="w-full p-2 rounded-xl text-left hover:bg-purple-50 dark:hover:bg-purple-950/40 flex items-center justify-between group transition cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🎒</span>
-                    <div>
-                      <div className="font-bold text-purple-900 dark:text-purple-300">6-9 කනිෂ්ඨ ශ්‍රේණි (Junior)</div>
-                      <div className="text-[10px] text-slate-500">General Science, Maths, History</div>
-                    </div>
-                  </div>
-                  {isJunior && <CheckCircle2 className="w-4 h-4 text-purple-500" />}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSelectGrade(11)}
-                  className="w-full p-2 rounded-xl text-left hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-between group transition cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">📝</span>
-                    <div>
-                      <div className="font-bold text-emerald-900 dark:text-emerald-300">10-11 සාමාන්‍ය පෙළ (O/L)</div>
-                      <div className="text-[10px] text-slate-500">9 Subjects, Past Papers, Auto Tests</div>
-                    </div>
-                  </div>
-                  {isOL && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSelectGrade(13, 'Physical Science (Maths)')}
-                  className="w-full p-2 rounded-xl text-left hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center justify-between group transition cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">📐</span>
-                    <div>
-                      <div className="font-bold text-blue-900 dark:text-blue-300">12-13 උසස් පෙළ Maths (A/L)</div>
-                      <div className="text-[10px] text-slate-500">Combined Maths, Physics, Z-Score</div>
-                    </div>
-                  </div>
-                  {isAL && profile?.stream === 'Physical Science (Maths)' && (
-                    <CheckCircle2 className="w-4 h-4 text-blue-500" />
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSelectGrade(13, 'Biological Science (Bio)')}
-                  className="w-full p-2 rounded-xl text-left hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-between group transition cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🔬</span>
-                    <div>
-                      <div className="font-bold text-emerald-900 dark:text-emerald-300">12-13 උසස් පෙළ Bio (A/L)</div>
-                      <div className="text-[10px] text-slate-500">Biology, Chemistry, Physics</div>
-                    </div>
-                  </div>
-                  {isAL && profile?.stream === 'Biological Science (Bio)' && (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  )}
-                </button>
+                <div className="space-y-1 max-h-72 overflow-y-auto">
+                  {stages.map((stg, idx) => {
+                    const isCurrent = activeStage.id === stg.id;
+                    const stageDisplay = (language === 'si' && stg.nameLocal) ? stg.nameLocal : stg.name;
+                    return (
+                      <button
+                        key={stg.id}
+                        type="button"
+                        onClick={() => handleSelectStage(stg)}
+                        className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between group transition cursor-pointer border ${
+                          isCurrent
+                            ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-950 dark:text-blue-200'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800 border-transparent text-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs">
+                            {idx + 1}
+                          </div>
+                          <div>
+                            <div className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                              <span>{stageDisplay}</span>
+                            </div>
+                            <div className="text-[10px] text-slate-500 font-semibold flex items-center gap-1.5 mt-0.5">
+                              <span className="px-1.5 py-0.2 rounded bg-slate-200/80 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold">{stg.gradeRangeLabel}</span>
+                              <span>•</span>
+                              <span className="text-blue-600 dark:text-blue-400">{stg.typicalAge}</span>
+                            </div>
+                          </div>
+                        </div>
+                        {isCurrent && <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

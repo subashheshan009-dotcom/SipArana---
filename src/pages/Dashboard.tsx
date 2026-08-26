@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useCountry } from '@/context/CountryContext';
 import { useExamNews } from '@/context/NewsContext';
 import { SUBJECTS_DATA, INITIAL_STUDY_TASKS, SCHOOL_GRADES } from '@/data/mockData';
 import type { PageId } from '@/components/Layout';
@@ -54,6 +55,7 @@ interface DashboardProps {
 export default function Dashboard({ onNavigate }: DashboardProps) {
   const { profile, addXP } = useAuth();
   const { language, t } = useLanguage();
+  const { country, curriculum, dictionary, subjects: dynamicSubjects, gradingSystem, mascot } = useCountry();
   const { notices, isSyncing } = useExamNews();
   const [tasks, setTasks] = useState<StudyTask[]>(INITIAL_STUDY_TASKS);
   const [quizAnswered, setQuizAnswered] = useState<number | null>(null);
@@ -63,11 +65,13 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
   // Daily challenge question adaptive to level and language
   const userGrade = profile?.grade || 11;
-  const isGrade5 =
+  const isSriLanka = country.code === 'LK';
+  const isGrade5 = isSriLanka && (
     profile?.grade === 5 ||
     profile?.level === 'SCHOLARSHIP' ||
     profile?.stream === 'Grade 5 Scholarship' ||
-    !!profile?.isKidMode;
+    !!profile?.isKidMode
+  );
   const isOLOrJunior = userGrade <= 11;
 
   const dailyQuiz = isGrade5
@@ -165,9 +169,9 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const taskProgressPercent = Math.round((completedTasksCount / tasks.length) * 100);
 
   // Filter subjects matching student's country, curriculum, grade and stream
-  const activeCountry = GlobalCurriculumEngine.getActiveCountry(profile);
-  const activeCurriculum = GlobalCurriculumEngine.getActiveCurriculum(profile);
-  const globalSubjects = GlobalCurriculumEngine.getFilteredGlobalSubjects(profile);
+  const activeCountry = country;
+  const activeCurriculum = curriculum;
+  const globalSubjects = dynamicSubjects;
 
   const streamSubjects = isGrade5
     ? SUBJECTS_DATA.filter((s) => ['sub_sch_sinhala', 'sub_sch_maths', 'sub_sch_env', 'sub_sch_iq'].includes(s.id))
@@ -194,7 +198,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const gradeInfo = SCHOOL_GRADES.find((g) => g.grade === userGrade);
   const examTargetLabel =
     activeCountry.code !== 'LK'
-      ? `${activeCurriculum.titleEnglish} (${activeCountry.name})`
+      ? `${activeCurriculum.titleEnglish} (${gradingSystem.targetSample})`
       : isGrade5
       ? '5 වසර ශිෂ්‍යත්වය (160+ Target)'
       : userGrade >= 12
@@ -232,7 +236,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                 <span>SIPARANA</span>
               </div>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-bold flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> NIE Aligned
+                <CheckCircle2 className="w-3 h-3" /> {dictionary.heroBadge}
               </span>
             </div>
 
@@ -245,11 +249,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             </h1>
 
             <p className="text-sm text-blue-100/90 leading-relaxed">
-              {language === 'si'
-                ? `ඔබගේ ${userGrade} ශ්‍රේණියේ (${profile?.stream || 'Physical Science'}) විෂය නිර්දේශයට අදාළ වීඩියෝ පන්ති, පසුගිය ප්‍රශ්න පත්‍ර සහ AI උපකාර මෙතැනින් ලබාගන්න.`
-                : language === 'ta'
-                ? `உங்கள் தரம் ${userGrade} (${profile?.stream || 'Physical Science'}) பாடத்திட்ட வீடியோக்கள் மற்றும் வினாத்தாள்களை இங்கிருந்து அணுகவும்.`
-                : `Access Grade ${userGrade} (${profile?.stream || 'Physical Science'}) video lessons, syllabus guides, and past exam papers.`}
+              {dictionary.heroSubtitle}
             </p>
 
             <div className="flex flex-wrap gap-3 pt-1 text-xs">
@@ -308,56 +308,94 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         />
       </section>
 
-      {/* 2d. GRADE 5 SCHOLARSHIP SPECIAL BANNER (KAVI MENTOR & INTERACTIVE WIZARD) */}
-      <section
-        id="grade5-scholarship-hero-launcher"
-        className={`p-4 sm:p-5 rounded-3xl border-2 transition-all shadow-md relative overflow-hidden ${
-          userGrade === 5
-            ? 'bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-yellow-500/20 border-amber-400 dark:border-amber-500'
-            : 'bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-yellow-500/10 border-amber-300/60 dark:border-amber-700/60'
-        }`}
-      >
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* 2d. COUNTRY-SPECIFIC STAGE BANNER */}
+      {isSriLanka ? (
+        <section
+          id="grade5-scholarship-hero-launcher"
+          className={`p-4 sm:p-5 rounded-3xl border-2 transition-all shadow-md relative overflow-hidden ${
+            userGrade === 5
+              ? 'bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-yellow-500/20 border-amber-400 dark:border-amber-500'
+              : 'bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-yellow-500/10 border-amber-300/60 dark:border-amber-700/60'
+          }`}
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 p-0.5 shadow-md flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl sm:text-3xl">🦉</span>
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-amber-900 dark:text-amber-300 uppercase tracking-wider bg-amber-200/80 dark:bg-amber-950 px-2 py-0.5 rounded-md">
+                    5 වසර ශිෂ්‍යත්වය (Grade 5)
+                  </span>
+                  <span className="text-[11px] font-extrabold text-orange-600 dark:text-orange-400">
+                    Step-by-Step Guide
+                  </span>
+                </div>
+                <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                  {language === 'si'
+                    ? 'කවි බකමූණා සමඟ 5 ශිෂ්‍යත්වයට සූදානම් වෙමු! 🌟'
+                    : 'Prepare for Grade 5 Scholarship with Kavi Owl!'}
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1">
+                  {language === 'si'
+                    ? 'සිංහල, ගණිතය, පරිසරය, බුද්ධි පරීක්ෂණ විනෝද ප්‍රශ්න, දවසේ කාලසටහන සහ ප්‍රශ්න පත්‍ර.'
+                    : 'Sinhala, Maths, Environment, IQ puzzles, color-coded timetable and past papers.'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              id="open-scholarship-wizard-btn"
+              onClick={() => {
+                soundFX.playCorrect();
+                setIsScholarshipWizardOpen(true);
+              }}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs shadow-md hover:shadow-lg transition transform hover:scale-102 flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
+            >
+              <span>{language === 'si' ? 'ශිෂ්‍යත්ව මඟපෙන්වීම විවෘත කරන්න' : 'Launch Scholarship Wizard'}</span>
+              <Sparkles className="w-4 h-4 text-amber-200 animate-spin" />
+            </button>
+          </div>
+        </section>
+      ) : (
+        <section
+          id="global-stage-highlight-banner"
+          className="p-4 sm:p-5 rounded-3xl border-2 bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-teal-500/10 border-blue-200 dark:border-blue-800 transition-all shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        >
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 p-0.5 shadow-md flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl sm:text-3xl">🦉</span>
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 p-0.5 shadow-md flex items-center justify-center flex-shrink-0 text-white font-black text-xl">
+              <span>{country.flag}</span>
             </div>
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-amber-900 dark:text-amber-300 uppercase tracking-wider bg-amber-200/80 dark:bg-amber-950 px-2 py-0.5 rounded-md">
-                  5 වසර ශිෂ්‍යත්වය (Grade 5)
+                <span className="text-xs font-black text-blue-900 dark:text-blue-300 uppercase tracking-wider bg-blue-100 dark:bg-blue-950 px-2 py-0.5 rounded-md">
+                  {country.name} • {curriculum.authorityBoard}
                 </span>
-                <span className="text-[11px] font-extrabold text-orange-600 dark:text-orange-400">
-                  Step-by-Step Guide
+                <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400">
+                  Target: {gradingSystem.targetExcellence}
                 </span>
               </div>
               <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-                {language === 'si'
-                  ? 'කවි බකමූණා සමඟ 5 ශිෂ්‍යත්වයට සූදානම් වෙමු! 🌟'
-                  : 'Prepare for Grade 5 Scholarship with Kavi Owl!'}
+                Official National Standards & AI Lesson Modules
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1">
-                {language === 'si'
-                  ? 'සිංහල, ගණිතය, පරිසරය, බුද්ධි පරීක්ෂණ විනෝද ප්‍රශ්න, දවසේ කාලසටහන සහ ප්‍රශ්න පත්‍ර.'
-                  : 'Sinhala, Maths, Environment, IQ puzzles, color-coded timetable and past papers.'}
+                Calibrated against {curriculum.titleEnglish} teacher guides and national examination benchmarks.
               </p>
             </div>
           </div>
 
           <button
             type="button"
-            id="open-scholarship-wizard-btn"
-            onClick={() => {
-              soundFX.playCorrect();
-              setIsScholarshipWizardOpen(true);
-            }}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs shadow-md hover:shadow-lg transition transform hover:scale-102 flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
+            onClick={() => onNavigate('subjects')}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs shadow-md transition flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
           >
-            <span>{language === 'si' ? 'ශිෂ්‍යත්ව මඟපෙන්වීම විවෘත කරන්න' : 'Launch Scholarship Wizard'}</span>
-            <Sparkles className="w-4 h-4 text-amber-200 animate-spin" />
+            <span>Explore {country.code} Subject Modules</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 3. HORIZONTAL QUICK-ACTION APP TOOLS BAR */}
       {isGrade5 ? (

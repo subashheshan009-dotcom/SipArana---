@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useCountry } from '@/context/CountryContext';
 import { getKaviDynamicAdvice, DynamicKaviAdvice } from '@/utils/autonomousCurriculumEngine';
 import { GlobalCurriculumEngine } from '@/utils/globalCurriculumEngine';
 import { soundFX } from '@/utils/audioUtils';
@@ -36,12 +37,12 @@ export default function KaviStepByStepMentor({
 }: KaviStepByStepMentorProps) {
   const { profile, addXP } = useAuth();
   const { language } = useLanguage();
+  const { country, curriculum, dictionary, mascot } = useCountry();
   const [activeAdviceIndex, setActiveAdviceIndex] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [completedAdviceIds, setCompletedAdviceIds] = useState<string[]>([]);
 
-  const country = GlobalCurriculumEngine.getActiveCountry(profile);
-  const globalMascot = GlobalCurriculumEngine.getLocalizedMascotGuidance(profile, language);
+  const globalMascot = mascot;
 
   const grade = profile?.grade || 11;
   const streak = profile?.streakDays || 1;

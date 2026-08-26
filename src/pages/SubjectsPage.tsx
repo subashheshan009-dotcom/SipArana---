@@ -51,6 +51,7 @@ import {
 } from '@/data/quizData';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useCountry } from '@/context/CountryContext';
 import type { Subject, Lesson } from '@/types';
 import AranaMascot from '@/components/AranaMascot';
 import SubjectGuideMascot from '@/components/SubjectGuideMascot';
@@ -61,6 +62,7 @@ type WizardStep = 'category' | 'stream' | 'subject' | 'details';
 export default function SubjectsPage() {
   const { profile, toggleBookmarkPaper, addXP } = useAuth();
   const { language } = useLanguage();
+  const { country, curriculum, dictionary, stages } = useCountry();
 
   const isGrade5 =
     profile?.grade === 5 ||
@@ -345,15 +347,15 @@ export default function SubjectsPage() {
             {isGrade5 ? <Sparkles className="w-3.5 h-3.5 text-amber-200" /> : <BookOpen className="w-3.5 h-3.5 text-amber-300" />}
             <span>
               {isGrade5
-                ? 'ශ්‍රී ලංකා ජාතික අධ්‍යාපන ආයතනය (NIE) • 5 ශ්‍රේණිය ගුරු පොත සහ විෂය නිර්දේශය'
-                : 'National Curriculum & Guru Potha Aligned • Grades 6 - 13 & Campus'}
+                ? `${dictionary.ministryShort} • ${dictionary.countryName} Primary & Guru Potha Guidelines`
+                : `${dictionary.heroBadge} • ${dictionary.officialTeacherGuideRef}`}
             </span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
             {isGrade5
-              ? (language === 'si' ? '5 වසර ශිෂ්‍යත්ව විෂයයන් සහ ගුරු පොත්' : 'Grade 5 Scholarship Subjects & Guru Potha')
-              : (language === 'si' ? 'විෂය නිර්දේශය සහ පසුගිය විභාග ප්‍රශ්න පත්‍ර' : 'Curriculum & Past Papers')}
+              ? (language === 'si' ? `${dictionary.countryName} ප්‍රාථමික විෂයයන් සහ ගුරු පොත්` : `${dictionary.countryName} Primary Subjects & Official Guide`)
+              : (language === 'si' ? `${dictionary.curriculumTitle} විෂය නිර්දේශය සහ පසුගිය විභාග ප්‍රශ්න පත්‍ර` : `${dictionary.curriculumTitle} Curriculum & Past Papers`)}
           </h1>
           <p className="text-sm sm:text-base text-slate-100 dark:text-slate-200 leading-relaxed">
             {isGrade5

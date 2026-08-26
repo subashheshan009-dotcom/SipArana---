@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserProfile, Stream, ExamLevel, Medium, SchoolGrade, StudentCategory, GlobalCountryCode, AppLanguage } from '@/types';
-import { getCountryByCode, getCurriculumById } from '@/data/globalCurriculumData';
+import { getCountryByCode, getCurriculumById, getCountrySubdivisions } from '@/data/globalCurriculumData';
 
 export type DemoPresetKey = 
   | 'scholarship' 
@@ -895,22 +895,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (
     data: Partial<UserProfile> & { password?: string; phone?: string }
   ): Promise<{ success: boolean; error?: string }> => {
+    const { password, phone, ...profileFields } = data;
     const gradeVal = data.grade || 12;
     let levelVal: ExamLevel = 'AL';
-    let streamVal: Stream = data.stream || 'Physical Science (Maths)';
+    const targetCountryCode = profileFields.countryCode || 'LK';
+    const targetCountry = getCountryByCode(targetCountryCode);
+    const targetCurriculum = profileFields.curriculumId ? getCurriculumById(profileFields.curriculumId) : targetCountry.curricula[0];
+    
+    // Find matching stage in active curriculum
+    const matchedStage = targetCurriculum.stages.find(s => s.targetGrades.includes(gradeVal)) || targetCurriculum.stages[targetCurriculum.stages.length - 1];
+    let streamVal: Stream = data.stream || matchedStage?.defaultStream || (targetCountryCode === 'LK' ? 'Physical Science (Maths)' : 'General Academic');
 
-    if (gradeVal === 5) {
-      levelVal = 'SCHOLARSHIP';
-      streamVal = 'Grade 5 Scholarship';
-    } else if (gradeVal <= 9) {
-      levelVal = 'JUNIOR';
-      streamVal = 'Junior Secondary (Grade 6-9)';
-    } else if (gradeVal <= 11) {
-      levelVal = 'OL';
-      streamVal = 'General O/L';
+    if (targetCountryCode === 'LK') {
+      if (gradeVal === 5) {
+        levelVal = 'SCHOLARSHIP';
+        streamVal = 'Grade 5 Scholarship';
+      } else if (gradeVal <= 9) {
+        levelVal = 'JUNIOR';
+        streamVal = 'Junior Secondary (Grade 6-9)';
+      } else if (gradeVal <= 11) {
+        levelVal = 'OL';
+        streamVal = 'General O/L';
+      }
+    } else {
+      levelVal = gradeVal >= 11 ? 'GLOBAL_SENIOR' : 'GLOBAL_SECONDARY';
     }
-
-    const { password, phone, ...profileFields } = data;
 
     const newUser: UserProfile = {
       id: `usr_${Date.now()}`,
@@ -927,11 +936,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       targetYear:
         profileFields.targetYear ||
         (gradeVal === 5 ? 2026 : gradeVal === 11 ? 2026 : gradeVal === 13 ? 2026 : 2027),
-      school: profileFields.school || (gradeVal === 5 ? 'Royal Primary School, Colombo' : 'National School'),
-      district: profileFields.district || 'Colombo',
-      medium: profileFields.medium || 'Sinhala',
+      school: profileFields.school || (targetCountryCode === 'LK' ? (gradeVal === 5 ? 'Royal Primary School, Colombo' : 'National Model School') : `${targetCountry.name} Academy`),
+      district: profileFields.district || (targetCountryCode === 'LK' ? 'Colombo' : getCountrySubdivisions(targetCountryCode).defaultSubdivision),
+      medium: profileFields.medium || (targetCountryCode === 'LK' ? 'Sinhala' : targetCountry.defaultLanguage === 'ja' ? 'Japanese' : targetCountry.defaultLanguage === 'de' ? 'German' : 'English'),
       isPremium: false,
-      isKidMode: gradeVal === 5 || profileFields.isKidMode,
+      isKidMode: (gradeVal === 5 && targetCountryCode === 'LK') || profileFields.isKidMode,
       xp: gradeVal === 5 ? 1000 : 250,
       streakDays: 1,
       lastActiveDate: new Date().toISOString().split('T')[0],
@@ -957,23 +966,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const setGradeAndStream = (newGrade: SchoolGrade, customStream?: Stream) => {
     if (!profile) return;
-    let level: ExamLevel = 'AL';
-    let stream: Stream = customStream || profile.stream;
+    const countryCode = profile.countryCode || 'LK';
+    const country = getCountryByCode(countryCode);
+    const curriculum = profile.curriculumId ? getCurriculumById(profile.curriculumId) : country.curricula[0];
+    const matchedStage = curriculum.stages.find(s => s.targetGrades.includes(newGrade)) || curriculum.stages[curriculum.stages.length - 1];
 
-    if (newGrade === 5) {
-      level = 'SCHOLARSHIP';
-      stream = 'Grade 5 Scholarship';
-    } else if (newGrade <= 9) {
-      level = 'JUNIOR';
-      stream = 'Junior Secondary (Grade 6-9)';
-    } else if (newGrade <= 11) {
-      level = 'OL';
-      stream = 'General O/L';
-    } else {
-      level = 'AL';
-      if (stream === 'General O/L' || stream === 'Junior Secondary (Grade 6-9)' || stream === 'Grade 5 Scholarship') {
-        stream = 'Physical Science (Maths)';
+    let level: ExamLevel = 'AL';
+    let stream: Stream = customStream || matchedStage?.defaultStream || profile.stream;
+
+    if (countryCode === 'LK') {
+      if (newGrade === 5) {
+        level = 'SCHOLARSHIP';
+        stream = 'Grade 5 Scholarship';
+      } else if (newGrade <= 9) {
+        level = 'JUNIOR';
+        stream = 'Junior Secondary (Grade 6-9)';
+      } else if (newGrade <= 11) {
+        level = 'OL';
+        stream = 'General O/L';
+      } else {
+        level = 'AL';
+        if (stream === 'General O/L' || stream === 'Junior Secondary (Grade 6-9)' || stream === 'Grade 5 Scholarship') {
+          stream = 'Physical Science (Maths)';
+        }
       }
+    } else {
+      level = newGrade >= 11 ? 'GLOBAL_SENIOR' : 'GLOBAL_SECONDARY';
     }
 
     const updated: UserProfile = {
@@ -981,7 +999,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       grade: newGrade,
       level,
       stream,
-      isKidMode: newGrade === 5,
+      isKidMode: newGrade === 5 && countryCode === 'LK',
     };
     persistUser(updated);
   };

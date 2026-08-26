@@ -33,14 +33,16 @@ import {
   Layers,
   Headphones,
   Languages,
-  Cpu
+  Cpu,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useLanguage, SUPPORTED_LANGUAGES } from '@/context/LanguageContext';
+import { useCountry } from '@/context/CountryContext';
 import { useExamNews } from '@/context/NewsContext';
 import { SCHOOL_GRADES } from '@/data/mockData';
-import type { SchoolGrade, AppLanguage } from '@/types';
+import type { SchoolGrade, AppLanguage, Stream } from '@/types';
 import SiparanaLogo from '@/components/SiparanaLogo';
 import AutonomousCurriculumSyncModal from '@/components/AutonomousCurriculumSyncModal';
 import GlobalCountryCurriculumModal from '@/components/GlobalCountryCurriculumModal';
@@ -118,6 +120,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
   const { profile, logout, setGradeAndStream, toggleStudentCategory } = useAuth();
   const { theme, toggleTheme, isDark } = useTheme();
   const { language, setLanguage, t } = useLanguage();
+  const { country, curriculum, dictionary, countryCode, stages } = useCountry();
   const { notices, readIds, markAsRead } = useExamNews();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -125,7 +128,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
   const [showAutonomousModal, setShowAutonomousModal] = useState(false);
   const [showGlobalCountryModal, setShowGlobalCountryModal] = useState(false);
 
-  const activeCountryObj = GLOBAL_COUNTRIES.find(c => c.code === profile?.countryCode) || GLOBAL_COUNTRIES[0];
+  const activeCountryObj = country;
 
   const unreadNotices = notices.filter(n => !readIds.includes(n.id));
   const unreadCount = unreadNotices.length;
@@ -245,11 +248,11 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                   SIPARANA
                 </span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded font-extrabold bg-blue-600 text-white">
-                  LK
+                  {dictionary.countryCode}
                 </span>
               </div>
               <p className="text-[10px] lg:text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">
-                ජාතික අධ්‍යාපන පියස
+                {dictionary.subTitleHeader}
               </p>
             </div>
           </div>
@@ -404,18 +407,14 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
             <div className="flex items-center justify-between mb-1">
               <span className="font-bold text-blue-900 dark:text-blue-300 flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                {language === 'si' ? 'විෂය නිර්දේශ පියස' : language === 'ta' ? 'பாடத்திட்ட வழிகாட்டி' : 'Curriculum Tracker'}
+                {dictionary.curriculumTrackerTitle}
               </span>
-              <span className="font-extrabold text-blue-600 dark:text-blue-400">
-                {isUniversityStudent ? (profile?.universityShort || 'Uni') : `Grade ${profile?.grade || 11}`}
+              <span className="font-extrabold text-blue-600 dark:text-blue-400 text-[10px]">
+                {isUniversityStudent ? (profile?.universityShort || 'Uni') : `${dictionary.countryCode} • Gr ${profile?.grade || 11}`}
               </span>
             </div>
-            <p className="text-[11px] text-slate-600 dark:text-slate-300">
-              {language === 'si'
-                ? 'ජාතික අධ්‍යාපන ආයතන (NIE) ගුරු පොතට අනුකූලයි.'
-                : language === 'ta'
-                ? 'தேசிய கல்வி நிறுவன (NIE) வழிகாட்டிக்கு அமைவானது.'
-                : 'Aligned with National Institute of Education (NIE) guidelines.'}
+            <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2">
+              {dictionary.curriculumTrackerDesc}
             </p>
           </div>
 
@@ -467,42 +466,69 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                 <button
                   id="grade-switcher-btn"
                   onClick={() => setShowGradeDropdown(!showGradeDropdown)}
-                  className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60 rounded-xl text-blue-700 dark:text-blue-300 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/80 transition max-w-[90px] sm:max-w-none"
-                  title="Change Active Grade"
+                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60 rounded-xl text-blue-700 dark:text-blue-300 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/80 transition max-w-[140px] sm:max-w-none"
+                  title="Change Active Grade / Stage"
                 >
                   <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span className="truncate">
-                    {language === 'si' ? `${profile.grade} වසර` : language === 'ta' ? `தரம் ${profile.grade}` : `Gr ${profile.grade}`}
+                    {countryCode === 'LK'
+                      ? (language === 'si' ? `${profile.grade} වසර` : language === 'ta' ? `தரம் ${profile.grade}` : `Grade ${profile.grade}`)
+                      : countryCode === 'UK'
+                      ? `Year ${profile.grade}`
+                      : countryCode === 'JP'
+                      ? (profile.grade >= 10 ? `高校 ${profile.grade - 9}年` : `中学 ${profile.grade - 6}年`)
+                      : `Grade ${profile.grade}`}
                   </span>
                   <ChevronDown className="w-3 h-3 opacity-70 flex-shrink-0" />
                 </button>
 
                 {showGradeDropdown && (
-                  <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 animate-in fade-in slide-in-from-top-2">
-                    <div className="px-2.5 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 mb-1">
-                      {language === 'si' ? 'ශ්‍රේණිය තෝරන්න' : language === 'ta' ? 'தரத்தைத் தேர்ந்தெடுக்கவும்' : 'Select Grade'}
+                  <div className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="px-2.5 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center justify-between">
+                      <span>{language === 'si' ? 'අධ්‍යාපන මට්ටම තෝරන්න' : `${country.name} Stages & Grades`}</span>
+                      <span className="text-blue-500 font-extrabold">{country.code}</span>
                     </div>
-                    <div className="space-y-1 max-h-60 overflow-y-auto">
-                      {SCHOOL_GRADES.map((g) => {
-                        const isCurrent = profile.grade === g.grade;
+                    <div className="space-y-1.5 max-h-72 overflow-y-auto">
+                      {stages.map((stg) => {
+                        const isStageActive = stg.targetGrades.includes(profile.grade);
+                        const stageLabel = (language === 'si' && stg.nameLocal) ? stg.nameLocal : stg.name;
                         return (
-                          <button
-                            key={g.grade}
-                            onClick={() => {
-                              setGradeAndStream(g.grade);
-                              setShowGradeDropdown(false);
-                            }}
-                            className={`w-full px-2.5 py-1.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between transition ${
-                              isCurrent
-                                ? 'bg-blue-600 text-white'
-                                : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
-                            }`}
-                          >
-                            <span>{language === 'ta' ? `தரம் ${g.grade}` : language === 'en' ? `Grade ${g.grade}` : g.nameSinhala}</span>
-                            <span className="text-[10px] opacity-75 font-normal">
-                              ({g.stage})
-                            </span>
-                          </button>
+                          <div key={stg.id} className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                            <div className="px-1.5 py-0.5 flex items-center justify-between text-[11px] font-extrabold text-slate-800 dark:text-slate-200">
+                              <span>{stageLabel}</span>
+                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold">{stg.typicalAge}</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-1 mt-1">
+                              {stg.targetGrades.map((gNum) => {
+                                const isCurrent = profile.grade === gNum;
+                                const gradeName = countryCode === 'UK'
+                                  ? `Year ${gNum}`
+                                  : countryCode === 'JP'
+                                  ? (gNum >= 10 ? `高${gNum - 9}` : `中${gNum - 6}`)
+                                  : countryCode === 'LK' && language === 'si'
+                                  ? `${gNum} වසර`
+                                  : `Grade ${gNum}`;
+                                return (
+                                  <button
+                                    key={gNum}
+                                    type="button"
+                                    onClick={() => {
+                                      setGradeAndStream(gNum as SchoolGrade, stg.defaultStream as Stream);
+                                      setShowGradeDropdown(false);
+                                    }}
+                                    className={`px-2 py-1.5 rounded-lg text-left text-xs font-bold flex items-center justify-between transition ${
+                                      isCurrent
+                                        ? 'bg-blue-600 text-white shadow-xs'
+                                        : 'hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-slate-800'
+                                    }`}
+                                  >
+                                    <span>{gradeName}</span>
+                                    {isCurrent && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
@@ -724,11 +750,16 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                     <SiparanaLogo variant="mark" size="xs" className="w-full h-full" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-black text-base tracking-wider uppercase font-serif text-slate-900 dark:text-white leading-none">
-                      SIPARANA
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-semibold mt-0.5">
-                      National Education
+                    <div className="flex items-center gap-1">
+                      <span className="font-black text-base tracking-wider uppercase font-serif text-slate-900 dark:text-white leading-none">
+                        SIPARANA
+                      </span>
+                      <span className="text-[9px] px-1 py-0.2 rounded font-extrabold bg-blue-600 text-white">
+                        {dictionary.countryCode}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-semibold mt-0.5 truncate max-w-[140px]">
+                      {dictionary.subTitleHeader}
                     </span>
                   </div>
                 </div>

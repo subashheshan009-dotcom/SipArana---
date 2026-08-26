@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { CountryProvider } from '@/context/CountryContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { NewsProvider } from '@/context/NewsContext';
@@ -130,13 +131,15 @@ export default function App() {
     <LanguageProvider>
       <ThemeProvider>
         <AuthProvider>
-          <NewsProvider>
-            <CoursesProvider>
-              <LiveSyncProvider>
-                <AppContent />
-              </LiveSyncProvider>
-            </CoursesProvider>
-          </NewsProvider>
+          <CountryProvider>
+            <NewsProvider>
+              <CoursesProvider>
+                <LiveSyncProvider>
+                  <AppContent />
+                </LiveSyncProvider>
+              </CoursesProvider>
+            </NewsProvider>
+          </CountryProvider>
         </AuthProvider>
       </ThemeProvider>
     </LanguageProvider>

@@ -20,7 +20,8 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useLanguage, SUPPORTED_LANGUAGES } from '@/context/LanguageContext';
-import { SRI_LANKA_DISTRICTS, SCHOOL_GRADES } from '@/data/mockData';
+import { SCHOOL_GRADES } from '@/data/mockData';
+import { getCountrySubdivisions, getCountryByCode } from '@/data/globalCurriculumData';
 import type { Stream, ExamLevel, Medium, SchoolGrade, AppLanguage } from '@/types';
 
 export default function SettingsPage() {
@@ -39,6 +40,10 @@ export default function SettingsPage() {
   const [notifyDaily, setNotifyDaily] = useState(true);
   const [notifyPapers, setNotifyPapers] = useState(true);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  const userCountryCode = profile?.countryCode || 'LK';
+  const activeSubdivisions = getCountrySubdivisions(userCountryCode);
+  const isSriLanka = userCountryCode === 'LK';
 
   const handleGradeChange = (newGrade: SchoolGrade) => {
     setGrade(newGrade);
@@ -221,13 +226,15 @@ export default function SettingsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block font-semibold text-slate-500 mb-1">දිස්ත්‍රික්කය (District)</label>
+              <label className="block font-semibold text-slate-500 mb-1">
+                {isSriLanka ? 'දිස්ත්‍රික්කය (District)' : activeSubdivisions.labelLocal}
+              </label>
               <select
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
                 className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-slate-100"
               >
-                {SRI_LANKA_DISTRICTS.map((d) => (
+                {activeSubdivisions.subdivisions.map((d) => (
                   <option key={d} value={d}>
                     {d}
                   </option>

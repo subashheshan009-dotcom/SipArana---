@@ -941,3 +941,186 @@ export function getCurriculumById(curriculumId?: string): GlobalCurriculum {
   }
   return GLOBAL_COUNTRIES[0].curricula[0];
 }
+
+export interface CountrySubdivision {
+  countryCode: GlobalCountryCode;
+  labelEn: string;
+  labelLocal: string;
+  placeholder: string;
+  defaultSubdivision: string;
+  subdivisions: string[];
+}
+
+export const GLOBAL_COUNTRY_SUBDIVISIONS: Record<GlobalCountryCode, CountrySubdivision> = {
+  LK: {
+    countryCode: 'LK',
+    labelEn: 'District',
+    labelLocal: 'දිස්ත්‍රික්කය (District)',
+    placeholder: 'දිස්ත්‍රික්කය තෝරන්න',
+    defaultSubdivision: 'Colombo',
+    subdivisions: [
+      'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya',
+      'Galle', 'Matara', 'Hambantota', 'Jaffna', 'Kilinochchi', 'Mannar',
+      'Vavuniya', 'Mullaitivu', 'Batticaloa', 'Ampara', 'Trincomalee',
+      'Kurunegala', 'Puttalam', 'Anuradhapura', 'Polonnaruwa', 'Badulla',
+      'Monaragala', 'Ratnapura', 'Kegalle'
+    ]
+  },
+  UK: {
+    countryCode: 'UK',
+    labelEn: 'Nation / County / Region',
+    labelLocal: 'Nation / County / Region',
+    placeholder: 'Select region or county',
+    defaultSubdivision: 'Greater London',
+    subdivisions: [
+      'Greater London',
+      'South East England (Oxford, Surrey)',
+      'East of England (Cambridge, Essex)',
+      'West Midlands (Birmingham, Coventry)',
+      'North West England (Manchester, Liverpool)',
+      'Yorkshire & the Humber (Leeds, Sheffield)',
+      'South West England (Bristol, Bath)',
+      'East Midlands (Nottingham, Leicester)',
+      'North East England (Newcastle, Durham)',
+      'Scotland (Edinburgh, Glasgow, Aberdeen)',
+      'Wales (Cardiff, Swansea)',
+      'Northern Ireland (Belfast, Derry)'
+    ]
+  },
+  US: {
+    countryCode: 'US',
+    labelEn: 'State / Territory',
+    labelLocal: 'State / Territory',
+    placeholder: 'Select state',
+    defaultSubdivision: 'California',
+    subdivisions: [
+      'California', 'New York', 'Texas', 'Florida', 'Illinois',
+      'Washington', 'Massachusetts', 'Pennsylvania', 'Georgia',
+      'North Carolina', 'Virginia', 'New Jersey', 'Ohio', 'Michigan',
+      'Colorado', 'Arizona', 'Maryland', 'Minnesota', 'Oregon',
+      'Connecticut', 'Indiana', 'Tennessee', 'Missouri', 'Wisconsin', 'Utah'
+    ]
+  },
+  JP: {
+    countryCode: 'JP',
+    labelEn: 'Prefecture / Region',
+    labelLocal: '都道府県 (Prefecture / Region)',
+    placeholder: '都道府県を選択',
+    defaultSubdivision: '東京都 (Tokyo)',
+    subdivisions: [
+      '東京都 (Tokyo)', '神奈川県 (Kanagawa)', '大阪府 (Osaka)',
+      '愛知県 (Aichi)', '埼玉県 (Saitama)', '千葉県 (Chiba)',
+      '兵庫県 (Hyogo)', '北海道 (Hokkaido)', '福岡県 (Fukuoka)',
+      '静岡県 (Shizuoka)', '京都府 (Kyoto)', '広島県 (Hiroshima)',
+      '宮城県 (Miyagi)', '茨城県 (Ibaraki)', '新潟県 (Niigata)'
+    ]
+  },
+  IN: {
+    countryCode: 'IN',
+    labelEn: 'State / Union Territory',
+    labelLocal: 'State / Union Territory (राज्य / संघ राज्य क्षेत्र)',
+    placeholder: 'Select state / UT',
+    defaultSubdivision: 'Maharashtra',
+    subdivisions: [
+      'Maharashtra (Mumbai, Pune)', 'Delhi (NCR)', 'Karnataka (Bengaluru)',
+      'Tamil Nadu (Chennai)', 'Uttar Pradesh (Lucknow, Noida)', 'Telangana (Hyderabad)',
+      'West Bengal (Kolkata)', 'Gujarat (Ahmedabad)', 'Kerala (Kochi, Trivandrum)',
+      'Rajasthan (Jaipur)', 'Punjab (Chandigarh)', 'Haryana (Gurugram)',
+      'Madhya Pradesh (Indore)', 'Bihar (Patna)', 'Andhra Pradesh', 'Odisha (Bhubaneswar)'
+    ]
+  },
+  AU: {
+    countryCode: 'AU',
+    labelEn: 'State / Territory',
+    labelLocal: 'State / Territory',
+    placeholder: 'Select state / territory',
+    defaultSubdivision: 'New South Wales (NSW)',
+    subdivisions: [
+      'New South Wales (NSW - Sydney)',
+      'Victoria (VIC - Melbourne)',
+      'Queensland (QLD - Brisbane)',
+      'Western Australia (WA - Perth)',
+      'South Australia (SA - Adelaide)',
+      'Australian Capital Territory (ACT - Canberra)',
+      'Tasmania (TAS - Hobart)',
+      'Northern Territory (NT - Darwin)'
+    ]
+  },
+  CA: {
+    countryCode: 'CA',
+    labelEn: 'Province / Territory',
+    labelLocal: 'Province / Territory',
+    placeholder: 'Select province',
+    defaultSubdivision: 'Ontario',
+    subdivisions: [
+      'Ontario (Toronto, Ottawa)',
+      'British Columbia (Vancouver, Victoria)',
+      'Quebec (Montreal, Quebec City)',
+      'Alberta (Calgary, Edmonton)',
+      'Manitoba (Winnipeg)',
+      'Saskatchewan (Saskatoon, Regina)',
+      'Nova Scotia (Halifax)',
+      'New Brunswick (Fredericton)',
+      'Newfoundland and Labrador',
+      'Prince Edward Island'
+    ]
+  },
+  SG: {
+    countryCode: 'SG',
+    labelEn: 'Planning Region / Area',
+    labelLocal: 'Planning Region / Area',
+    placeholder: 'Select area',
+    defaultSubdivision: 'Central Region',
+    subdivisions: [
+      'Central Region (Downtown, Orchard, Bukit Merah)',
+      'East Region (Tampines, Bedok, Pasir Ris)',
+      'North-East Region (Hougang, Sengkang, Punggol)',
+      'North Region (Woodlands, Yishun, Sembawang)',
+      'West Region (Jurong, Clementi, Bukit Batok)'
+    ]
+  },
+  DE: {
+    countryCode: 'DE',
+    labelEn: 'Bundesland (Federal State)',
+    labelLocal: 'Bundesland (Federal State)',
+    placeholder: 'Bundesland wählen',
+    defaultSubdivision: 'Bayern (Bavaria)',
+    subdivisions: [
+      'Bayern (Bavaria - München)',
+      'Baden-Württemberg (Stuttgart)',
+      'Nordrhein-Westfalen (Köln, Düsseldorf)',
+      'Berlin',
+      'Hessen (Frankfurt)',
+      'Hamburg',
+      'Niedersachsen (Hannover)',
+      'Sachsen (Dresden, Leipzig)',
+      'Rheinland-Pfalz (Mainz)',
+      'Schleswig-Holstein (Kiel)'
+    ]
+  },
+  GLOBAL: {
+    countryCode: 'GLOBAL',
+    labelEn: 'Global Region / Major City',
+    labelLocal: 'Global Region / Major City',
+    placeholder: 'Select or enter region',
+    defaultSubdivision: 'International / Global Hub',
+    subdivisions: [
+      'International / Global Hub',
+      'London / Western Europe',
+      'New York / Eastern US',
+      'San Francisco / Silicon Valley',
+      'Tokyo / East Asia',
+      'Singapore / SE Asia',
+      'Sydney / Oceania',
+      'Dubai / Middle East Hub',
+      'Toronto / Canada',
+      'Other Global City'
+    ]
+  }
+};
+
+export function getCountrySubdivisions(countryCode?: string): CountrySubdivision {
+  if (!countryCode) return GLOBAL_COUNTRY_SUBDIVISIONS.LK;
+  const code = countryCode.toUpperCase() as GlobalCountryCode;
+  return GLOBAL_COUNTRY_SUBDIVISIONS[code] || GLOBAL_COUNTRY_SUBDIVISIONS.GLOBAL;
+}
