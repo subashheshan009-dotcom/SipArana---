@@ -113,7 +113,7 @@ export default function SettingsPage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-bold">
           {SUPPORTED_LANGUAGES.map((lang) => {
             const isSelected = language === lang.code;
             return (
@@ -121,15 +121,15 @@ export default function SettingsPage() {
                 key={lang.code}
                 id={`settings-lang-${lang.code}-btn`}
                 onClick={() => setLanguage(lang.code as AppLanguage)}
-                className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition text-left ${
+                className={`p-3 rounded-2xl border flex flex-col items-center gap-1 transition text-center cursor-pointer ${
                   isSelected
-                    ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/30'
+                    ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/30 font-black scale-102 shadow-xs'
                     : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                 }`}
               >
-                <span className="text-xl">{lang.flag}</span>
-                <span className="font-bold text-sm">{lang.nativeName}</span>
-                <span className="text-[11px] opacity-70 font-normal">({lang.name})</span>
+                <span className="text-2xl leading-none">{lang.flag}</span>
+                <span className="font-extrabold text-xs text-slate-900 dark:text-slate-100">{lang.nativeName}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-400 font-semibold">{lang.name}</span>
               </button>
             );
           })}

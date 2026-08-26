@@ -6,6 +6,7 @@
  */
 
 import { GLOBAL_COUNTRIES, getCountryByCode, getCurriculumById, type GlobalCountry, type GlobalCurriculum, type GlobalSubject, type GlobalCountryCode } from '@/data/globalCurriculumData';
+export { GLOBAL_COUNTRIES, getCountryByCode, getCurriculumById, type GlobalCountry, type GlobalCurriculum, type GlobalSubject, type GlobalCountryCode };
 import type { UserProfile, SchoolGrade } from '@/types';
 import type { AppLanguage } from '@/data/translations';
 

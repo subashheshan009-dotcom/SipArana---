@@ -44,6 +44,7 @@ import Grade5ScholarshipWizard from '@/components/Grade5ScholarshipWizard';
 import StudentRoleIsolationBanner from '@/components/StudentRoleIsolationBanner';
 import KaviStepByStepMentor from '@/components/KaviStepByStepMentor';
 import AutonomousCurriculumSyncModal from '@/components/AutonomousCurriculumSyncModal';
+import { GlobalCurriculumEngine } from '@/utils/globalCurriculumEngine';
 import { soundFX } from '@/utils/audioUtils';
 
 interface DashboardProps {
@@ -163,23 +164,44 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const completedTasksCount = tasks.filter(t => t.isCompleted).length;
   const taskProgressPercent = Math.round((completedTasksCount / tasks.length) * 100);
 
-  // Filter subjects matching student's grade
+  // Filter subjects matching student's country, curriculum, grade and stream
+  const activeCountry = GlobalCurriculumEngine.getActiveCountry(profile);
+  const activeCurriculum = GlobalCurriculumEngine.getActiveCurriculum(profile);
+  const globalSubjects = GlobalCurriculumEngine.getFilteredGlobalSubjects(profile);
+
   const streamSubjects = isGrade5
     ? SUBJECTS_DATA.filter((s) => ['sub_sch_sinhala', 'sub_sch_maths', 'sub_sch_env', 'sub_sch_iq'].includes(s.id))
     : SUBJECTS_DATA.filter((s) => s.grades.includes(userGrade)).slice(0, 3);
 
-  const displaySubjects = streamSubjects.length > 0
-    ? streamSubjects
-    : SUBJECTS_DATA.filter((s) => !profile || s.stream === profile.stream).slice(0, 3);
+  const displaySubjects =
+    activeCountry.code === 'LK'
+      ? streamSubjects.length > 0
+        ? streamSubjects
+        : SUBJECTS_DATA.filter((s) => !profile || s.stream === profile.stream).slice(0, 3)
+      : globalSubjects.map((gs) => ({
+          id: gs.id,
+          code: gs.code,
+          titleEnglish: gs.titleEnglish,
+          titleSinhala: gs.titleNative || gs.titleEnglish,
+          category: gs.category,
+          grades: gs.grades,
+          stream: gs.stream,
+          totalModules: gs.unitsCount || 10,
+          completedModules: Math.floor((gs.unitsCount || 10) * 0.3),
+          color: gs.color
+        })).slice(0, 3);
 
   const gradeInfo = SCHOOL_GRADES.find((g) => g.grade === userGrade);
-  const examTargetLabel = isGrade5
-    ? '5 වසර ශිෂ්‍යත්වය (160+ Target)'
-    : userGrade >= 12
-    ? `A/L ${profile?.targetYear || 2026} (3 A's)`
-    : userGrade >= 10
-    ? `O/L ${profile?.targetYear || 2026} (9 A's)`
-    : `Grade ${userGrade} Term Exam`;
+  const examTargetLabel =
+    activeCountry.code !== 'LK'
+      ? `${activeCurriculum.titleEnglish} (${activeCountry.name})`
+      : isGrade5
+      ? '5 වසර ශිෂ්‍යත්වය (160+ Target)'
+      : userGrade >= 12
+      ? `A/L ${profile?.targetYear || 2026} (3 A's)`
+      : userGrade >= 10
+      ? `O/L ${profile?.targetYear || 2026} (9 A's)`
+      : `Grade ${userGrade} Term Exam`;
 
   return (
     <div className="space-y-6">

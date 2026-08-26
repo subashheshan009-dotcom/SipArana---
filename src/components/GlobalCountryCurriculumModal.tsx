@@ -215,14 +215,14 @@ export default function GlobalCountryCurriculumModal({
                           )}
                         </div>
                         <p className="text-xs text-slate-600 dark:text-slate-300">
-                          {curr.description}
+                          {curr.circularRegistry}
                         </p>
                         <div className="flex flex-wrap items-center gap-2 pt-1">
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-200/80 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
                             🏛️ {curr.authorityBoard}
                           </span>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">
-                            📊 Scale: {curr.gradingSystem.scaleName}
+                            📊 Scale: {curr.gradingSystem.name} ({curr.gradingSystem.highestHonor})
                           </span>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">
                             📚 {curr.subjects.length} Core Subjects
