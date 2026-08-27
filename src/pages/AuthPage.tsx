@@ -18,7 +18,7 @@ import {
   Volume2,
   Zap
 } from 'lucide-react';
-import { useAuth, type DemoPresetKey } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { SCHOOL_GRADES } from '@/data/mockData';
 import { UNIVERSITIES_DATA } from '@/data/universityData';
@@ -37,7 +37,7 @@ import kaviOwlAvatar from '@/assets/images/owl_mascot_avatar_1787579057944.jpg';
 import { soundFX } from '@/utils/audioUtils';
 
 export default function AuthPage() {
-  const { simpleLogin, loginAsDemo } = useAuth();
+  const { simpleLogin } = useAuth();
   const { language, setLanguage } = useLanguage();
 
   // Interactive Explorer Modals
@@ -298,11 +298,6 @@ export default function AuthPage() {
     }
   };
 
-  const handleQuickPreset = (preset: DemoPresetKey) => {
-    soundFX.playLevelUp();
-    loginAsDemo(preset);
-  };
-
   // Available streams based on selection
   const availableStreams: string[] = countryCode === 'LK'
     ? grade >= 12
@@ -382,90 +377,6 @@ export default function AuthPage() {
       {/* MAIN CONTAINER: Clean, Spacious, 2-Column Responsive Layout */}
       <main className="relative z-10 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 flex flex-col justify-center">
         
-        {/* Quick 1-Click Multi-Country Evaluation Bar */}
-        <div className="mb-6 bg-white/90 backdrop-blur-md p-3.5 sm:p-4 rounded-3xl border-2 border-blue-200/80 shadow-sm space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="p-1 rounded-lg bg-blue-600 text-white shadow-xs">
-                <Zap className="w-3.5 h-3.5" />
-              </span>
-              <span className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                1-Click Instant Global Demo Roles:
-              </span>
-            </div>
-            <span className="text-[10px] font-bold text-slate-400">
-              Zero typing required • Instant Isolated UI & Syllabi
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-1.5">
-            <button
-              type="button"
-              onClick={() => handleQuickPreset('maths')}
-              className="px-2 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-950 font-extrabold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition"
-            >
-              <span>🇱🇰</span>
-              <span>A/L Maths</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPreset('scholarship')}
-              className="px-2 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-950 font-extrabold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition"
-            >
-              <span>🇱🇰</span>
-              <span>Scholarship</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPreset('uk_alevel')}
-              className="px-2 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-950 font-extrabold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition"
-            >
-              <span>🇬🇧</span>
-              <span>UK A-Level</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPreset('us_ap')}
-              className="px-2 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-950 font-extrabold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition"
-            >
-              <span>🇺🇸</span>
-              <span>US AP / SAT</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPreset('jp_koko')}
-              className="px-2 py-2 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-950 font-extrabold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition"
-            >
-              <span>🇯🇵</span>
-              <span>Japan 高校</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPreset('in_jee')}
-              className="px-2 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-950 font-extrabold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition"
-            >
-              <span>🇮🇳</span>
-              <span>India JEE</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPreset('global_ib')}
-              className="px-2 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-950 font-extrabold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition"
-            >
-              <span>🌍</span>
-              <span>Global IB</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPreset('uni_cse')}
-              className="px-2 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-950 font-extrabold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition"
-            >
-              <span>🏛️</span>
-              <span>Moratuwa</span>
-            </button>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* LEFT COLUMN: Student Photo, Mascot & Interactive Exploration */}
