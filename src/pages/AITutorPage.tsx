@@ -45,6 +45,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import FilePermissionHelperModal from '@/components/FilePermissionHelperModal';
 import { soundFX } from '@/utils/audioUtils';
 import { buildMemoryContextForGemini, getPersonalizedReturningGreeting } from '@/utils/userMemoryEngine';
+import { generate2026ModelPaperHTML, downloadPrintableHTMLDoc } from '@/utils/fileDownloader';
 
 type CoreFeatureTab =
   | 'chat_tutor'
@@ -1251,7 +1252,7 @@ export default function AITutorPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* 5. EXAM & MODEL PAPER GENERATION */}
+      {/* 5. EXAM & MODEL PAPER GENERATION (2026 SYLLABUS STANDARDS) */}
       {/* ========================================================================= */}
       {activeTab === 'model_paper' && (
         <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6 shadow-sm">
@@ -1261,24 +1262,63 @@ export default function AITutorPage() {
                 <span className="p-2 rounded-xl bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 font-bold">
                   <Award className="w-5 h-5" />
                 </span>
-                <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                  5. Exam & Model Paper Generation (with Marking Schemes)
-                </h2>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white">
+                      5. Exam & Model Paper Generation
+                    </h2>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                      2026 Syllabus Aligned 🇱🇰
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Official Sri Lankan Ministry of Education & NIE 2026 revised blueprints with step-by-step marking rubrics (Method M, Accuracy A, Keywords B).
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Authentic model question papers aligned with Grade 5 Scholarship, G.C.E. O/L, G.C.E. A/L, and University benchmarks with official point schemes.
-              </p>
             </div>
             <select
               value={examStandard}
               onChange={(e) => setExamStandard(e.target.value as any)}
               className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 font-bold text-xs text-slate-900 dark:text-white focus:outline-none"
             >
-              <option value="Grade 5 Scholarship">Grade 5 Scholarship (ශිෂ්‍යත්ව විභාගය)</option>
-              <option value="G.C.E. O/L">G.C.E. O/L Standard</option>
-              <option value="G.C.E. A/L">G.C.E. A/L Standard (Maths/Bio/Commerce/Arts/Tech)</option>
-              <option value="University Semester Exam">University Semester Exam</option>
+              <option value="Grade 5 Scholarship">Grade 5 Scholarship (2026 Guru Potha)</option>
+              <option value="G.C.E. O/L">G.C.E. O/L (2026 Modular Reform)</option>
+              <option value="G.C.E. A/L">G.C.E. A/L (2026 Revised NIE Standards)</option>
+              <option value="University Semester Exam">University Semester / Degree Level</option>
             </select>
+          </div>
+
+          {/* 2026 Syllabus High-Yield Topic Presets */}
+          <div>
+            <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase tracking-wider block mb-2">
+              ⚡ Quick 2026 High-Yield Syllabus Presets:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: '🦉 5 වසර: බුද්ධි පරීක්ෂණ කැට & පරිසරය', val: '5 වසර බුද්ධි පරීක්ෂණ කැට ගණන් කිරීම, රූප රටා සහ පරිසරය ජල චක්‍රය', std: 'Grade 5 Scholarship' },
+                { label: '📐 O/L 2026: ත්‍රිකෝණමිතිය & සාධක (Modular)', val: 'O/L Mathematics Trigonometry, Factorization & Quadratic Equations', std: 'G.C.E. O/L' },
+                { label: '🔬 O/L 2026: ජීවී පටක & චලිත සමීකරණ', val: 'O/L Science Living Tissues, Motion Equations & Newton Laws', std: 'G.C.E. O/L' },
+                { label: '🧮 A/L Maths: අනුකලනය & දෛශික (Pure/Applied)', val: 'Combined Mathematics Integration, Vectors & Statics Equilibrium', std: 'G.C.E. A/L' },
+                { label: '⚡ A/L Physics: චල විද්‍යුතය & ඉලෙක්ට්‍රොනික්ස්', val: 'A/L Physics Current Electricity, Operational Amplifiers & Semiconductors', std: 'G.C.E. A/L' },
+                { label: '🧪 A/L Chemistry: කාබනික ප්‍රතික්‍රියා යාන්ත්‍රණ', val: 'A/L Chemistry Organic Reaction Mechanisms, Curly Arrows & Equilibrium', std: 'G.C.E. A/L' },
+                { label: '🧬 A/L Bio: NIE Resource Book ප්‍රභාසංස්ලේෂණය', val: 'A/L Biology Cellular Respiration, Photosynthesis C3/C4 & Human Physiology', std: 'G.C.E. A/L' },
+                { label: '📊 A/L Commerce: SLFRS/LKAS මූල්‍ය ප්‍රකාශන', val: 'A/L Accounting SLFRS/LKAS Published Financial Statements & Ratio Analysis', std: 'G.C.E. A/L' },
+                { label: '📡 A/L Media: සන්නිවේදන ආකෘති & සිනමාව', val: 'A/L Media Studies Harold Lasswell, Shannon-Weaver & Sri Lankan Cinema History', std: 'G.C.E. A/L' }
+              ].map((p, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setExamTopic(p.val);
+                    setExamStandard(p.std as any);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -1297,17 +1337,17 @@ export default function AITutorPage() {
                 type="button"
                 onClick={handleGenerateExamPaper}
                 disabled={isGeneratingExam}
-                className="px-6 py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer transition"
+                className="px-6 py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer transition shadow-md"
               >
                 {isGeneratingExam ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Compiling Paper...</span>
+                    <span>Compiling 2026 Paper...</span>
                   </>
                 ) : (
                   <>
                     <Award className="w-4 h-4" />
-                    <span>Generate Model Paper + Marking Scheme</span>
+                    <span>Generate 2026 Model Paper + Marking Key</span>
                   </>
                 )}
               </button>
@@ -1316,18 +1356,43 @@ export default function AITutorPage() {
 
           {examPaperOutput && (
             <div className="mt-6 p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/60 border-2 border-slate-200 dark:border-slate-700 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
-                <span className="text-xs font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider">
-                  Model Examination Paper & Official Marking Key
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleCopyText('exam_output', examPaperOutput)}
-                  className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 cursor-pointer"
-                >
-                  {copiedId === 'exam_output' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedId === 'exam_output' ? 'Copied Paper' : 'Copy'}</span>
-                </button>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider">
+                    2026 Model Examination Paper & Official Marking Key
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
+                    {examStandard}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const htmlDoc = generate2026ModelPaperHTML(
+                        examStandard,
+                        selectedSubject || 'National Curriculum',
+                        profile?.stream || selectedStream || 'National Stream',
+                        examTopic || '2026 Core Module',
+                        examPaperOutput,
+                        profile?.fullName || 'SipArana Candidate'
+                      );
+                      downloadPrintableHTMLDoc(htmlDoc, `2026_Model_Paper_${examStandard.replace(/\s+/g, '_')}.html`, true);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download / Print PDF</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyText('exam_output', examPaperOutput)}
+                    className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {copiedId === 'exam_output' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedId === 'exam_output' ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
               </div>
               <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
                 {examPaperOutput}
@@ -1348,25 +1413,33 @@ export default function AITutorPage() {
                 <span className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 font-bold">
                   <PenTool className="w-5 h-5" />
                 </span>
-                <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                  6. Essay & Answer Feedback Evaluator
-                </h2>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white">
+                      6. 2026 Essay & Answer Feedback Evaluator
+                    </h2>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                      Step Rubrics 📝
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Evaluates student answers against official 2026 Department of Examinations marking rubrics: Step marks, terminology accuracy, examiner deductions & 100% full-mark model answers.
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Evaluate 15-20 mark essays and written coursework: Estimated Score, Key Strengths, Missing Points, and Rewritten Model Sample Answer.
-              </p>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-slate-500">Max Marks:</span>
               <select
                 value={essayMaxMarks}
                 onChange={(e) => setEssayMaxMarks(Number(e.target.value))}
-                className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-xs"
+                className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-xs text-slate-900 dark:text-white"
               >
                 <option value={10}>10 Marks</option>
-                <option value={15}>15 Marks</option>
-                <option value={20}>20 Marks (Standard Essay)</option>
-                <option value={25}>25 Marks (A/L Structured)</option>
+                <option value={15}>15 Marks (O/L Standard)</option>
+                <option value={20}>20 Marks (A/L Standard Essay)</option>
+                <option value={25}>25 Marks (A/L Structured Essay)</option>
+                <option value={50}>50 Marks (Scholarship / Modular)</option>
               </select>
             </div>
           </div>
@@ -1374,7 +1447,7 @@ export default function AITutorPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">
-                Question / Assignment Prompt (ප්‍රශ්නය):
+                Question / Assignment Prompt (විභාග ප්‍රශ්නය):
               </label>
               <input
                 type="text"
@@ -1408,12 +1481,12 @@ export default function AITutorPage() {
                 {isEvaluatingEssay ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Grading & Evaluating...</span>
+                    <span>Grading with 2026 Rubrics...</span>
                   </>
                 ) : (
                   <>
                     <PenTool className="w-4 h-4" />
-                    <span>Evaluate Essay & Generate Model Answer</span>
+                    <span>Evaluate with 2026 Marking Rubrics</span>
                   </>
                 )}
               </button>

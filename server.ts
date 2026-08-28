@@ -65,14 +65,29 @@ async function startServer() {
       // Build specialized system instructions based on feature & grade
       const isGrade5 = targetTier === 'grade_5' || grade === 5 || grade === '5' || stream?.toLowerCase().includes('scholarship');
       const isUniversity = targetTier === 'university' || stream?.toLowerCase().includes('university') || grade === 'university';
+      const isOL = targetTier === 'gce_ol' || (typeof grade === 'number' && grade >= 6 && grade <= 11) || grade === '10' || grade === '11';
 
       let rolePersona = '';
       if (isGrade5) {
-        rolePersona = `You are "Kavi the Owl" (කවි බකමූණා 🦉), the encouraging primary school AI educator for Grade 5 Sri Lankan Scholarship students. Use simple, gentle, encouraging language (Sinhala/English/Tamil), step-by-step clarity, and zero confusing academic jargon.`;
+        rolePersona = `You are "Kavi the Owl" (කවි බකමූණා 🦉), the encouraging primary school AI educator strictly aligned with the Sri Lankan Ministry of Education 2026 Grade 5 Scholarship syllabus & NIE Guru Potha (5 ශ්‍රේණිය ශිෂ්‍යත්ව විභාගය සහ ගුරු මාර්ගෝපදේශ සංග්‍රහය).
+- Paper 1 Standards: General Intelligence & Aptitude (බුද්ධි පරීක්ෂණය), 3D spatial cube counts, pattern symmetry, paper fold geometry, sequence logic, clock reasoning.
+- Paper 2 Standards: Language (Sinhala/Tamil/English) - ණ/න, ළ/ල, ශ/ෂ/ස spelling accuracy, idioms (ප්‍රස්ථාව පිරුළු), collective nouns, synonyms/antonyms, comprehension; Environmental Studies (පරිසරය) - 2026 flora/fauna, weather, national heritage, health, simple mechanics.
+- Marking Style: Clear step marks, child-friendly praise, exact keyword benchmarks.`;
       } else if (isUniversity) {
         rolePersona = `You are "SipArana University AI Core", an advanced academic research and higher education pedagogical AI tailored for Sri Lankan university undergraduates and postgraduates across Engineering, Medicine, IT, Management, and Science. Provide mathematically and scientifically rigorous, citation-backed analyses.`;
+      } else if (isOL) {
+        rolePersona = `You are "SipArana National Curriculum AI Core (G.C.E. O/L 2026 Modular Reform)", expert educator aligned with the Sri Lankan Ministry of Education 2026 Revised Modular Framework & National Institute of Education (NIE) guidelines for Grades 10–11.
+- Competency-based modular assessment with real-world applications.
+- Mathematics: Paper I (Part A 25 short Qs x 2 marks = 50, Part B 5 structured Qs x 10 marks = 50) + Paper II (Part A & B with method marks M, accuracy marks A, and independent marks B).
+- Science: Paper I (40 MCQs, 40 marks) + Paper II (Part A: 4 Structured Essay Qs 40 marks, Part B: 3 Essay Qs 30 marks).
+- Languages & Humanities: Grammar, comprehension, and structured analytical essay rubrics.`;
       } else {
-        rolePersona = `You are "SipArana National Curriculum AI Core", expert educator aligned with the Sri Lankan Ministry of Education & National Institute of Education (NIE Guru Potha) for G.C.E. O/L and G.C.E. A/L (Physical Science, Bio, Commerce, Arts, Technology).`;
+        rolePersona = `You are "SipArana National Curriculum AI Core (G.C.E. A/L 2026 Revised Standards)", expert national examiner and pedagogical AI systematically aligned with the Sri Lankan Ministry of Education 2026 syllabus, Department of Examinations (DOENETS), and official NIE Resource Books (ජාතික අධ්‍යාපන ආයතනයේ සම්පත් පොත් සහ ගුරු මාර්ගෝපදේශ).
+- Physical Science (Maths): Combined Mathematics I (Pure) & II (Applied) with standard Section A (10 short questions x 25 = 250) and Section B (7 long questions choose 5 x 150 = 750) marking matrices (M Method, A Accuracy, B Independent); Physics with 50 MCQs + 4 Structured Essays + Essay questions with SI unit precision and step deductions; Chemistry with 50 MCQs + Structured + Inorganic/Organic essays with IUPAC nomenclature and curly arrow mechanisms.
+- Biological Science: Biology strictly compliant with official NIE Resource Book 2020-2026 terminology, anatomical keywords, and structured essay rubrics; Agricultural Science.
+- Commerce Stream: Accounting under LKAS/SLFRS standards, Business Studies case studies, Economics macroeconomic indicators and fiscal/monetary policies.
+- Technology Stream: Engineering Tech, Bio-Systems Tech, Science for Technology (SFT) with practical calculation rubrics.
+- Arts & Humanities: Media Studies (Harold Lasswell, Shannon-Weaver, Berlo, Schramm, Semiotics, Sri Lankan & Global Cinema, Journalism), Sinhala, Tamil, English, History, Buddhist Civilization, Logic, Political Science.`;
       }
 
       if (studentMemoryContext) {
@@ -85,44 +100,45 @@ async function startServer() {
       switch (feature) {
         case 'content_quiz': {
           const subType = additionalParams.subType || 'all'; // 'summary' | 'flashcards' | 'mcq' | 'all'
-          taskPrompt = `TASK: AUTOMATED CONTENT & QUIZ GENERATION
+          taskPrompt = `TASK: AUTOMATED CONTENT & QUIZ GENERATION (2026 REVISED SYLLABUS ALIGNED)
 Input Lesson / Topic: "${inputContent}"
 Target Level: ${grade ? `Grade ${grade}` : targetTier || 'A/L'} | Stream: ${stream || 'General'} | Subject: ${subject || 'General'}
+Official Framework: Sri Lanka Ministry of Education 2026 Syllabus & NIE Teacher Guides.
 
 Generate the following according to requested subType (${subType}):
-1. STRUCTURED SUMMARY:
-   - Clear headings, bold key concepts, bullet points, and essential definitions.
+1. STRUCTURED SUMMARY (2026 Competency Focus):
+   - Clear headings, bold key concepts, official NIE terminology, bullet points, and core definitions.
 2. INTERACTIVE FLASHCARDS (At least 5 high-yield cards):
-   - Front: Precise Question / Formula / Concept
-   - Back: Clear Definition / Derivation / Key Explanation
+   - Front: Precise Question / Formula / Concept / Examiner Trap
+   - Back: Clear Definition / Derivation / Key Explanation & Units
 3. HIGH-QUALITY MCQs (At least 4-5 exam-grade questions):
-   - 4 distinct options (A, B, C, D)
+   - 4 distinct options (A, B, C, D) modeled on past Department of Examinations papers
    - State the Correct Answer clearly
-   - Provide a detailed step-by-step Explanation referencing curriculum concepts / formulas.`;
+   - Provide a detailed step-by-step Explanation referencing 2026 curriculum competencies and marking criteria.`;
           formatExpectations = `Format with standard markdown, bold highlights, clean codeblocks if math/code, and clear demarcations between Summary, Flashcards, and MCQs.`;
           break;
         }
 
         case 'multi_format': {
           const targetFormat = additionalParams.targetFormat || 'all'; // 'plain_text' | 'audio_script' | 'video_script' | 'all'
-          taskPrompt = `TASK: MULTI-FORMAT CONTENT ADAPTATION
+          taskPrompt = `TASK: MULTI-FORMAT CONTENT ADAPTATION (2026 SYLLABUS STANDARDS)
 Input Lesson / Material: "${inputContent}"
 Target Level: ${grade ? `Grade ${grade}` : targetTier || 'A/L'} | Subject: ${subject || 'General'}
 
 Convert this lesson into the requested format(s) (${targetFormat}):
-1. PLAIN TEXT STUDY NOTES:
+1. PLAIN TEXT STUDY NOTES (2026 Revision Guide):
    - Well-structured hierarchical notes with clear headings, bullet points, and memory mnemonics.
 2. CONVERSATIONAL AUDIO SCRIPT (For TTS Voiceover Engines):
    - Natural, engaging, spoken-word cadence with audio cues like [Warm Greeting], [Pause for reflection], [Emphasis on key term], [Recap].
-3. SHORT VIDEO SCRIPT (For Educational Reels / TikTok / YouTube Shorts):
-   - Scene-by-scene script with exact timestamps (e.g. 0:00-0:05), Visual cues & on-screen text graphics, and energetic Narration/Voiceover lines.`;
+3. SHORT VIDEO SCRIPT (For Educational Reels / Shorts):
+   - Scene-by-scene script with exact timestamps (e.g. 0:00-0:05), Visual cues & on-screen text graphics, and energetic Narration lines highlighting 2026 exam tips.`;
           formatExpectations = `Use distinct markdown sections for each format with clean spacing.`;
           break;
         }
 
         case 'doc_analyzer': {
           const docType = additionalParams.docType || 'Chapter Document / Lecture Slides / Research Paper';
-          taskPrompt = `TASK: DOCUMENT & PDF ANALYZER
+          taskPrompt = `TASK: DOCUMENT & PDF ANALYZER (2026 ACADEMIC BENCHMARK)
 Document Type: ${docType}
 Target Level: ${grade ? `Grade ${grade}` : targetTier || 'A/L or University'} | Subject: ${subject || 'General'}
 Document Content:
@@ -132,7 +148,7 @@ ${inputContent}
 
 Perform a deep academic extraction:
 1. EXECUTIVE SUMMARY & CORE ARGUMENTS (The fundamental thesis and findings).
-2. KEY METHODOLOGIES & THEORETICAL PRINCIPLES (Formulas, scientific mechanisms, algorithms, or historical contexts).
+2. KEY METHODOLOGIES & THEORETICAL PRINCIPLES (Formulas, scientific mechanisms, algorithms, or historical contexts aligned with 2026 benchmarks).
 3. HIGH-YIELD Q&A PAIRS (5 critical exam-targeted questions extracted directly from this text with rigorous answers).
 4. QUICK REVISION BULLET POINTS (Must-remember facts for rapid pre-exam recall).`;
           formatExpectations = `Ensure academic rigor, accurate formulas, and structured markdown bullet points.`;
@@ -140,7 +156,7 @@ Perform a deep academic extraction:
         }
 
         case 'mindmap_diagram': {
-          taskPrompt = `TASK: VISUAL MIND MAP & DIAGRAM CONCEPT GENERATOR
+          taskPrompt = `TASK: VISUAL MIND MAP & DIAGRAM CONCEPT GENERATOR (2026 MODULAR FRAMEWORK)
 Topic / Concept: "${inputContent}"
 Target Level: ${grade ? `Grade ${grade}` : targetTier || 'A/L'} | Subject: ${subject || 'General'}
 
@@ -155,29 +171,53 @@ Generate:
         }
 
         case 'model_paper': {
-          const examStandard = additionalParams.examStandard || (isGrade5 ? 'Grade 5 Scholarship' : isUniversity ? 'University Semester Exam' : 'G.C.E. A/L');
+          const examStandard = additionalParams.examStandard || (isGrade5 ? 'Grade 5 Scholarship (2026 Revised Guru Potha)' : isUniversity ? 'University Semester Exam' : isOL ? 'G.C.E. O/L (2026 Modular Reform)' : 'G.C.E. A/L (2026 Revised Standards)');
           const paperSection = additionalParams.paperSection || 'Full Model Paper';
-          taskPrompt = `TASK: EXAM & MODEL PAPER GENERATION
+          taskPrompt = `TASK: SYSTEMATIC 2026 MODEL EXAMINATION PAPER & OFFICIAL MARKING SCHEME GENERATION
 Target Exam Standard: ${examStandard}
 Subject: ${subject || inputContent} | Stream: ${stream || 'General'} | Grade: ${grade || 12}
 Topic/Scope: "${inputContent || subject}"
+Syllabus Authority: Sri Lankan Ministry of Education 2026 Revised Syllabus & Department of Examinations (DOENETS) Standards.
 
-Generate an authentic, curriculum-aligned Model Examination:
-1. SECTION 1: QUESTION PAPER
-   - Multiple Choice Questions (MCQ) or Structured Essay Questions styled exactly after official Sri Lankan Department of Examinations / University past papers.
-   - Allocated marks for each part (e.g., [02 Marks], [05 Marks], Total [20 Marks]).
-2. SECTION 2: OFFICIAL MARKING SCHEME & ANSWER KEY
-   - Step-by-step point allocation (e.g., 1 mark for formula, 2 marks for substitution, 1 mark for final answer with correct SI units).
-   - Expected keywords and alternative acceptable answers.`;
-          formatExpectations = `Follow authentic Sri Lankan examination formatting with clear point allocations.`;
+You MUST systematically generate a complete, authentic 2026 Model Paper structured in three distinct sections:
+
+═══════════════════════════════════════════════════════════════
+SECTION I: EXAMINATION PAPER (ප්‍රශ්න පත්‍රය)
+═══════════════════════════════════════════════════════════════
+- Official Header: Exam Name, Subject, Time Allocation, Total Marks, Specific 2026 Modular Competency Benchmark.
+- Authentic Questions:
+  * For Grade 5 Scholarship: Paper 1 IQ/Spatial Questions (කැට ගණන් කිරීම, රූප රටා, වාචික තර්කනය) + Paper 2 Language (ණ/න, ළ/ල, ප්‍රස්ථාව පිරුළු) & Environment (පරිසරය).
+  * For O/L: Part A Short Questions + Part B Structured/Essay Questions with explicit sub-parts (a), (b), (i), (ii).
+  * For A/L: Section A Structured/Short Questions + Section B Long Essay/Derivation/Calculation Questions.
+- Mark Distribution: Every sub-part MUST clearly display allocated marks (e.g., [02 Marks], [03 Marks], [05 Marks], Total [25 Marks] or [100 Marks]).
+
+═══════════════════════════════════════════════════════════════
+SECTION II: OFFICIAL STEP-BY-STEP MARKING SCHEME & ANSWER KEY (ලකුණු දීමේ පටිපාටිය)
+═══════════════════════════════════════════════════════════════
+- Complete Step-by-Step Mark Breakdown:
+  * Method Marks (M): Formula statement, theoretical principle, structural approach.
+  * Accuracy / Calculation Marks (A): Proper substitution, arithmetic correctness, correct SI units.
+  * Fact / Keyword Marks (B): Official NIE Resource Book keywords, accurate definitions, and biological/chemical/legal terms.
+- Full Model Answers: Provide the complete, pristine 100% full-mark solution for every question.
+- Alternative Acceptable Answers: Mention alternative valid methods or wording accepted by examiners.
+- Examiner Traps & Common Errors: Explicitly warn students of typical mistakes where marks are deducted (e.g., missing SI units, incorrect curly arrows, unstated boundary conditions).
+
+═══════════════════════════════════════════════════════════════
+SECTION III: 2026 MODULAR CURRICULUM CITATION & LEARNING OUTCOMES
+═══════════════════════════════════════════════════════════════
+- National Curriculum Competency Number (e.g., Competency 4.2 / Unit 6).
+- Official NIE Teacher Guide (Guru Potha) / Resource Book reference chapter.
+- Recommended follow-up revision focus.`;
+          formatExpectations = `Follow authentic Sri Lankan Department of Examinations typography and layout with high pedagogical precision.`;
           break;
         }
 
         case 'essay_evaluator': {
           const question = additionalParams.questionPrompt || 'Explain the core principles and significance of the given topic.';
           const maxMarks = additionalParams.maxMarks || 20;
-          taskPrompt = `TASK: ESSAY & ANSWER FEEDBACK EVALUATOR
+          taskPrompt = `TASK: 2026 SYLLABUS ESSAY & WRITTEN ANSWER EVALUATOR (WITH STEP MARKING RUBRIC)
 Subject: ${subject || 'General'} | Target Level: ${grade ? `Grade ${grade}` : targetTier || 'A/L'}
+Official Standard: Sri Lankan Ministry of Education 2026 Exam Evaluation Rubrics.
 Question / Assignment Prompt:
 "${question}"
 Max Marks: ${maxMarks}
@@ -187,17 +227,22 @@ Student's Submitted Answer:
 ${inputContent}
 """
 
-Evaluate the student's answer with high academic fidelity:
-1. 📊 ESTIMATED SCORE & GRADING: Give a realistic mark out of ${maxMarks} (e.g., 15/${maxMarks}) with percentage and grade tier.
-2. 🌟 KEY STRENGTHS: Specific well-explained points, correct terminology, and good reasoning demonstrated.
-3. ⚠️ AREAS FOR IMPROVEMENT & MISSING POINTS: Critical omissions, factual ambiguities, incorrect steps, or lack of diagrams/examples.
-4. ✍️ REWRITTEN MODEL SAMPLE ANSWER (100% Full-Marks Benchmark): A complete, well-structured, exemplary answer showing exactly how to score full marks in the exam.`;
-          formatExpectations = `Provide constructive, motivating, yet academically honest evaluation in clean markdown.`;
+Evaluate the student's answer with national examiner fidelity:
+1. 📊 ESTIMATED SCORE & GRADING BREAKDOWN:
+   - Provide a realistic score out of ${maxMarks} (e.g., 16/${maxMarks}) with percentage and grade tier (A / B / C / S / W).
+   - Detail marks awarded per criterion: (i) Core Content & Theory [ /${Math.round(maxMarks*0.4)}], (ii) Structure & Derivation/Methodology [ /${Math.round(maxMarks*0.3)}], (iii) Official Terminology & Accuracy [ /${Math.round(maxMarks*0.2)}], (iv) Real-world Application/Examples [ /${Math.round(maxMarks*0.1)}].
+2. 🌟 KEY STRENGTHS:
+   - Specific well-explained points, correct terminology, and good reasoning demonstrated.
+3. ⚠️ AREAS FOR IMPROVEMENT & EXAMINER DEDUCTIONS:
+   - Critical omissions, factual ambiguities, incorrect steps, missing SI units, or lack of diagrams.
+4. ✍️ REWRITTEN 2026 MODEL SAMPLE ANSWER (100% Full-Marks Benchmark):
+   - A complete, exemplary answer demonstrating how to score full marks in the official exam.`;
+          formatExpectations = `Provide constructive, motivating, yet academically rigorous evaluation in clean markdown.`;
           break;
         }
 
         default:
-          taskPrompt = `Analyze and provide educational guidance on: "${inputContent}" for Grade ${grade || '12'} in ${subject || 'General'}.`;
+          taskPrompt = `Analyze and provide educational guidance on: "${inputContent}" for Grade ${grade || '12'} in ${subject || 'General'} aligned with 2026 Sri Lankan Ministry of Education benchmarks.`;
       }
 
       const operationalRule = `OPERATIONAL RULES:
@@ -405,36 +450,174 @@ ${inputContent}
 3. **Branch 2 (Bottom Right in Orange):** Create a box for the main equation with units highlighted in yellow.
 4. **Branch 3 (Left in Red):** List 3 common exam traps to avoid when writing answers under time pressure.`;
 
-      case 'model_paper':
-        return `### 📜 Model Examination Paper & Official Marking Scheme
+      case 'model_paper': {
+        const isGrade5Paper = ctx.targetTier === 'grade_5' || grade === 5 || grade === '5' || String(subj).toLowerCase().includes('scholarship') || String(subj).toLowerCase().includes('ශිෂ්‍යත්ව');
+        const isOLPaper = ctx.targetTier === 'gce_ol' || (typeof grade === 'number' && grade >= 6 && grade <= 11) || grade === '10' || grade === '11';
+        const isMathsAL = String(subj).toLowerCase().includes('math') || String(ctx.stream).toLowerCase().includes('math');
+        const isBioAL = String(subj).toLowerCase().includes('bio') || String(ctx.stream).toLowerCase().includes('bio');
+        const isCommerceAL = String(subj).toLowerCase().includes('account') || String(subj).toLowerCase().includes('business') || String(subj).toLowerCase().includes('econ') || String(ctx.stream).toLowerCase().includes('commerce');
+        const isTechAL = String(subj).toLowerCase().includes('tech') || String(subj).toLowerCase().includes('sft') || String(ctx.stream).toLowerCase().includes('technology');
 
-**Examination Standard:** Sri Lankan National Curriculum Model Paper
-**Subject:** ${subj} | **Grade:** ${grade} | **Topic:** ${inputContent}
-
----
-
-### SECTION I: QUESTION PAPER
-**Time Allowed:** 45 Minutes | **Total Marks:** 25 Marks
-
-**Question 01 (Structured Question):**
-(a) State the fundamental definition of **${inputContent}**. [03 Marks]  
-(b) Write the standard mathematical expression associated with this concept and identify all symbols with their SI units. [04 Marks]  
-(c) A student performs an experiment under standard conditions. Explain with a brief diagram how the result is affected if the primary variable is doubled. [08 Marks]  
+        if (isGrade5Paper) {
+          return `### 📜 ශ්‍රී ලංකා අධ්‍යාපන අමාත්‍යාංශය — 2026 ප්‍රතිශෝධිත 5 ශ්‍රේණිය ශිෂ්‍යත්ව ආදර්ශ ප්‍රශ්න පත්‍රය & ලකුණු දීමේ පටිපාටිය
+**National Institute of Education (NIE) & Dept. of Examinations Sri Lanka (2026 Blueprint)**
+**විෂය:** ${subj} • **ඒකකය:** ${inputContent} | **කාලය:** මිනිත්තු 45 | **මුළු ලකුණු:** 50 (100% පරිමාණය)
 
 ---
 
-### SECTION II: OFFICIAL MARKING SCHEME & ANSWER KEY
-* **Q1 (a):**
-  * Stating correct definition: **[02 Marks]**
-  * Mentioning standard boundary condition: **[01 Mark]**
-* **Q1 (b):**
-  * Correct formula written: **[02 Marks]**
-  * All symbols accurately identified with SI units: **[02 Marks]**
-* **Q1 (c):**
-  * Clear, labeled sketch/diagram: **[03 Marks]**
-  * Explaining linear/proportional relationship: **[03 Marks]**
-  * Final conclusion with correct reasoning: **[02 Marks]**
-  * *Total: [25 Marks]*`;
+### 🏛️ SECTION I: ප්‍රශ්න පත්‍රය (EXAMINATION PAPER)
+
+#### [ප්‍රශ්නය 01 — බුද්ධි පරීක්ෂණ හා අවකාශීය තර්කනය (IQ & Reasoning - 2026 Standard)]
+(i) පහත දැක්වෙන ත්‍රිමාණ කැට ආකෘතියේ සැඟවුණු කැට සංඛ්‍යාව සහ මුළු කැට ගණන කොපමණද? **[04 ලකුණු]**  
+(ii) රූප රටාවේ හිස්තැනට ගැළපෙන නිවැරදි රූපය තෝරන්න (කැරකෙන ඊතල සහ වර්ණ තිත් රටාව). **[04 ලකුණු]**  
+(iii) ඔරලෝසුවක වේලාව ප.ව. 3:45 වන විට මිනිත්තු කටුව හා පැය කටුව අතර කෝණය සරල රේඛීයව විග්‍රහ කරන්න. **[04 ලකුණු]**  
+
+#### [ප්‍රශ්නය 02 — සිංහල භාෂා ඥානය හා ව්‍යාකරණ (2026 ගුරු පොත)]
+(i) පහත වචනවල නිවැරදි අක්ෂර වින්‍යාසය තෝරා නිවැරදිව ලියන්න: *(ග්‍රහණය / ග්‍රහනය, ප්‍රවීණ / ප්‍රවීන, කෞතුකාගාරය / කෞතුකාගාරය)* **[03 ලකුණු]**  
+(ii) "අතීසාරයට අමුඩ ගසනවා වගේ" යන ප්‍රස්ථාව පිරුළේ අර්ථය පැහැදිලි වන සේ අර්ථවත් වාක්‍යයක් ගොඩනගන්න. **[05 ලකුණු]**  
+
+#### [ප්‍රශ්නය 03 — පරිසරය ආශ්‍රිත ක්‍රියාකාරකම් (2026 ප්‍රතිශෝධිත නිපුණතා)]
+(i) ශ්‍රී ලංකාවේ ආවේණික පක්ෂීන් 3 දෙනෙකු නම් කර ඔවුන්ගේ වාසස්ථාන හා ආහාර රටාව සඳහන් කරන්න. **[05 ලකුණු]**  
+(ii) සූර්ය බලශක්තිය සහ ජල චක්‍රය අතර ඇති සම්බන්ධය සරල පියවර 3කින් පැහැදිලි කරන්න. **[05 ලකුණු]**  
+
+---
+
+### 🎯 SECTION II: නිල ලකුණු දීමේ පටිපාටිය (OFFICIAL 2026 MARKING SCHEME & ANSWERS)
+
+* **ප්‍රශ්නය 01 (බුද්ධි පරීක්ෂණය):**
+  * (i) සැඟවුණු කැට 4 ක් හඳුනාගැනීම **[02 ලකුණු]**; මුළු කැට 16 ක් ලෙස නිවැරදිව ගණනය කිරීම **[02 ලකුණු]**.
+  * (ii) වාමාවර්තව 90° භ්‍රමණය වන තිත් 3 කින් යුතු නිවැරදි රූප සංකේතය තේරීම **[04 ලකුණු]**.
+  * (iii) කටු දෙක අතර කෝණය සුළු කෝණයක් බව හා විනාඩි 45 පරතරය නිවැරදිව දැක්වීම **[04 ලකුණු]**.
+
+* **ප්‍රශ්නය 02 (භාෂාව):**
+  * (i) *ග්‍රහණය* [01], *ප්‍රවීණ* [01], *කෞතුකාගාරය* [01] — නිවැරදි "ණ/න" සහ "ළ/ල" සඳහා පූර්ණ ලකුණු **[03 ලකුණු]**.
+  * (ii) සුදුසු කාලයේදී නොකර විපතක් සිදු වූ පසු ප්‍රතිකර්ම යෙදීම යන අරුත සහිත පරිපූර්ණ වාක්‍යයකට **[05 ලකුණු]**. *(අක්ෂර දෝෂ රහිත විය යුතුය)*.
+
+* **ප්‍රශ්නය 03 (පරිසරය):**
+  * (i) වලිකුකුළා, හබන් කුකුළා, අලු කෑඳැත්තා ආදී ආවේණික පක්ෂීන් නම් කිරීම **[03 ලකුණු]**; නිවැරදි වාසස්ථාන දැක්වීම **[02 ලකුණු]**.
+  * (ii) සූර්ය තාපයෙන් ජලය වාෂ්පීකරණය [02], ඝනීභවනය වී වලාකුළු සෑදීම [02], වර්ෂාව ලෙස පතිත වීම [01] — සම්පූර්ණ ලකුණු **[05 ලකුණු]**.
+
+---
+
+### 📖 SECTION III: 2026 විෂය නිර්දේශ නිපුණතා හා විභාග උපදෙස් (NIE BENCHMARKS)
+* **අදාළ ගුරු මාර්ගෝපදේශය:** NIE Grade 5 Guru Potha (2026 Revision - Units 2 & 4).
+* **විභාග පරීක්ෂක සටහන (Examiner Trap Alert):** ප්‍රශ්නය කියවීමේදී අනිවාර්යයෙන්ම ප්‍රශ්න අංක හා උප කොටස් (i, ii) වෙන වෙනම පැහැදිලි අත්අකුරින් ලිවීමට දරුවා පුහුණු කරන්න.`;
+        }
+
+        if (isOLPaper) {
+          return `### 📜 Sri Lanka Ministry of Education — G.C.E. O/L 2026 Modular Model Paper & Marking Scheme
+**Department of Examinations Sri Lanka (Modular Competency Assessment Framework)**
+**Subject:** ${subj} • **Topic/Module:** ${inputContent} | **Time:** 1 Hour | **Total Marks:** 50 Marks
+
+---
+
+### 🏛️ SECTION I: EXAMINATION QUESTION PAPER
+
+#### Part A: Structured Short Questions (Compulsory)
+**1.** (a) Define the fundamental principle of **${inputContent}** under 2026 NIE modular competency guidelines. **[03 Marks]**  
+(b) Write the governing mathematical expression / scientific formula and define all symbols in standard SI units. **[04 Marks]**  
+(c) State two practical everyday applications of this phenomenon in Sri Lankan industrial or environmental contexts. **[04 Marks]**  
+
+#### Part B: Structured Analytical & Experimental Problem
+**2.** A school laboratory investigation was conducted under ambient conditions (25°C, 1 atm):
+(a) Draw a neat, labeled schematic diagram representing the experimental setup. **[05 Marks]**  
+(b) The independent variable is increased by a factor of 2. Deduce quantitatively the expected change in the measured output. Show step-by-step calculations. **[08 Marks]**  
+(c) Explain two major systematic error sources in this setup and propose specific corrective precautions. **[06 Marks]**  
+
+---
+
+### 🎯 SECTION II: OFFICIAL STEP MARKING SCHEME (METHOD M / ACCURACY A / FACT B)
+
+* **Question 1 (a) Core Definition:**
+  * Accurate statement of theoretical principle: **[02 Marks - B2]**
+  * Stating boundary conditions / equilibrium state: **[01 Mark - B1]**
+
+* **Question 1 (b) Governing Expression & Units:**
+  * Correct formula written: **[02 Marks - M2]**
+  * All variables identified with standard SI units: **[02 Marks - A2]** *(Deduct 1 mark if SI units missing)*.
+
+* **Question 1 (c) Real-World Applications:**
+  * Application 1 with brief mechanism: **[02 Marks - B2]**
+  * Application 2 with brief mechanism: **[02 Marks - B2]**
+
+* **Question 2 (a) Schematic Diagram:**
+  * Fully labeled apparatus components: **[03 Marks - B3]**
+  * Proper direction arrows / scale proportion: **[02 Marks - B2]**
+
+* **Question 2 (b) Quantitative Derivation:**
+  * Stating the governing proportionality relationship: **[02 Marks - M2]**
+  * Proper numerical substitution: **[03 Marks - M3]**
+  * Final numerical result with correct sign and SI units: **[03 Marks - A3]**
+
+* **Question 2 (c) Error Analysis & Precautions:**
+  * Identifying 2 valid sources of experimental error: **[03 Marks - B3]**
+  * Stating appropriate laboratory corrective action: **[03 Marks - B3]**
+
+---
+
+### 📖 SECTION III: 2026 MODULAR COMPETENCY CITATION
+* **NIE National Framework:** O/L Modular Unit Competency Standard 4.1.2 (2026 National Reforms).
+* **Common Examiner Deductions:** Forgetting SI units in calculations, failing to label diagram axes, and ambiguous definitions without precise scientific terminology.`;
+        }
+
+        // A/L Stream Specific Model Paper Fallback (Maths / Bio / Commerce / Tech / Arts)
+        return `### 📜 Department of Examinations Sri Lanka — G.C.E. A/L 2026 Revised Model Examination Paper
+**National Institute of Education (NIE Resource Book Standard 2020–2026)**
+**Subject:** ${subj} (${ctx.stream || 'National Stream'}) • **Module:** ${inputContent}
+**Time Allowed:** 1 Hour 30 Mins | **Total Score:** 100 Marks (Scaled)
+
+---
+
+### 🏛️ SECTION I: EXAMINATION QUESTION PAPER
+
+#### Part A: Structured Section (All questions compulsory)
+**Q1.** (a) Under official 2026 NIE syllabus guidelines, state the exact theoretical definition and fundamental laws governing **${inputContent}**. **[10 Marks]**  
+(b) Derive the comprehensive analytical expression from first principles, stating all thermodynamic, kinematic, or algebraic assumptions clearly. **[15 Marks]**  
+(c) A standard system operates with initial boundary parameters $P_1 = 100\\text{ kPa}$ and $T_1 = 300\\text{ K}$. Calculate the steady-state equilibrium value when subjected to a 20% harmonic variation. **[15 Marks]**  
+
+#### Part B: Essay & Advanced Derivation Section (Structured Essay)
+**Q2.** (a) Draw a fully labeled structural schematic / metabolic pathway / circuit diagram illustrating the complete operational mechanism of **${inputContent}**. **[20 Marks]**  
+(b) Contrast the theoretical model with real-world Sri Lankan engineering/biological/economic applications, citing specific empirical data points. **[20 Marks]**  
+(c) Synthesize an error-matrix identifying 3 subtle analytical traps frequently penalized by chief examiners in recent A/L past papers. **[20 Marks]**  
+
+---
+
+### 🎯 SECTION II: OFFICIAL MARKING SCHEME & STEP-BY-STEP RUBRIC (M / A / B / E)
+
+* **Q1 (a) Definition & Axioms [10 Marks]:**
+  * Exact NIE Resource Book terminology: **[06 Marks - B6]**
+  * Stating boundary constraints & conservation principles: **[04 Marks - B4]**
+
+* **Q1 (b) Analytical Derivation [15 Marks]:**
+  * Stating initial governing differential/algebraic equations: **[05 Marks - M5]**
+  * Step-by-step intermediate substitution and integration/factorization: **[05 Marks - M5]**
+  * Final simplified expression with explicitly defined constant coefficients: **[05 Marks - A5]**
+
+* **Q1 (c) Numerical Computation [15 Marks]:**
+  * Correct parameter substitution into derived formula: **[05 Marks - M5]**
+  * Proper dimensional analysis check: **[04 Marks - M4]**
+  * Final numerical answer with exact SI units: **[06 Marks - A6]** *(Zero marks for final step if SI units omitted)*.
+
+* **Q2 (a) Structural Diagram / Schematic [20 Marks]:**
+  * Accurate architectural layout and connectivity: **[10 Marks - B10]**
+  * Standard scientific labels (at least 6 critical callouts): **[06 Marks - B6]**
+  * Dimension arrows and direction indicators: **[04 Marks - B4]**
+
+* **Q2 (b) Comparative Empirical Analysis [20 Marks]:**
+  * Point-by-point comparison matrix (Theoretical vs Empirical): **[10 Marks - E10]**
+  * Real-world Sri Lankan context citations: **[10 Marks - B10]**
+
+* **Q2 (c) Examiner Trap Matrix [20 Marks]:**
+  * Identifying 3 common errors: **[12 Marks - B12]**
+  * Mitigation strategies and full-mark answer templates: **[08 Marks - B8]**
+
+---
+
+### 📖 SECTION III: 2026 NIE RESOURCE BOOK CITATIONS & EXAMINER DIRECTIVES
+* **Official Syllabus Code:** AL-${subj.slice(0, 3).toUpperCase()}-2026-REV (Competency Unit 5).
+* **Reference Literature:** National Institute of Education Sri Lanka (NIE) Official Resource Book 2020–2026.
+* **Chief Examiner Directives:** Step marks ($M$) are strictly awarded for logical progression even if arithmetic slips occur; however, final accuracy marks ($A$) require pristine SI units and correct significant figures.`;
+      }
 
       case 'essay_evaluator':
         return `### ✍️ Essay & Written Answer Evaluation Report

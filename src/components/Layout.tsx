@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Video,
   ChevronDown,
+  ChevronUp,
   Globe,
   FileQuestion,
   Bot,
@@ -46,9 +47,12 @@ import type { SchoolGrade, AppLanguage, Stream } from '@/types';
 import SiparanaLogo from '@/components/SiparanaLogo';
 import AutonomousCurriculumSyncModal from '@/components/AutonomousCurriculumSyncModal';
 import GlobalCountryCurriculumModal from '@/components/GlobalCountryCurriculumModal';
+import DailyMysteryChestModal from '@/components/DailyMysteryChestModal';
+import DailyStreakModal from '@/components/DailyStreakModal';
 import HeaderLanguageSelector from '@/components/HeaderLanguageSelector';
 import { GLOBAL_COUNTRIES } from '@/utils/globalCurriculumEngine';
 import { soundFX } from '@/utils/audioUtils';
+import { Gift } from 'lucide-react';
 
 export type PageId =
   | 'dashboard'
@@ -82,39 +86,199 @@ interface LayoutProps {
 interface NavItemDef {
   id: PageId;
   icon: React.ElementType;
-  transKey: string;
   enLabel: string;
   siLabel: string;
   taLabel: string;
-  badgeKey?: string;
-  badgeText?: string;
+  badgeText?: 'NEW' | 'FREE' | 'LIVE' | string;
+  badgeType?: 'new' | 'free' | 'live' | 'pro' | 'default';
   isPro?: boolean;
-  highlight?: boolean;
 }
 
-const NAV_ITEMS_CONFIG: NavItemDef[] = [
-  { id: 'dashboard', icon: LayoutDashboard, transKey: 'dashboard', enLabel: 'Dashboard', siLabel: 'පුවරුව', taLabel: 'முகப்பு பலகை' },
-  { id: 'modern_languages', icon: Languages, transKey: 'modernLanguages', enLabel: 'Modern & Foreign Languages', siLabel: 'නවීන & විදේශ භාෂා', taLabel: 'நவீன & வெளிநாட்டு மொழிகள்', badgeText: 'Reforms 2026', highlight: true },
-  { id: 'planner', icon: Calendar, transKey: 'planner', enLabel: 'AI Study Planner', siLabel: 'AI කාලසටහන', taLabel: 'AI படிப்புத் திட்டம்', badgeText: 'Auto-Sync', highlight: true },
-  { id: 'flashcards', icon: Layers, transKey: 'flashcards', enLabel: 'Smart Flashcards', siLabel: 'ස්මාර්ට් ෆ්ලෑෂ්කාඩ්', taLabel: 'ஃபிளாஷ்கார்டுகள்', badgeText: 'Spaced Recall', highlight: true },
-  { id: 'audio', icon: Headphones, transKey: 'audio', enLabel: 'Voice Notes & Audio', siLabel: 'ශ්‍රව්‍ය සටහන්', taLabel: 'குரல் குறிப்புகள்', badgeText: 'Voice AI', highlight: true },
-  { id: 'fun_english', icon: Smile, transKey: 'funEnglish', enLabel: 'Fun English & Relax', siLabel: 'විනෝදජනක ඉංග්‍රීසි & විවේකය', taLabel: 'வேடிக்கையான ஆங்கிலம் & ஓய்வு', badgeText: 'Mascot Flow', highlight: true },
-  { id: 'google_hub', icon: Globe, transKey: 'googleHub', enLabel: 'Google Student Hub', siLabel: 'ගූගල් අධ්‍යාපන පීඨය', taLabel: 'கூகிள் மாணவர் தளம்', badgeText: 'In-App Hub', highlight: true },
-  { id: 'free_courses', icon: Compass, transKey: 'freeCourses', enLabel: 'Free Online Courses', siLabel: 'නිදහස් ඔන්ලයින් පාඨමාලා', taLabel: 'இலவச இணையப் படிப்புகள்', badgeText: 'Live Radar', highlight: true },
-  { id: 'book_shop', icon: ShoppingBag, transKey: 'bookShop', enLabel: 'SipArana Book Shop', siLabel: 'සිප්අරණ පොත් හල', taLabel: 'புத்தக சந்தை', badgeText: 'Marketplace', highlight: true },
-  { id: 'quizzes', icon: FileQuestion, transKey: 'quizzes', enLabel: 'MCQ Quizzes', siLabel: 'බහුවරණ පරීක්ෂණ', taLabel: 'பன்மைத் தெரிவு வினாக்கள்', badgeText: 'Auto-Marked', highlight: true },
-  { id: 'ai_tutor', icon: Bot, transKey: 'aiTutor', enLabel: 'AI Tutor & Voice', siLabel: 'AI ගුරු සහකාර', taLabel: 'AI குரல் ஆசிரியர்', badgeText: 'Voice AI', highlight: true },
-  { id: 'analytics', icon: BarChart3, transKey: 'analytics', enLabel: 'Performance Analytics', siLabel: 'ප්‍රගති වාර්තාව', taLabel: 'செயல்திறன் பகுப்பாய்வு', badgeText: 'Live Diagnostic' },
-  { id: 'offline_syllabus', icon: HardDriveDownload, transKey: 'offlineSyllabus', enLabel: 'Offline Syllabus & PDFs', siLabel: 'නිල විෂය නිර්දේශ PDF', taLabel: 'பாடத்திட்டம் & PDF', badgeText: '100% Free' },
-  { id: 'university', icon: Sparkles, transKey: 'universityPortal', enLabel: 'University AI Portal', siLabel: 'සරසවි AI සහකාර', taLabel: 'பல்கலைக்கழக AI தளம்', badgeText: 'AI Degree' },
-  { id: 'classroom', icon: Video, transKey: 'classroom', enLabel: 'HD Video Classroom', siLabel: 'වීඩියෝ පන්ති කාමරය', taLabel: 'வீடியோ வகுப்பறை', badgeText: 'HD • 6-13' },
-  { id: 'subjects', icon: BookOpen, transKey: 'subjectsPapers', enLabel: 'Subjects & Past Papers', siLabel: 'විෂයන් & ප්‍රශ්න පත්‍ර', taLabel: 'பாடங்கள் & வினாத்தாள்கள்', badgeText: 'Guru Potha' },
-  { id: 'campus', icon: GraduationCap, transKey: 'campusZScore', enLabel: 'Campus & Z-Score', siLabel: 'සරසවි & Z-Score', taLabel: 'பல்கலைக்கழகம் & Z-புள்ளி', badgeText: 'Cutoffs' },
-  { id: 'utilities', icon: Wrench, transKey: 'utilities', enLabel: 'Study Utilities', siLabel: 'පාඩම් මෙවලම්', taLabel: 'படிப்பு கருவிகள்', badgeText: 'Stopwatch & Chart' },
-  { id: 'news', icon: Newspaper, transKey: 'examNews', enLabel: 'Exam News & Alerts', siLabel: 'විභාග පුවත්', taLabel: 'தேர்வுச் செய்திகள்' },
-  { id: 'premium', icon: Crown, transKey: 'proMembership', enLabel: 'SipArana Pro', siLabel: 'ප්‍රෝ සාමාජිකත්වය', taLabel: 'புரோ உறுப்பினர்', isPro: true },
-  { id: 'settings', icon: Settings, transKey: 'settings', enLabel: 'Settings', siLabel: 'සැකසුම්', taLabel: 'அமைப்புகள்' }
-];
+interface NavGroupDef {
+  id: string;
+  icon: string;
+  enTitle: string;
+  siTitle: string;
+  taTitle: string;
+  pastelBg: string;
+  pastelBorder: string;
+  pastelText: string;
+  items: NavItemDef[];
+}
+
+const RAW_NAV_ITEMS: Record<PageId, NavItemDef> = {
+  dashboard: {
+    id: 'dashboard',
+    icon: LayoutDashboard,
+    enLabel: 'Dashboard',
+    siLabel: 'ප්‍රධාන පුවරුව',
+    taLabel: 'முகப்பு பலகை'
+  },
+  // GROUP 1: CORE ACADEMICS & REVISION
+  subjects: {
+    id: 'subjects',
+    icon: BookOpen,
+    enLabel: 'Subjects & Past Papers',
+    siLabel: 'විෂයන් සහ ප්‍රශ්න පත්‍ර',
+    taLabel: 'பாடங்கள் & வினாத்தாள்கள்'
+  },
+  quizzes: {
+    id: 'quizzes',
+    icon: FileQuestion,
+    enLabel: 'MCQ Quizzes & Test Series',
+    siLabel: 'එම්.සී.කියු. ප්‍රශ්න',
+    taLabel: 'பன்மைத் தெரிவு வினாக்கள்',
+    badgeText: 'LIVE',
+    badgeType: 'live'
+  },
+  classroom: {
+    id: 'classroom',
+    icon: Video,
+    enLabel: 'HD Video Classroom',
+    siLabel: 'වීඩියෝ පාඩම්',
+    taLabel: 'வீடியோ வகுப்பறை'
+  },
+  offline_syllabus: {
+    id: 'offline_syllabus',
+    icon: HardDriveDownload,
+    enLabel: 'Offline Syllabus & PDFs',
+    siLabel: 'විෂය නිර්දේශ සහ PDF',
+    taLabel: 'பாடத்திட்டம் & PDF',
+    badgeText: 'FREE',
+    badgeType: 'free'
+  },
+
+  // GROUP 2: AI STUDY ASSISTANTS
+  ai_tutor: {
+    id: 'ai_tutor',
+    icon: Bot,
+    enLabel: 'AI Tutor & Voice Chat',
+    siLabel: 'AI ගුරු සහකාර',
+    taLabel: 'AI குரல் ஆசிரியர்',
+    badgeText: 'LIVE',
+    badgeType: 'live'
+  },
+  planner: {
+    id: 'planner',
+    icon: Calendar,
+    enLabel: 'AI Study Planner',
+    siLabel: 'පාඩම් කාලසටහන',
+    taLabel: 'AI படிப்புத் திட்டம்',
+    badgeText: 'NEW',
+    badgeType: 'new'
+  },
+  flashcards: {
+    id: 'flashcards',
+    icon: Layers,
+    enLabel: 'Smart Flashcards',
+    siLabel: 'ක්ෂණික මතක කාඩ්',
+    taLabel: 'ஃபிளாஷ்கார்டுகள்'
+  },
+  audio: {
+    id: 'audio',
+    icon: Headphones,
+    enLabel: 'Voice Notes & Audio',
+    siLabel: 'ශ්‍රව්‍ය සටහන්',
+    taLabel: 'குரல் குறிப்புகள்'
+  },
+
+  // GROUP 3: LANGUAGES & SKILLS
+  modern_languages: {
+    id: 'modern_languages',
+    icon: Languages,
+    enLabel: 'Modern & Foreign Languages',
+    siLabel: 'විදේශ භාෂා',
+    taLabel: 'நவீன & வெளிநாட்டு மொழிகள்',
+    badgeText: 'NEW',
+    badgeType: 'new'
+  },
+  fun_english: {
+    id: 'fun_english',
+    icon: Smile,
+    enLabel: 'Fun English & Practice',
+    siLabel: 'ඉංග්‍රීසි පුහුණුව',
+    taLabel: 'வேடிக்கையான ஆங்கிலம்'
+  },
+  free_courses: {
+    id: 'free_courses',
+    icon: Compass,
+    enLabel: 'Free Online Courses',
+    siLabel: 'නොමිලේ පාඨමාලා',
+    taLabel: 'இலவசப் படிப்புகள்',
+    badgeText: 'FREE',
+    badgeType: 'free'
+  },
+
+  // GROUP 4: PROGRESS & STUDENT HUB
+  analytics: {
+    id: 'analytics',
+    icon: BarChart3,
+    enLabel: 'Performance Analytics',
+    siLabel: 'ප්‍රගති වාර්තාව',
+    taLabel: 'செயல்திறන් பகுப்பாய்வு'
+  },
+  campus: {
+    id: 'campus',
+    icon: GraduationCap,
+    enLabel: 'Campus & Z-Score Info',
+    siLabel: 'සරසවි සහ Z-Score',
+    taLabel: 'பல்கலைக்கழகம் & Z-புள்ளி'
+  },
+  university: {
+    id: 'university',
+    icon: Sparkles,
+    enLabel: 'University AI Portal',
+    siLabel: 'සරසවි AI සහකාර',
+    taLabel: 'பல்கலைக்கழக AI தளம்',
+    badgeText: 'NEW',
+    badgeType: 'new'
+  },
+  news: {
+    id: 'news',
+    icon: Newspaper,
+    enLabel: 'Exam News & Alerts',
+    siLabel: 'විභාග පුවත්',
+    taLabel: 'தேர்வுச் செய்திகள்'
+  },
+  google_hub: {
+    id: 'google_hub',
+    icon: Globe,
+    enLabel: 'Student Community Hub',
+    siLabel: 'සිසු පියස',
+    taLabel: 'மாணவர் தளம்'
+  },
+  book_shop: {
+    id: 'book_shop',
+    icon: ShoppingBag,
+    enLabel: 'SipArana Book Shop',
+    siLabel: 'පොත් හල',
+    taLabel: 'புத்தக சந்தை'
+  },
+
+  // Other utilities
+  utilities: {
+    id: 'utilities',
+    icon: Wrench,
+    enLabel: 'Study Utilities',
+    siLabel: 'පාඩම් මෙවලම්',
+    taLabel: 'படிப்பு கருவிகள்'
+  },
+  premium: {
+    id: 'premium',
+    icon: Crown,
+    enLabel: 'SipArana Pro',
+    siLabel: 'ප්‍රෝ සාමාජිකත්වය',
+    taLabel: 'புரோ உறுப்பினர்',
+    isPro: true
+  },
+  settings: {
+    id: 'settings',
+    icon: Settings,
+    enLabel: 'Settings & Profile',
+    siLabel: 'සැකසුම් & පැතිකඩ',
+    taLabel: 'அமைப்புகள் & சுயவிவரம்'
+  }
+};
 
 export default function Layout({ current, onNavigate, children }: LayoutProps) {
   const { profile, logout, setGradeAndStream, toggleStudentCategory } = useAuth();
@@ -127,6 +291,21 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
   const [showGradeDropdown, setShowGradeDropdown] = useState(false);
   const [showAutonomousModal, setShowAutonomousModal] = useState(false);
   const [showGlobalCountryModal, setShowGlobalCountryModal] = useState(false);
+  const [showChestModal, setShowChestModal] = useState(false);
+  const [showStreakModal, setShowStreakModal] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({
+    academics: false,
+    ai_assistants: false,
+    languages_skills: false,
+    progress_hub: false,
+  });
+
+  const toggleGroup = (groupId: string) => {
+    setCollapsedGroups(prev => ({
+      ...prev,
+      [groupId]: !prev[groupId]
+    }));
+  };
 
   const activeCountryObj = country;
 
@@ -166,62 +345,190 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
     }
   }, [isGrade5, current, onNavigate]);
 
-  const activeNavItems: NavItemDef[] = React.useMemo(() => {
+  const navGroups: NavGroupDef[] = React.useMemo(() => {
     if (isGrade5) {
-      return NAV_ITEMS_CONFIG.filter((item) => GRADE5_ALLOWED_PAGES.includes(item.id)).map((item) => {
-        if (item.id === 'dashboard') {
-          return { ...item, enLabel: 'Scholarship Dashboard', siLabel: '5 වසර ශිෂ්‍යත්ව පුවරුව', taLabel: 'புலமைப்பரிசில் பலகை', badgeText: 'Kid Portal 🌟' };
+      return [
+        {
+          id: 'academics',
+          icon: '🎓',
+          enTitle: 'CORE ACADEMICS & REVISION',
+          siTitle: 'අධ්‍යයන & ප්‍රශ්න පත්‍ර',
+          taTitle: 'பாடங்கள் & வினாத்தாள்கள்',
+          pastelBg: 'bg-blue-50/80 dark:bg-blue-950/40',
+          pastelBorder: 'border-blue-200/70 dark:border-blue-800/50',
+          pastelText: 'text-blue-800 dark:text-blue-200',
+          items: [
+            { ...RAW_NAV_ITEMS.subjects, enLabel: '4 Core Subjects & Guru Potha', siLabel: '5 වසර විෂයන් සහ ගුරු පොත' },
+            { ...RAW_NAV_ITEMS.quizzes, enLabel: 'IQ & Scholarship Quizzes', siLabel: 'බුද්ධි පරීක්ෂණ & ප්‍රශ්න' },
+            { ...RAW_NAV_ITEMS.offline_syllabus, enLabel: 'Grade 5 Teacher Guides (PDF)', siLabel: '5 වසර ගුරු පොත් සහ PDF' }
+          ]
+        },
+        {
+          id: 'ai_assistants',
+          icon: '🤖',
+          enTitle: 'AI STUDY ASSISTANTS',
+          siTitle: 'ස්මාර්ට් AI මෙවලම්',
+          taTitle: 'AI படிப்பு உதவியாளர்கள்',
+          pastelBg: 'bg-purple-50/80 dark:bg-purple-950/40',
+          pastelBorder: 'border-purple-200/70 dark:border-purple-800/50',
+          pastelText: 'text-purple-800 dark:text-purple-200',
+          items: [
+            { ...RAW_NAV_ITEMS.ai_tutor, enLabel: 'Kavi Owl AI Tutor', siLabel: 'කවි බකමූණා AI ගුරු සහකාර' },
+            { ...RAW_NAV_ITEMS.planner, enLabel: 'My Study Routine', siLabel: 'මගේ පාඩම් කාලසටහන' },
+            { ...RAW_NAV_ITEMS.flashcards, enLabel: 'Scholarship Flashcards', siLabel: 'ක්ෂණික මතක කාඩ්' },
+            { ...RAW_NAV_ITEMS.audio, enLabel: 'Voice Stories & Audio Notes', siLabel: 'ශ්‍රව්‍ය සටහන් & කතා' }
+          ]
+        },
+        {
+          id: 'languages_skills',
+          icon: '🌐',
+          enTitle: 'LANGUAGES & SKILLS',
+          siTitle: 'භාෂා සහ ඉගෙනුම්',
+          taTitle: 'மொழிகள் & திறன்கள்',
+          pastelBg: 'bg-amber-50/80 dark:bg-amber-950/40',
+          pastelBorder: 'border-amber-200/70 dark:border-amber-800/50',
+          pastelText: 'text-amber-800 dark:text-amber-200',
+          items: [
+            { ...RAW_NAV_ITEMS.fun_english, enLabel: 'Fun English & Relax', siLabel: 'ඉංග්‍රීසි පුහුණුව & විවේකය' }
+          ]
         }
-        if (item.id === 'subjects') {
-          return { ...item, enLabel: '4 Core Subjects & Guru Potha', siLabel: '5 වසර විෂයන් & ගුරු පොත', taLabel: '4 பாடங்கள் & ஆசிரியர் வழிகாட்டி', badgeText: 'NIE Guru Potha' };
-        }
-        if (item.id === 'planner') {
-          return { ...item, enLabel: 'My Study Routine & Timetable', siLabel: 'මගේ පාඩම් කාලසටහන', taLabel: 'படிப்பு அட்டவணை', badgeText: 'Daily Routine' };
-        }
-        if (item.id === 'flashcards') {
-          return { ...item, enLabel: 'Scholarship Flashcards', siLabel: 'මතක කාඩ්පත්', taLabel: 'நினைவு அட்டைகள்', badgeText: 'Fun Cards' };
-        }
-        if (item.id === 'audio') {
-          return { ...item, enLabel: 'Voice Stories & Audio Notes', siLabel: 'ශ්‍රව්‍ය සටහන් & කතා', taLabel: 'குரல் குறிப்புகள்', badgeText: 'Audio Stories' };
-        }
-        if (item.id === 'fun_english') {
-          return { ...item, enLabel: 'Fun English & Relax', siLabel: 'විනෝදජනක ඉංග්‍රීසි & විවේකය', taLabel: 'வேடிக்கையான ஆங்கிலம்', badgeText: 'Kavi Games' };
-        }
-        if (item.id === 'quizzes') {
-          return { ...item, enLabel: 'IQ & Scholarship Quizzes', siLabel: 'බුද්ධි පරීක්ෂණ & ප්‍රශ්න', taLabel: 'புலமைப்பரிசில் வினாக்கள்', badgeText: 'Brain IQ' };
-        }
-        if (item.id === 'ai_tutor') {
-          return { ...item, enLabel: 'Kavi Owl AI Tutor', siLabel: 'කවි බකමූණා AI ගුරු', taLabel: 'கவி ஆந்தை ஆசிரியர்', badgeText: 'Kavi Voice' };
-        }
-        if (item.id === 'offline_syllabus') {
-          return { ...item, enLabel: 'Grade 5 Teacher Guides (PDF)', siLabel: '5 වසර ගුරු පොත් & PDF', taLabel: 'ஆசிரியர் வழிகாட்டிகள்', badgeText: 'NIE PDF' };
-        }
-        if (item.id === 'settings') {
-          return { ...item, enLabel: 'Profile & Settings', siLabel: 'මගේ පැතිකඩ & සැකසුම්', taLabel: 'சுயவிவரம் & அமைப்புகள்' };
-        }
-        return item;
-      });
+      ];
     }
 
-    if (isUniversityStudent) {
-      return NAV_ITEMS_CONFIG.filter((item) => !['classroom', 'campus', 'utilities'].includes(item.id));
-    }
-
-    return NAV_ITEMS_CONFIG.filter((item) => !['university'].includes(item.id));
-  }, [isGrade5, isUniversityStudent]);
-
-  const daysToExam = Math.max(1, Math.round((new Date(2026, 10, 15).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
-  const currentGradeInfo = SCHOOL_GRADES.find(g => g.grade === profile?.grade);
+    return [
+      {
+        id: 'academics',
+        icon: '🎓',
+        enTitle: 'CORE ACADEMICS & REVISION',
+        siTitle: 'අධ්‍යයන & ප්‍රශ්න පත්‍ර',
+        taTitle: 'பாடங்கள் & வினாத்தாள்கள்',
+        pastelBg: 'bg-blue-50/80 dark:bg-blue-950/40',
+        pastelBorder: 'border-blue-200/70 dark:border-blue-800/50',
+        pastelText: 'text-blue-800 dark:text-blue-200',
+        items: [
+          RAW_NAV_ITEMS.subjects,
+          RAW_NAV_ITEMS.quizzes,
+          RAW_NAV_ITEMS.classroom,
+          RAW_NAV_ITEMS.offline_syllabus
+        ]
+      },
+      {
+        id: 'ai_assistants',
+        icon: '🤖',
+        enTitle: 'AI STUDY ASSISTANTS',
+        siTitle: 'ස්මාර්ට් AI මෙවලම්',
+        taTitle: 'AI படிப்பு உதவியாளர்கள்',
+        pastelBg: 'bg-purple-50/80 dark:bg-purple-950/40',
+        pastelBorder: 'border-purple-200/70 dark:border-purple-800/50',
+        pastelText: 'text-purple-800 dark:text-purple-200',
+        items: [
+          RAW_NAV_ITEMS.ai_tutor,
+          RAW_NAV_ITEMS.planner,
+          RAW_NAV_ITEMS.flashcards,
+          RAW_NAV_ITEMS.audio
+        ]
+      },
+      {
+        id: 'languages_skills',
+        icon: '🌐',
+        enTitle: 'LANGUAGES & SKILLS',
+        siTitle: 'භාෂා සහ ඉගෙනුම්',
+        taTitle: 'மொழிகள் & திறன்கள்',
+        pastelBg: 'bg-amber-50/80 dark:bg-amber-950/40',
+        pastelBorder: 'border-amber-200/70 dark:border-amber-800/50',
+        pastelText: 'text-amber-800 dark:text-amber-200',
+        items: [
+          RAW_NAV_ITEMS.modern_languages,
+          RAW_NAV_ITEMS.fun_english,
+          RAW_NAV_ITEMS.free_courses
+        ]
+      },
+      {
+        id: 'progress_hub',
+        icon: '📊',
+        enTitle: 'PROGRESS & STUDENT HUB',
+        siTitle: 'ප්‍රගතිය සහ තොරතුරු',
+        taTitle: 'முன்னேற்றம் & தளம்',
+        pastelBg: 'bg-emerald-50/80 dark:bg-emerald-950/40',
+        pastelBorder: 'border-emerald-200/70 dark:border-emerald-800/50',
+        pastelText: 'text-emerald-800 dark:text-emerald-200',
+        items: [
+          RAW_NAV_ITEMS.analytics,
+          isUniversityStudent ? RAW_NAV_ITEMS.university : RAW_NAV_ITEMS.campus,
+          {
+            ...RAW_NAV_ITEMS.news,
+            badgeText: unreadCount > 0 ? `${unreadCount} NEW` : undefined,
+            badgeType: 'new'
+          },
+          RAW_NAV_ITEMS.google_hub,
+          RAW_NAV_ITEMS.book_shop
+        ]
+      }
+    ];
+  }, [isGrade5, isUniversityStudent, unreadCount]);
 
   const getNavLabel = (item: NavItemDef) => {
     if (language === 'si') return item.siLabel;
-    if (language === 'ta') return item.taLabel;
+    if (language === 'ta' && item.taLabel) return item.taLabel;
     return item.enLabel;
   };
 
   const getSubLabel = (item: NavItemDef) => {
     if (language === 'si') return item.enLabel;
     return item.siLabel;
+  };
+
+  const getGroupTitle = (grp: NavGroupDef) => {
+    if (language === 'si') return grp.siTitle;
+    if (language === 'ta' && grp.taTitle) return grp.taTitle;
+    return grp.enTitle;
+  };
+
+  const getGroupSubTitle = (grp: NavGroupDef) => {
+    if (language === 'si') return grp.enTitle;
+    return grp.siTitle;
+  };
+
+  const renderBadge = (item: NavItemDef, isActive: boolean) => {
+    if (!item.badgeText) return null;
+    if (isActive) {
+      return (
+        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-white/20 text-white shadow-xs">
+          {item.badgeText}
+        </span>
+      );
+    }
+
+    if (item.badgeType === 'live') {
+      return (
+        <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200/70 dark:border-rose-800/50 flex items-center gap-1 shadow-2xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+          {item.badgeText}
+        </span>
+      );
+    }
+
+    if (item.badgeType === 'new') {
+      return (
+        <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/50 shadow-2xs">
+          {item.badgeText}
+        </span>
+      );
+    }
+
+    if (item.badgeType === 'free') {
+      return (
+        <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-950/80 dark:text-cyan-300 border border-cyan-200/70 dark:border-cyan-800/50 shadow-2xs">
+          {item.badgeText}
+        </span>
+      );
+    }
+
+    return (
+      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+        {item.badgeText}
+      </span>
+    );
   };
 
   const activeLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === language) || SUPPORTED_LANGUAGES[0];
@@ -337,68 +644,202 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
         )}
 
         {/* Navigation items */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {activeNavItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = current === item.id;
+        <nav className="flex-1 px-3 py-3 space-y-3 overflow-y-auto custom-scrollbar">
+          {/* Main Dashboard Button */}
+          {(() => {
+            const dashItem = RAW_NAV_ITEMS.dashboard;
+            const Icon = dashItem.icon;
+            const isActive = current === 'dashboard';
             return (
               <button
-                key={item.id}
-                id={`nav-item-${item.id}`}
-                onClick={() => onNavigate(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                id="nav-item-dashboard"
+                onClick={() => onNavigate('dashboard')}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
                   isActive
                     ? isGrade5
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm shadow-orange-500/30'
-                      : 'bg-blue-600 text-white shadow-sm shadow-blue-500/30'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs shadow-orange-500/25 ring-1 ring-amber-400/50'
+                      : 'bg-blue-600 text-white shadow-xs shadow-blue-500/25 ring-1 ring-blue-500/50'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:translate-x-0.5'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <Icon
-                    className={`w-4 h-4 ${
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center ${
                       isActive
-                        ? 'text-white'
-                        : item.isPro
-                        ? 'text-amber-500'
+                        ? 'bg-white/20 text-white'
                         : isGrade5
-                        ? 'text-amber-600 dark:text-amber-400'
-                        : 'text-slate-400 dark:text-slate-400'
+                        ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400'
+                        : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400'
                     }`}
-                  />
+                  >
+                    <Icon className="w-4 h-4" />
+                  </div>
                   <div className="text-left leading-tight">
-                    <div className="font-bold">{getNavLabel(item)}</div>
+                    <div className="font-bold text-[13px]">{getNavLabel(dashItem)}</div>
                     <span
-                      className={`text-[10px] block opacity-75 ${
-                        isActive ? 'text-white' : 'text-slate-400'
+                      className={`text-[10px] block font-normal leading-none mt-0.5 ${
+                        isActive ? 'text-blue-100' : 'text-slate-400'
                       }`}
                     >
-                      {getSubLabel(item)}
+                      {getSubLabel(dashItem)}
                     </span>
                   </div>
                 </div>
-
-                {item.badgeText && (
-                  <span
-                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                      isActive
-                        ? 'bg-black/20 text-white'
-                        : isGrade5
-                        ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-bold'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                    }`}
-                  >
-                    {item.badgeText}
-                  </span>
-                )}
-                {item.isPro && !isActive && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-                    PRO
-                  </span>
-                )}
               </button>
             );
+          })()}
+
+          {/* Categorized Groups */}
+          {navGroups.map((group) => {
+            const isCollapsed = !!collapsedGroups[group.id];
+            const hasActiveChild = group.items.some((it) => it.id === current);
+            return (
+              <div
+                key={group.id}
+                className={`rounded-2xl border transition-all duration-200 ${
+                  group.pastelBorder
+                } ${group.pastelBg} p-1.5 shadow-2xs`}
+              >
+                {/* Section Header Accordion Trigger */}
+                <button
+                  type="button"
+                  id={`nav-group-toggle-${group.id}`}
+                  onClick={() => toggleGroup(group.id)}
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer text-left"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-sm select-none">{group.icon}</span>
+                    <div className="min-w-0">
+                      <span
+                        className={`text-[11px] font-black tracking-wide uppercase block truncate ${group.pastelText}`}
+                      >
+                        {getGroupTitle(group)}
+                      </span>
+                      <span className="text-[9.5px] font-medium text-slate-500 dark:text-slate-400 block leading-none truncate">
+                        {getGroupSubTitle(group)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0 text-slate-400">
+                    {hasActiveChild && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                    )}
+                    {isCollapsed ? (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    )}
+                  </div>
+                </button>
+
+                {/* Group Items */}
+                {!isCollapsed && (
+                  <div className="mt-1 space-y-0.5 pt-0.5 border-t border-black/5 dark:border-white/5">
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = current === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          id={`nav-item-${item.id}`}
+                          onClick={() => onNavigate(item.id)}
+                          className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all duration-150 cursor-pointer ${
+                            isActive
+                              ? isGrade5
+                                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs font-semibold'
+                                : 'bg-blue-600 text-white shadow-xs font-semibold'
+                              : 'text-slate-700 dark:text-slate-200 hover:bg-white/80 dark:hover:bg-slate-800/80 hover:shadow-2xs font-medium'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <Icon
+                              className={`w-4 h-4 flex-shrink-0 ${
+                                isActive
+                                  ? 'text-white'
+                                  : isGrade5
+                                  ? 'text-amber-600 dark:text-amber-400'
+                                  : 'text-slate-500 dark:text-slate-400'
+                              }`}
+                            />
+                            <div className="text-left min-w-0 leading-tight">
+                              <div className="text-[12.5px] font-semibold truncate">
+                                {getNavLabel(item)}
+                              </div>
+                              <span
+                                className={`text-[10px] block font-normal leading-none mt-0.5 truncate ${
+                                  isActive ? 'text-blue-100' : 'text-slate-400 dark:text-slate-400'
+                                }`}
+                              >
+                                {getSubLabel(item)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex-shrink-0 ml-1.5">
+                            {renderBadge(item, isActive)}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
           })}
+
+          {/* Quick Settings & Pro footer shortcuts */}
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+            {/* Pro Button if not Grade 5 */}
+            {!isGrade5 && (
+              <button
+                id="nav-item-premium"
+                onClick={() => onNavigate('premium')}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition ${
+                  current === 'premium'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-xs'
+                    : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 font-semibold'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Crown className="w-4 h-4 text-amber-500" />
+                  <div className="text-left leading-tight">
+                    <div className="text-[12.5px] font-bold">
+                      {language === 'si' ? 'සිප්අරණ ප්‍රෝ' : 'SipArana Pro'}
+                    </div>
+                    <span className="text-[9.5px] opacity-80 block">
+                      {language === 'si' ? 'විශේෂ පහසුකම්' : 'Unlock All Features'}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500 text-white">
+                  PRO
+                </span>
+              </button>
+            )}
+
+            {/* Settings Button */}
+            <button
+              id="nav-item-settings"
+              onClick={() => onNavigate('settings')}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition ${
+                current === 'settings'
+                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Settings className="w-4 h-4 text-slate-500" />
+                <div className="text-left leading-tight">
+                  <div className="text-[12.5px] font-semibold">
+                    {getNavLabel(RAW_NAV_ITEMS.settings)}
+                  </div>
+                  <span className="text-[9.5px] text-slate-400 block">
+                    {getSubLabel(RAW_NAV_ITEMS.settings)}
+                  </span>
+                </div>
+              </div>
+            </button>
+          </div>
         </nav>
 
         {/* Bottom Banner & Log Out */}
@@ -565,19 +1006,42 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
               <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
             </button>
 
-            {/* Streak indicator */}
+            {/* Daily Mystery Chest Trigger */}
+            <button
+              type="button"
+              id="header-mystery-chest-btn"
+              onClick={() => {
+                soundFX.playPop();
+                setShowChestModal(true);
+              }}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-purple-500/20 dark:from-amber-950/60 dark:via-purple-950/50 dark:to-indigo-950/60 border border-amber-400/70 dark:border-amber-500/60 rounded-xl text-amber-700 dark:text-amber-300 text-xs font-black hover:scale-105 transition-all shadow-xs cursor-pointer group"
+              title="Open Daily Mystery Chest Rewards!"
+            >
+              <span className="text-sm group-hover:scale-125 transition-transform">🎁</span>
+              <span className="hidden sm:inline font-black">
+                {language === 'si' ? 'අභිරහස් තිළිණ' : 'Mystery Chest'}
+              </span>
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+            </button>
+
+            {/* Streak indicator - Clickable with Modal */}
             {profile && (
-              <div
+              <button
+                type="button"
                 id="streak-badge"
-                title={`${profile.streakDays} Days Study Streak!`}
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-xl text-amber-700 dark:text-amber-300 text-xs font-bold"
+                onClick={() => {
+                  soundFX.playStreak();
+                  setShowStreakModal(true);
+                }}
+                title={`${profile.streakDays} Days Study Streak! Tap to view milestones.`}
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/40 border border-amber-300 dark:border-amber-800/80 rounded-xl text-amber-700 dark:text-amber-300 text-xs font-black shadow-xs hover:border-amber-400 hover:scale-103 transition cursor-pointer"
               >
                 <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 fill-amber-500 animate-pulse flex-shrink-0" />
                 <span>{profile.streakDays}d</span>
                 <span className="hidden sm:inline text-[11px] font-normal text-amber-600 dark:text-amber-400">
                   {t('streak')}
                 </span>
-              </div>
+              </button>
             )}
 
             {/* XP Points */}
@@ -802,43 +1266,124 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                 </div>
               </div>
 
-              <div className="flex-1 py-3 space-y-1 overflow-y-auto">
-                {activeNavItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = current === item.id;
+              <div className="flex-1 py-3 space-y-2.5 overflow-y-auto custom-scrollbar">
+                {/* Dashboard item */}
+                {(() => {
+                  const dashItem = RAW_NAV_ITEMS.dashboard;
+                  const Icon = dashItem.icon;
+                  const isActive = current === 'dashboard';
                   return (
                     <button
-                      key={item.id}
                       onClick={() => {
-                        onNavigate(item.id);
+                        onNavigate('dashboard');
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition ${
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${
                         isActive
                           ? isGrade5
                             ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold'
                             : 'bg-blue-600 text-white font-bold'
-                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <Icon className={`w-4 h-4 ${isActive ? 'text-white' : isGrade5 ? 'text-amber-600' : 'text-slate-500'}`} />
-                        <span>{getNavLabel(item)}</span>
+                      <div className="flex items-center gap-2.5">
+                        <Icon className="w-4 h-4" />
+                        <div className="text-left">
+                          <div>{getNavLabel(dashItem)}</div>
+                          <span className="text-[9.5px] opacity-75 block font-normal">{getSubLabel(dashItem)}</span>
+                        </div>
                       </div>
-                      {item.badgeText && (
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                          isActive 
-                            ? 'bg-black/20 text-white' 
-                            : isGrade5 
-                            ? 'bg-amber-100 text-amber-800' 
-                            : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300'
-                        }`}>
-                          {item.badgeText}
-                        </span>
-                      )}
                     </button>
                   );
+                })()}
+
+                {/* Groups */}
+                {navGroups.map((group) => {
+                  const isCollapsed = !!collapsedGroups[group.id];
+                  return (
+                    <div
+                      key={group.id}
+                      className={`rounded-2xl border ${group.pastelBorder} ${group.pastelBg} p-1.5`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(group.id)}
+                        className="w-full flex items-center justify-between px-2 py-1 rounded-xl text-left"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-sm">{group.icon}</span>
+                          <span className={`text-[11px] font-black uppercase truncate ${group.pastelText}`}>
+                            {getGroupTitle(group)}
+                          </span>
+                        </div>
+                        {isCollapsed ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-400" />}
+                      </button>
+
+                      {!isCollapsed && (
+                        <div className="mt-1 space-y-0.5 pt-1 border-t border-black/5 dark:border-white/5">
+                          {group.items.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = current === item.id;
+                            return (
+                              <button
+                                key={item.id}
+                                onClick={() => {
+                                  onNavigate(item.id);
+                                  setMobileMenuOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition ${
+                                  isActive
+                                    ? isGrade5
+                                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold'
+                                      : 'bg-blue-600 text-white font-bold'
+                                    : 'text-slate-700 dark:text-slate-200 hover:bg-white/70 dark:hover:bg-slate-800'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                                  <div className="text-left min-w-0">
+                                    <div className="font-semibold truncate text-[12px]">{getNavLabel(item)}</div>
+                                    <span className="text-[9px] opacity-75 block font-normal truncate">{getSubLabel(item)}</span>
+                                  </div>
+                                </div>
+                                {renderBadge(item, isActive)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
                 })}
+
+                {/* Mobile Settings & Pro */}
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+                  {!isGrade5 && (
+                    <button
+                      onClick={() => {
+                        onNavigate('premium');
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs text-amber-700 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/40"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-4 h-4 text-amber-500" />
+                        <span>SipArana Pro</span>
+                      </div>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500 text-white font-black">PRO</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      onNavigate('settings');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold"
+                  >
+                    <Settings className="w-4 h-4 text-slate-500" />
+                    <span>{getNavLabel(RAW_NAV_ITEMS.settings)}</span>
+                  </button>
+                </div>
               </div>
 
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800">

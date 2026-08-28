@@ -436,3 +436,94 @@ export function generateGrade5TimetableHTML(
 </body>
 </html>`;
 }
+
+/**
+ * Creates print-ready official Sri Lankan Ministry of Education & NIE 2026 Model Examination Paper + Marking Scheme HTML Blob
+ */
+export function generate2026ModelPaperHTML(
+  examStandard: string,
+  subject: string,
+  stream: string,
+  topic: string,
+  contentMarkdown: string,
+  studentName = 'SipArana Candidate'
+): string {
+  // Convert markdown to clean HTML
+  const parsedBody = contentMarkdown
+    .replace(/^### (.*$)/gim, '<h3 class="sec-h3">$1</h3>')
+    .replace(/^#### (.*$)/gim, '<h4 class="sec-h4">$1</h4>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/```mermaid[\s\S]*?```/g, '<div class="diagram-notice">[Mermaid Diagram Code Block]</div>')
+    .replace(/```[\s\S]*?```/g, (match) => `<pre class="code-box">${match.replace(/```/g, '')}</pre>`)
+    .replace(/\n/g, '<br/>');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>2026 Model Paper - ${subject} (${examStandard}) - SipArana LK</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;600;700;800&display=swap');
+    @page { size: A4; margin: 15mm; }
+    body { font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif; color: #0f172a; line-height: 1.6; padding: 24px; background: #fff; }
+    .header-banner { border-bottom: 3px double #1e3a8a; padding-bottom: 14px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .gov-badge { background: #1e3a8a; color: #ffffff; padding: 6px 14px; border-radius: 6px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px; }
+    .nie-sub { font-size: 11px; font-weight: 700; color: #b45309; margin-top: 4px; }
+    .meta-grid { background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; font-size: 12px; }
+    .meta-lbl { color: #64748b; font-weight: 600; font-size: 10px; text-transform: uppercase; }
+    .meta-val { font-weight: 800; color: #0f172a; font-size: 13px; }
+    .content-area { font-size: 13.5px; color: #1e293b; line-height: 1.7; }
+    .sec-h3 { font-size: 16px; font-weight: 800; color: #1e3a8a; border-left: 4px solid #f59e0b; padding-left: 10px; margin: 24px 0 12px; text-transform: uppercase; background: #f1f5f9; padding: 8px 12px; border-radius: 0 8px 8px 0; }
+    .sec-h4 { font-size: 14px; font-weight: 800; color: #0369a1; margin: 16px 0 8px; }
+    .code-box { background: #0f172a; color: #f8fafc; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 12px; overflow-x: auto; margin: 12px 0; }
+    .diagram-notice { background: #f3e8ff; border: 1px dashed #9333ea; color: #7e22ce; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; margin: 8px 0; }
+    .footer { margin-top: 36px; padding-top: 14px; border-top: 2px dashed #94a3b8; display: flex; justify-content: space-between; font-size: 11px; color: #64748b; font-weight: 600; }
+    .no-print { background: #1e40af; color: white; padding: 12px 18px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2); }
+    .btn-print { background: #f59e0b; color: #000; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; }
+    @media print {
+      .no-print { display: none !important; }
+      body { padding: 0; background: #fff; }
+      .header-banner { border-bottom: 2px solid #000; }
+      .sec-h3 { background: #eee !important; color: #000 !important; border-left-color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <div><strong>🏛️ Official 2026 Sri Lankan Curriculum Model Examination & Marking Scheme</strong></div>
+    <button class="btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+  </div>
+
+  <div class="header-banner">
+    <div>
+      <span class="gov-badge">DEPARTMENT OF EXAMINATIONS • SRI LANKA</span>
+      <div class="nie-sub">NATIONAL INSTITUTE OF EDUCATION (NIE) • 2026 REVISED SYLLABUS FRAMEWORK</div>
+    </div>
+    <div style="text-align: right; font-size: 12px;">
+      <div style="font-weight: 800; color: #1e3a8a;">${examStandard}</div>
+      <div style="color: #64748b; font-weight: 600;">Syllabus Standard 2026</div>
+    </div>
+  </div>
+
+  <h1 style="font-size: 20px; margin: 0 0 4px; color: #0f172a;">${subject} — 2026 Model Examination</h1>
+  <h2 style="font-size: 14px; margin: 0 0 16px; color: #1e40af;">${stream} • Module / Scope: ${topic}</h2>
+
+  <div class="meta-grid">
+    <div><div class="meta-lbl">Examination Standard</div><div class="meta-val">${examStandard}</div></div>
+    <div><div class="meta-lbl">Curriculum Version</div><div class="meta-val">2026 Revised NIE</div></div>
+    <div><div class="meta-lbl">Evaluation Matrix</div><div class="meta-val">Step Marking Scheme</div></div>
+    <div><div class="meta-lbl">Candidate</div><div class="meta-val">${studentName}</div></div>
+  </div>
+
+  <div class="content-area">
+    ${parsedBody}
+  </div>
+
+  <div class="footer">
+    <div>SipArana LK • Official Sri Lankan 2026 Curriculum Digital Benchmarks</div>
+    <div>Strictly aligned with National Institute of Education & Department of Examinations circulars</div>
+  </div>
+</body>
+</html>`;
+}
