@@ -14,9 +14,7 @@ import {
   Layers,
   MapPin,
   Compass,
-  Info,
-  Volume2,
-  Zap
+  Info
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -28,12 +26,9 @@ import {
   getCountrySubdivisions,
   type GlobalCountryCode
 } from '@/data/globalCurriculumData';
-import { GlobalCurriculumEngine } from '@/utils/globalCurriculumEngine';
 import type { Stream, SchoolGrade, StudentCategory, Medium } from '@/types';
 import SiparanaLogo from '@/components/SiparanaLogo';
 import HeaderLanguageSelector from '@/components/HeaderLanguageSelector';
-import heroGirlImage from '@/assets/images/mascot_hero_girl_1787746112702.jpg';
-import kaviOwlAvatar from '@/assets/images/owl_mascot_avatar_1787579057944.jpg';
 import { soundFX } from '@/utils/audioUtils';
 
 export default function AuthPage() {
@@ -44,7 +39,6 @@ export default function AuthPage() {
   const [showSchoolModal, setShowSchoolModal] = useState(false);
   const [showUniModal, setShowUniModal] = useState(false);
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
-  const [isSpeakingKavi, setIsSpeakingKavi] = useState(false);
 
   // Global Country & Curriculum State
   const [countryCode, setCountryCode] = useState<GlobalCountryCode>('LK');
@@ -77,22 +71,6 @@ export default function AuthPage() {
   const activeCurricula = activeCountry.curricula;
   const activeCurriculum = activeCurricula.find((c) => c.id === selectedCurriculumId) || activeCurricula[0];
   const activeSubdivisions = getCountrySubdivisions(countryCode);
-
-  // Mascot guidance for the active configuration
-  const mascotGuidance = GlobalCurriculumEngine.getLocalizedMascotGuidance(
-    {
-      id: 'preview',
-      name: username || 'Student',
-      email: '',
-      studentCategory,
-      grade,
-      stream,
-      countryCode,
-      curriculumId: selectedCurriculumId,
-      isPremium: true
-    } as any,
-    language
-  );
 
   // University helpers
   const currentUni = UNIVERSITIES_DATA.find((u) => u.id === selectedUniId) || UNIVERSITIES_DATA[0];
@@ -181,28 +159,6 @@ export default function AuthPage() {
       if (matchedStage) {
         setStream(matchedStage.defaultStream);
       }
-    }
-  };
-
-  const handleSpeakMascotWelcome = () => {
-    if ('speechSynthesis' in window) {
-      if (isSpeakingKavi) {
-        window.speechSynthesis.cancel();
-        setIsSpeakingKavi(false);
-        return;
-      }
-      window.speechSynthesis.cancel();
-      const textToSpeak = countryCode === 'UK'
-        ? "Let's tackle your UK GCSE and A-Level revision with active recall and official Ofqual mark schemes!"
-        : mascotGuidance.spokenAudioScript;
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.rate = 0.95;
-      utterance.pitch = 1.1;
-      utterance.lang = countryCode === 'UK' ? 'en-GB' : mascotGuidance.speechLocale;
-      utterance.onend = () => setIsSpeakingKavi(false);
-      utterance.onerror = () => setIsSpeakingKavi(false);
-      setIsSpeakingKavi(true);
-      window.speechSynthesis.speak(utterance);
     }
   };
 
@@ -374,79 +330,14 @@ export default function AuthPage() {
         </div>
       </header>
 
-      {/* MAIN CONTAINER: Clean, Spacious, 2-Column Responsive Layout */}
+      {/* MAIN CONTAINER: Clean, Centered Layout */}
       <main className="relative z-10 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 flex flex-col justify-center">
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* LEFT COLUMN: Student Photo, Mascot & Interactive Exploration */}
+          {/* LEFT COLUMN: Interactive Feature Exploration & Verification Cards */}
           <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left space-y-4">
             
-            {/* Student Photo Card with Floating Chat Bubbles */}
-            <div className="relative group w-full max-w-md">
-              <div className="absolute -inset-2 bg-gradient-to-r from-amber-400/30 to-blue-400/30 rounded-3xl blur-md opacity-70 group-hover:opacity-100 transition duration-500" />
-              
-              <div className="relative bg-white p-4 rounded-3xl border-2 border-amber-300/80 shadow-[0_8px_0_0_#fcd34d] flex flex-col gap-3">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-slate-900 border-2 border-amber-400 flex-shrink-0 shadow-inner">
-                    <img
-                      src={heroGirlImage}
-                      alt="SipArana Student"
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover object-top transform hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="text-left flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-base">{mascotGuidance.avatarIcon}</span>
-                      <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-tight">
-                        {mascotGuidance.mascotName}
-                      </h3>
-                    </div>
-                    <span className="text-[10px] font-bold text-amber-700 block mt-0.5">
-                      {mascotGuidance.badgeLabel}
-                    </span>
-                    <div className="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/90 text-[10px] font-black text-blue-900">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                      <span>{activeCountry.name} ({activeCountry.code})</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Floating Chat Bubble */}
-                <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-50/90 to-amber-100/50 border border-amber-200/90 text-xs text-slate-700 leading-relaxed text-left relative">
-                  <div className="flex items-start gap-2">
-                    <div className="w-6 h-6 rounded-full overflow-hidden bg-amber-200 flex-shrink-0 mt-0.5 border border-amber-400">
-                      <img
-                        src={kaviOwlAvatar}
-                        alt="Kavi Avatar"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-[11px] text-slate-800">
-                        "{mascotGuidance.greetingMessage}"
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-2.5 pt-2 border-t border-amber-200/60 flex items-center justify-between">
-                    <button
-                      type="button"
-                      onClick={handleSpeakMascotWelcome}
-                      className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-amber-900 hover:text-amber-950 bg-white/90 px-3 py-1 rounded-xl border border-amber-300/80 cursor-pointer shadow-xs"
-                    >
-                      <Volume2 className="w-3.5 h-3.5 text-amber-600" />
-                      <span>{isSpeakingKavi ? 'Stop Voice' : `Listen to ${mascotGuidance.mascotName}`}</span>
-                    </button>
-                    <span className="text-[10px] font-bold text-amber-700">
-                      ★ 100% Accurate
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Interactive Feature Exploration Cards */}
             <div className="w-full space-y-2.5 text-xs text-slate-600 font-medium max-w-md">
               
@@ -542,6 +433,38 @@ export default function AuthPage() {
                   <Check className="w-3 h-3 stroke-[3]" />
                 </div>
               </button>
+
+              {/* SipArana Features Checklist (Matching Official Mockup) */}
+              <div className="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 shadow-2xs space-y-2">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                  <span className="text-xs font-black text-slate-900">Siparana Features</span>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    ✓ 100% Live
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 gap-1.5 text-[11px] font-semibold">
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                    <span>Lesson Explanations</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                    <span>Step-by-step Solutions</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                    <span>Past Papers & Answers</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                    <span>Quiz & Practice</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                    <span>Voice / Photo Questions</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

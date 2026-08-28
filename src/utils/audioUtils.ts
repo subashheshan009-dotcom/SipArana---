@@ -133,6 +133,10 @@ class SoundFX {
       // Audio fallback
     }
   }
+
+  playPop() {
+    this.playClick();
+  }
 }
 
 export const soundFX = new SoundFX();
