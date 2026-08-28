@@ -30,7 +30,9 @@ import {
   ShoppingBag,
   Smile,
   Headphones,
-  Languages
+  Languages,
+  Brain,
+  BrainCircuit
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -47,13 +49,14 @@ import KaviStepByStepMentor from '@/components/KaviStepByStepMentor';
 import AutonomousCurriculumSyncModal from '@/components/AutonomousCurriculumSyncModal';
 import { GlobalCurriculumEngine } from '@/utils/globalCurriculumEngine';
 import { soundFX } from '@/utils/audioUtils';
+import { getPersonalizedReturningGreeting } from '@/utils/userMemoryEngine';
 
 interface DashboardProps {
   onNavigate: (page: PageId) => void;
 }
 
 export default function Dashboard({ onNavigate }: DashboardProps) {
-  const { profile, addXP } = useAuth();
+  const { profile, studyMemory, addXP } = useAuth();
   const { language, t } = useLanguage();
   const { country, curriculum, dictionary, subjects: dynamicSubjects, gradingSystem, mascot } = useCountry();
   const { notices, isSyncing } = useExamNews();
@@ -207,6 +210,8 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       ? `O/L ${profile?.targetYear || 2026} (9 A's)`
       : `Grade ${userGrade} Term Exam`;
 
+  const returningGreeting = getPersonalizedReturningGreeting(profile, studyMemory, language);
+
   return (
     <div className="space-y-6">
       {/* 1. HORIZONTAL HERO BANNER */}
@@ -241,16 +246,33 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              {language === 'si'
-                ? `ආයුබෝවන්, ${profile?.name || 'ශිෂ්‍යයා'}! 👋`
-                : language === 'ta'
-                ? `வணக்கம், ${profile?.name || 'மாணவர்'}! 👋`
-                : `Welcome, ${profile?.name || 'Student'}! 👋`}
+              {returningGreeting.headline}
             </h1>
 
             <p className="text-sm text-blue-100/90 leading-relaxed">
-              {dictionary.heroSubtitle}
+              {returningGreeting.subtext}
             </p>
+
+            {returningGreeting.hasPreviousHistory && returningGreeting.resumeTopic && (
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFX.playCorrect();
+                    onNavigate('ai_tutor');
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>
+                    {language === 'si'
+                      ? `"${returningGreeting.resumeTopic}" පාඩම දිගටම කරගෙන යන්න`
+                      : `Resume "${returningGreeting.resumeTopic}"`}
+                  </span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            )}
 
             <div className="flex flex-wrap gap-3 pt-1 text-xs">
               <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl backdrop-blur-xs">
@@ -527,6 +549,66 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Listen & Revise High-Yield</p>
               </div>
             </button>
+          </section>
+
+          {/* 3a-2. CONTINUOUS STUDY MEMORY & SAVED ASSETS SYNC WIDGET */}
+          <section
+            onClick={() => onNavigate('ai_tutor')}
+            className="p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 via-blue-500/10 to-indigo-500/10 border-2 border-amber-300/60 dark:border-amber-700/60 shadow-sm hover:border-amber-400 hover:shadow-md transition cursor-pointer group"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md flex-shrink-0 group-hover:scale-105 transition">
+                  <Brain className="w-6 h-6" />
+                </div>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-300/40">
+                      ⚡ Persistent Session Retention Active
+                    </span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                      {profile?.email || 'Logged-in Account'}
+                    </span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                    {language === 'si'
+                      ? 'අඛණ්ඩ අධ්‍යයන මතකය සහ සුරැකි සටහන් (Continuous Study History)'
+                      : 'Continuous Study Memory & Context Retention'}
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    {language === 'si'
+                      ? 'පෙර විමසූ ප්‍රශ්න, උත්පාදිත සාරාංශ, Flashcards, රචනා ලකුණු සහ දුර්වල ඒකක ස්වයංක්‍රීයව සුරැකී ඇත.'
+                      : 'Past questions, generated summaries, mind maps, essay feedback and weak areas are safely retained.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-start sm:self-center">
+                <div className="flex gap-2 text-center text-xs">
+                  <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+                    <span className="block text-[10px] text-slate-400 font-bold">Chats</span>
+                    <span className="font-black text-blue-600 dark:text-blue-400">
+                      {studyMemory?.chatHistory?.filter((m) => m.sender === 'user').length || 0}
+                    </span>
+                  </div>
+                  <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+                    <span className="block text-[10px] text-slate-400 font-bold">Assets</span>
+                    <span className="font-black text-amber-600 dark:text-amber-400">
+                      {studyMemory?.savedAssets?.length || 0}
+                    </span>
+                  </div>
+                  <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+                    <span className="block text-[10px] text-slate-400 font-bold">Essays</span>
+                    <span className="font-black text-emerald-600 dark:text-emerald-400">
+                      {studyMemory?.essayEvaluations?.length || 0}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-2 rounded-xl bg-blue-600 text-white group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
           </section>
 
           {/* 3b. ADDITIONAL APP TOOLS */}

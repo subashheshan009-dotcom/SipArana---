@@ -30,6 +30,7 @@ import FreeCoursesPage from '@/pages/FreeCoursesPage';
 import GoogleStudentHubPage from '@/pages/GoogleStudentHubPage';
 import FunEnglishRelaxPage from '@/pages/FunEnglishRelaxPage';
 import ModernLanguagesPage from '@/pages/ModernLanguagesPage';
+import OnboardingFlow from '@/components/OnboardingFlow';
 
 function AppContent() {
   const { profile, loading } = useAuth();
@@ -51,6 +52,11 @@ function AppContent() {
 
   if (!profile) {
     return <AuthPage />;
+  }
+
+  // If user has not completed multi-step academic onboarding, present the OnboardingFlow
+  if (!profile.hasCompletedOnboarding) {
+    return <OnboardingFlow onComplete={() => setPage('dashboard')} />;
   }
 
   const handleNavigate = (p: PageId) => {

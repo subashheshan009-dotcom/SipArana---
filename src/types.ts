@@ -45,6 +45,8 @@ export interface UserProfile {
   isKidMode?: boolean;
   kidAvatar?: string;
   
+  hasCompletedOnboarding?: boolean;
+  
   // Global Country & Multi-Curriculum Core Attributes
   countryCode?: GlobalCountryCode;
   countryName?: string;

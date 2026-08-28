@@ -1,6 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserProfile, Stream, ExamLevel, Medium, SchoolGrade, StudentCategory, GlobalCountryCode, AppLanguage } from '@/types';
 import { getCountryByCode, getCurriculumById, getCountrySubdivisions } from '@/data/globalCurriculumData';
+import {
+  getUserStudyMemory,
+  saveUserStudyMemory,
+  recordChatToMemory,
+  recordGeneratedAssetToMemory,
+  recordEssayEvaluationToMemory,
+  recordWeakSubjectArea,
+  resolveWeakSubjectArea,
+  clearUserStudyMemory,
+  normalizeEmail,
+  type UserStudyMemory,
+  type GeneratedStudyAsset,
+  type EssayEvaluationRecord,
+  type WeakSubjectAreaRecord
+} from '@/utils/userMemoryEngine';
 
 export type DemoPresetKey = 
   | 'scholarship' 
@@ -52,10 +67,12 @@ export interface SimpleLoginParams {
 
 interface AuthContextType {
   profile: UserProfile | null;
+  studyMemory: UserStudyMemory | null;
   loading: boolean;
   simpleLogin: (params: SimpleLoginParams) => Promise<{ success: boolean; error?: string }>;
   login: (emailOrPhone: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogle: (googleData?: {
+    id?: string;
     name?: string;
     email?: string;
     avatar?: string;
@@ -68,7 +85,8 @@ interface AuthContextType {
     degreeProgramme?: string;
     district?: string;
     medium?: Medium;
-  }) => Promise<{ success: boolean; error?: string }>;
+    isNewUser?: boolean;
+  }) => Promise<{ success: boolean; isNewUser?: boolean; error?: string }>;
   loginAsDemo: (presetKey: DemoPresetKey) => void;
   register: (data: Partial<UserProfile> & { password?: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
@@ -80,6 +98,18 @@ interface AuthContextType {
   addXP: (amount: number) => void;
   incrementStreak: () => void;
   toggleBookmarkPaper: (paperId: string) => void;
+  
+  // Continuous Context & Study Memory Retention methods
+  recordChat: (
+    userMsg: { text: string; attachedImage?: string; attachedPdfName?: string; subjectTag?: string },
+    aiMsg: { text: string; subjectTag?: string }
+  ) => void;
+  recordAsset: (asset: Omit<GeneratedStudyAsset, 'id' | 'date'>) => GeneratedStudyAsset | null;
+  recordEvaluation: (evaluation: Omit<EssayEvaluationRecord, 'id' | 'date'>) => EssayEvaluationRecord | null;
+  recordWeakArea: (weakArea: Omit<WeakSubjectAreaRecord, 'id' | 'dateIdentified'>) => WeakSubjectAreaRecord | null;
+  resolveWeakArea: (id: string) => void;
+  clearStudySessionMemory: () => void;
+  refreshStudyMemory: () => void;
 }
 
 const DEFAULT_USERS: Record<DemoPresetKey, UserProfile> = {
@@ -524,6 +554,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [studyMemory, setStudyMemory] = useState<UserStudyMemory | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -531,13 +562,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem('siparana_user');
     if (saved) {
       try {
-        setProfile(JSON.parse(saved));
+        const u = JSON.parse(saved) as UserProfile;
+        setProfile(u);
+        const mem = getUserStudyMemory(u.email, u);
+        setStudyMemory(mem);
       } catch {
         setProfile(null);
+        setStudyMemory(null);
       }
     } else {
       // User is not logged in by default - display Welcome / Sign In / Register screen
       setProfile(null);
+      setStudyMemory(null);
     }
     setLoading(false);
   }, []);
@@ -546,8 +582,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(user);
     if (user) {
       localStorage.setItem('siparana_user', JSON.stringify(user));
+      const mem = getUserStudyMemory(user.email, user);
+      setStudyMemory(mem);
+
+      // Keep user in registered accounts repository so future email logins retrieve exact profile
+      try {
+        const storedUsers: Array<{ profile: UserProfile; password?: string; phone?: string }> =
+          JSON.parse(localStorage.getItem('siparana_registered_accounts') || '[]');
+        const norm = normalizeEmail(user.email);
+        const idx = storedUsers.findIndex(acc => normalizeEmail(acc.profile.email) === norm);
+        if (idx >= 0) {
+          storedUsers[idx].profile = { ...storedUsers[idx].profile, ...user };
+        } else {
+          storedUsers.push({ profile: user });
+        }
+        localStorage.setItem('siparana_registered_accounts', JSON.stringify(storedUsers));
+      } catch {
+        // ignore
+      }
     } else {
       localStorage.removeItem('siparana_user');
+      setStudyMemory(null);
     }
   };
 
@@ -766,24 +821,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginWithGoogle = async (googleData?: {
+    id?: string;
     name?: string;
     email?: string;
     avatar?: string;
     category?: StudentCategory;
     grade?: SchoolGrade;
     stream?: Stream;
+    countryCode?: GlobalCountryCode;
+    curriculumId?: string;
     university?: string;
     degreeProgramme?: string;
     district?: string;
     medium?: Medium;
-  }): Promise<{ success: boolean; error?: string }> => {
+    isNewUser?: boolean;
+  }): Promise<{ success: boolean; isNewUser?: boolean; error?: string }> => {
     const userEmail = (googleData?.email || 'subashheshan009@gmail.com').trim().toLowerCase();
-    const rawName = googleData?.name || (userEmail.includes('@') ? userEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ') : 'Heshan Subasinghe');
+    const rawName = googleData?.name || (userEmail.includes('@') ? userEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ') : 'Google Student');
     const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
     const userAvatar = googleData?.avatar || `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`;
+    const targetCountryCode: GlobalCountryCode = googleData?.countryCode || 'LK';
+    const targetCountry = getCountryByCode(targetCountryCode);
 
     // Determine chosen medium or fallback to saved app language
-    let activeMedium: Medium = googleData?.medium || 'Sinhala';
+    let activeMedium: Medium = googleData?.medium || (targetCountryCode === 'LK' ? 'Sinhala' : targetCountryCode === 'JP' ? 'Japanese' : 'English');
     try {
       const savedLang = localStorage.getItem('siparana_app_language');
       if (savedLang === 'ta') activeMedium = 'Tamil';
@@ -793,33 +854,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // ignore
     }
 
-    // Check if user already registered before
+    // 1. Check if user already registered before in local storage
     const storedUsersJson = localStorage.getItem('siparana_registered_accounts');
     if (storedUsersJson) {
       try {
         const storedUsers: Array<{ profile: UserProfile; password?: string; phone?: string }> = JSON.parse(storedUsersJson);
         const existing = storedUsers.find(acc => acc.profile.email.toLowerCase() === userEmail);
         if (existing) {
+          const isCompleted = existing.profile.hasCompletedOnboarding !== false;
           const updatedProfile: UserProfile = {
             ...existing.profile,
+            name: googleData?.name && googleData.name !== 'Google Student' ? googleData.name : existing.profile.name,
+            avatar: googleData?.avatar || existing.profile.avatar || userAvatar,
             medium: googleData?.medium || existing.profile.medium || activeMedium,
             authProvider: 'google',
-            lastActiveDate: new Date().toISOString().split('T')[0]
+            lastActiveDate: new Date().toISOString().split('T')[0],
+            hasCompletedOnboarding: isCompleted
           };
           persistUser(updatedProfile);
-          return { success: true };
+          return { success: true, isNewUser: !isCompleted };
         }
       } catch {
         // continue
       }
     }
 
+    // 2. Check if it matches a preset user
+    const matchedPreset = Object.values(DEFAULT_USERS).find(u => u.email.toLowerCase() === userEmail);
+    if (matchedPreset) {
+      const updatedProfile: UserProfile = {
+        ...matchedPreset,
+        authProvider: 'google',
+        hasCompletedOnboarding: true,
+        lastActiveDate: new Date().toISOString().split('T')[0]
+      };
+      persistUser(updatedProfile);
+      return { success: true, isNewUser: false };
+    }
+
+    // 3. New Google User: Create fresh profile with hasCompletedOnboarding: false
     const isUni = googleData?.category === 'University' || userEmail.includes('eng') || userEmail.includes('uni') || userEmail.includes('moratuwa');
     
     let newUser: UserProfile;
     if (isUni) {
       newUser = {
-        id: `usr_google_${Date.now()}`,
+        id: googleData?.id || `usr_google_${Date.now()}`,
         name: formattedName,
         email: userEmail,
         avatar: userAvatar,
@@ -827,51 +906,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         studentCategory: 'University',
         level: 'CAMPUS',
         stream: 'Higher Education',
+        countryCode: targetCountryCode,
+        countryName: targetCountry.name,
+        countryFlag: targetCountry.flag,
         school: googleData?.university || 'University of Moratuwa',
         university: googleData?.university || 'University of Moratuwa',
         universityShort: 'UoM',
         faculty: 'Faculty of Engineering',
         degreeProgramme: googleData?.degreeProgramme || 'B.Sc. (Hons) in Computer Science & Engineering',
         degreeCode: 'ENG-CSE',
-        academicYear: 2,
+        academicYear: 1,
         academicSemester: 1,
         studentIdNumber: '220459X',
         targetYear: 2027,
-        district: googleData?.district || 'Colombo',
+        district: googleData?.district || (targetCountryCode === 'LK' ? 'Colombo' : targetCountry.name),
         medium: googleData?.medium || activeMedium || 'English',
         isPremium: true,
         xp: 1200,
-        streakDays: 3,
+        streakDays: 1,
         lastActiveDate: new Date().toISOString().split('T')[0],
-        completedLessonsCount: 8,
-        solvedDoubtsCount: 4,
+        completedLessonsCount: 0,
+        solvedDoubtsCount: 0,
         bookmarkedPaperIds: [],
         currentGpa: 3.85,
-        targetGpa: 4.0
+        targetGpa: 4.0,
+        hasCompletedOnboarding: false
       };
     } else {
-      const gradeVal = googleData?.grade || 13;
+      const gradeVal = googleData?.grade || (targetCountryCode === 'LK' ? 13 : 12);
       newUser = {
-        id: `usr_google_${Date.now()}`,
+        id: googleData?.id || `usr_google_${Date.now()}`,
         name: formattedName,
         email: userEmail,
         avatar: userAvatar,
         authProvider: 'google',
         studentCategory: 'School',
         grade: gradeVal,
-        level: gradeVal <= 9 ? 'JUNIOR' : gradeVal <= 11 ? 'OL' : 'AL',
-        stream: googleData?.stream || (gradeVal <= 9 ? 'Junior Secondary (Grade 6-9)' : gradeVal <= 11 ? 'General O/L' : 'Physical Science (Maths)'),
+        level: targetCountryCode === 'LK' ? (gradeVal <= 5 ? 'SCHOLARSHIP' : gradeVal <= 9 ? 'JUNIOR' : gradeVal <= 11 ? 'OL' : 'AL') : (gradeVal >= 11 ? 'GLOBAL_SENIOR' : 'GLOBAL_SECONDARY'),
+        stream: googleData?.stream || (targetCountryCode === 'LK' ? (gradeVal <= 5 ? 'Grade 5 Scholarship' : gradeVal <= 9 ? 'Junior Secondary (Grade 6-9)' : gradeVal <= 11 ? 'General O/L' : 'Physical Science (Maths)') : 'General Academic'),
+        countryCode: targetCountryCode,
+        countryName: targetCountry.name,
+        countryFlag: targetCountry.flag,
         targetYear: 2026,
-        school: 'Sri Lanka National School',
-        district: googleData?.district || 'Colombo',
-        medium: googleData?.medium || activeMedium || 'Sinhala',
+        school: targetCountryCode === 'LK' ? 'Sri Lanka National School' : `${targetCountry.name} Academy`,
+        district: googleData?.district || (targetCountryCode === 'LK' ? 'Colombo' : targetCountry.name),
+        medium: googleData?.medium || activeMedium || (targetCountryCode === 'LK' ? 'Sinhala' : targetCountryCode === 'JP' ? 'Japanese' : 'English'),
         isPremium: true,
         xp: 1000,
         streakDays: 1,
         lastActiveDate: new Date().toISOString().split('T')[0],
-        completedLessonsCount: 4,
-        solvedDoubtsCount: 2,
+        completedLessonsCount: 0,
+        solvedDoubtsCount: 0,
         bookmarkedPaperIds: [],
+        hasCompletedOnboarding: false
       };
     }
 
@@ -885,11 +972,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     persistUser(newUser);
-    return { success: true };
+    return { success: true, isNewUser: true };
   };
 
   const loginAsDemo = (presetKey: DemoPresetKey) => {
-    persistUser(DEFAULT_USERS[presetKey] || DEFAULT_USERS.maths);
+    const user = DEFAULT_USERS[presetKey] || DEFAULT_USERS.maths;
+    persistUser({ ...user, hasCompletedOnboarding: true });
   };
 
   const register = async (
@@ -947,6 +1035,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       completedLessonsCount: 0,
       solvedDoubtsCount: 0,
       bookmarkedPaperIds: [],
+      hasCompletedOnboarding: false,
       ...profileFields,
     };
 
@@ -1136,10 +1225,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     persistUser(updated);
   };
 
+  // Continuous Context & Study Memory Methods
+  const recordChat = (
+    userMsg: { text: string; attachedImage?: string; attachedPdfName?: string; subjectTag?: string },
+    aiMsg: { text: string; subjectTag?: string }
+  ) => {
+    if (!profile) return;
+    const updatedMem = recordChatToMemory(profile.email, userMsg, aiMsg);
+    setStudyMemory({ ...updatedMem });
+  };
+
+  const recordAsset = (asset: Omit<GeneratedStudyAsset, 'id' | 'date'>) => {
+    if (!profile) return null;
+    const res = recordGeneratedAssetToMemory(profile.email, asset);
+    const mem = getUserStudyMemory(profile.email, profile);
+    setStudyMemory({ ...mem });
+    return res;
+  };
+
+  const recordEvaluation = (evaluation: Omit<EssayEvaluationRecord, 'id' | 'date'>) => {
+    if (!profile) return null;
+    const res = recordEssayEvaluationToMemory(profile.email, evaluation);
+    const mem = getUserStudyMemory(profile.email, profile);
+    setStudyMemory({ ...mem });
+    return res;
+  };
+
+  const recordWeakArea = (weakArea: Omit<WeakSubjectAreaRecord, 'id' | 'dateIdentified'>) => {
+    if (!profile) return null;
+    const res = recordWeakSubjectArea(profile.email, weakArea);
+    const mem = getUserStudyMemory(profile.email, profile);
+    setStudyMemory({ ...mem });
+    return res;
+  };
+
+  const resolveWeakArea = (id: string) => {
+    if (!profile) return;
+    resolveWeakSubjectArea(profile.email, id);
+    const mem = getUserStudyMemory(profile.email, profile);
+    setStudyMemory({ ...mem });
+  };
+
+  const clearStudySessionMemory = () => {
+    if (!profile) return;
+    const fresh = clearUserStudyMemory(profile.email, profile);
+    setStudyMemory({ ...fresh });
+  };
+
+  const refreshStudyMemory = () => {
+    if (!profile) return;
+    const mem = getUserStudyMemory(profile.email, profile);
+    setStudyMemory({ ...mem });
+  };
+
   return (
     <AuthContext.Provider
       value={{
         profile,
+        studyMemory,
         loading,
         simpleLogin,
         login,
@@ -1155,6 +1298,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         addXP,
         incrementStreak,
         toggleBookmarkPaper,
+        recordChat,
+        recordAsset,
+        recordEvaluation,
+        recordWeakArea,
+        resolveWeakArea,
+        clearStudySessionMemory,
+        refreshStudyMemory,
       }}
     >
       {children}

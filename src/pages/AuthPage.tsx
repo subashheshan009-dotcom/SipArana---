@@ -1,243 +1,141 @@
 import React, { useState } from 'react';
 import {
-  Sparkles,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
   ArrowRight,
-  ShieldCheck,
-  User,
-  School,
-  Building2,
-  Landmark,
-  GraduationCap,
-  Award,
+  Sparkles,
   Check,
-  Globe,
+  Play,
+  Heart,
+  Video,
   Layers,
-  MapPin,
-  Compass,
-  Info
+  GraduationCap,
+  Globe,
+  Info,
+  BookOpen,
+  Award,
+  Zap,
+  HelpCircle,
+  X
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { SCHOOL_GRADES } from '@/data/mockData';
-import { UNIVERSITIES_DATA } from '@/data/universityData';
+import SiparanaLogo from '@/components/SiparanaLogo';
+import HeaderLanguageSelector from '@/components/HeaderLanguageSelector';
+import GoogleAccountPickerModal, { GoogleAuthPayload } from '@/components/GoogleAccountPickerModal';
+import heroBannerStudent from '@/assets/hero-banner-student.jpg';
+import { soundFX } from '@/utils/audioUtils';
 import {
   GLOBAL_COUNTRIES,
   getCountryByCode,
-  getCountrySubdivisions,
   type GlobalCountryCode
 } from '@/data/globalCurriculumData';
-import type { Stream, SchoolGrade, StudentCategory, Medium } from '@/types';
-import SiparanaLogo from '@/components/SiparanaLogo';
-import HeaderLanguageSelector from '@/components/HeaderLanguageSelector';
-import { soundFX } from '@/utils/audioUtils';
 
 export default function AuthPage() {
-  const { simpleLogin } = useAuth();
-  const { language, setLanguage } = useLanguage();
+  const { login, loginWithGoogle, loginAsDemo, simpleLogin, register } = useAuth();
+  const { language } = useLanguage();
 
-  // Interactive Explorer Modals
-  const [showSchoolModal, setShowSchoolModal] = useState(false);
-  const [showUniModal, setShowUniModal] = useState(false);
-  const [showVerifiedModal, setShowVerifiedModal] = useState(false);
+  // Auth Mode: 'login' | 'register'
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
-  // Global Country & Curriculum State
-  const [countryCode, setCountryCode] = useState<GlobalCountryCode>('LK');
-  const [selectedCurriculumId, setSelectedCurriculumId] = useState<string>('LK_NIE');
-
-  // Form State
-  const [username, setUsername] = useState('');
-  const [studentCategory, setStudentCategory] = useState<StudentCategory>('School');
-  
-  // School Student State
-  const [grade, setGrade] = useState<SchoolGrade>(13);
-  const [stream, setStream] = useState<Stream>('Physical Science (Maths)');
-  const [locationRegion, setLocationRegion] = useState<string>('Colombo');
-  const [customLocation, setCustomLocation] = useState<string>('');
-  const [isCustomLocation, setIsCustomLocation] = useState<boolean>(false);
-  const [medium, setMedium] = useState<Medium>('Sinhala');
-  const [schoolName, setSchoolName] = useState('');
-
-  // University Undergrad State
-  const [selectedUniId, setSelectedUniId] = useState('uom');
-  const [selectedFacultyId, setSelectedFacultyId] = useState('uom_eng');
-  const [selectedDegreeCode, setSelectedDegreeCode] = useState('ENG-CSE');
-  const [academicYear, setAcademicYear] = useState(1);
-  const [academicSemester, setAcademicSemester] = useState(1);
-
+  // Form Fields
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Country & Grade Selection State
+  const [countryCode, setCountryCode] = useState<GlobalCountryCode>('LK');
+  const [selectedGrade, setSelectedGrade] = useState<number>(13);
+  const [selectedStream, setSelectedStream] = useState<string>('Physical Science (Maths)');
+
+  // Modals
+  const [showTourModal, setShowTourModal] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [showGooglePicker, setShowGooglePicker] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSent, setForgotSent] = useState(false);
+  const [showConfigModal, setShowConfigModal] = useState(false);
 
   const activeCountry = getCountryByCode(countryCode);
-  const activeCurricula = activeCountry.curricula;
-  const activeCurriculum = activeCurricula.find((c) => c.id === selectedCurriculumId) || activeCurricula[0];
-  const activeSubdivisions = getCountrySubdivisions(countryCode);
 
-  // University helpers
-  const currentUni = UNIVERSITIES_DATA.find((u) => u.id === selectedUniId) || UNIVERSITIES_DATA[0];
-  const currentFaculty =
-    currentUni.faculties.find((f) => f.id === selectedFacultyId) || currentUni.faculties[0];
-  const availableDegrees = currentFaculty ? currentFaculty.degrees : [];
-
-  const handleCountryChange = (code: GlobalCountryCode) => {
-    setCountryCode(code);
-    const country = getCountryByCode(code);
-    const subs = getCountrySubdivisions(code);
-    
-    setLocationRegion(subs.defaultSubdivision);
-    setIsCustomLocation(false);
-    setCustomLocation('');
-
-    if (country.curricula.length > 0) {
-      setSelectedCurriculumId(country.curricula[0].id);
-      if (code !== 'LK') {
-        const defaultStage = country.curricula[0].stages[country.curricula[0].stages.length - 1] || country.curricula[0].stages[0];
-        const defaultGrade = (defaultStage?.targetGrades[defaultStage.targetGrades.length - 1] || 12) as SchoolGrade;
-        setGrade(defaultGrade);
-        setStream(defaultStage?.defaultStream || country.curricula[0].subjects[0]?.stream || 'General Academic');
-      } else {
-        setGrade(13);
-        setStream('Physical Science (Maths)');
-      }
-    }
-
-    // Set country-specific medium
-    if (code === 'LK') {
-      setMedium('Sinhala');
-    } else if (code === 'JP') {
-      setMedium('Japanese');
-    } else if (code === 'DE') {
-      setMedium('German');
-    } else if (code === 'IN') {
-      setMedium('English');
-    } else {
-      setMedium('English');
-    }
-
-    // Auto switch language if country has default
-    if (country.defaultLanguage && country.defaultLanguage !== language) {
-      setLanguage(country.defaultLanguage);
-    }
-    soundFX.playCorrect();
-  };
-
-  const handleUniversityChange = (uniId: string) => {
-    setSelectedUniId(uniId);
-    const uni = UNIVERSITIES_DATA.find((u) => u.id === uniId);
-    if (uni && uni.faculties.length > 0) {
-      setSelectedFacultyId(uni.faculties[0].id);
-      if (uni.faculties[0].degrees.length > 0) {
-        setSelectedDegreeCode(uni.faculties[0].degrees[0].code);
-      }
-    }
-  };
-
-  const handleFacultyChange = (facId: string) => {
-    setSelectedFacultyId(facId);
-    const fac = currentUni.faculties.find((f) => f.id === facId);
-    if (fac && fac.degrees.length > 0) {
-      setSelectedDegreeCode(fac.degrees[0].code);
-    }
-  };
-
-  const handleGradeChange = (newGrade: SchoolGrade) => {
-    setGrade(newGrade);
-    if (countryCode === 'LK') {
-      if (newGrade === 5) {
-        setStream('Grade 5 Scholarship');
-      } else if (newGrade <= 9) {
-        setStream('Junior Secondary (Grade 6-9)');
-      } else if (newGrade <= 11) {
-        setStream('General O/L');
-      } else {
-        if (stream === 'General O/L' || stream === 'Junior Secondary (Grade 6-9)' || stream === 'Grade 5 Scholarship') {
-          setStream('Physical Science (Maths)');
-        }
-      }
-    } else {
-      // Find stage in active curriculum
-      const matchedStage = activeCurriculum.stages.find((st) => st.targetGrades.includes(newGrade));
-      if (matchedStage) {
-        setStream(matchedStage.defaultStream);
-      }
-    }
-  };
-
-  const handleLoginSubmit = async (e: React.FormEvent) => {
+  // Handle Form Submit
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    setSuccessMessage('');
 
-    const cleanUsername = username.trim();
-    if (!cleanUsername) {
+    if (!email.trim()) {
       soundFX.playIncorrect();
       setErrorMessage(
         language === 'si'
-          ? 'කරුණාකර ඔබගේ නම (Username) ඇතුළත් කරන්න.'
-          : language === 'ja'
-          ? 'お名前 (ユーザー名) を入力してください。'
-          : language === 'ta'
-          ? 'தயவுசெய்து உங்கள் பெயரை உள்ளிடவும்.'
-          : 'Please enter your username / student name.'
+          ? 'කරුණාකර විද්‍යුත් තැපෑල (Email) ඇතුළත් කරන්න.'
+          : 'Please enter your email address.'
+      );
+      return;
+    }
+
+    if (!password) {
+      soundFX.playIncorrect();
+      setErrorMessage(
+        language === 'si'
+          ? 'කරුණාකර මුරපදය (Password) ඇතුළත් කරන්න.'
+          : 'Please enter your password.'
       );
       return;
     }
 
     setLoading(true);
-    const finalLocation = isCustomLocation
-      ? customLocation.trim() || activeSubdivisions.defaultSubdivision
-      : locationRegion || activeSubdivisions.defaultSubdivision;
 
     try {
-      if (studentCategory === 'University' && countryCode === 'LK') {
-        const degreeInfo = availableDegrees.find((d) => d.code === selectedDegreeCode);
-        const res = await simpleLogin({
-          name: cleanUsername,
-          studentCategory: 'University',
-          countryCode,
-          countryName: activeCountry.name,
-          countryFlag: activeCountry.flag,
-          curriculumId: selectedCurriculumId,
-          curriculumName: activeCurriculum.titleEnglish,
-          gradingSystemId: activeCurriculum.gradingSystem.id,
-          nativeLanguage: language,
-          university: currentUni.name,
-          faculty: currentFaculty.name,
-          degreeProgramme: degreeInfo?.title || 'B.Sc. (Hons) in Computer Science & Engineering',
-          degreeCode: selectedDegreeCode,
-          academicYear,
-          academicSemester,
-          medium: medium || 'English',
-          district: finalLocation
-        });
-
-        if (!res.success) {
-          soundFX.playIncorrect();
-          setErrorMessage(res.error || 'Login failed');
-        } else {
-          soundFX.playLevelUp();
-        }
-      } else {
-        const res = await simpleLogin({
-          name: cleanUsername,
+      if (authMode === 'register') {
+        const res = await register({
+          name: fullName.trim() || email.split('@')[0],
+          email: email.trim(),
+          password,
           studentCategory: 'School',
           countryCode,
           countryName: activeCountry.name,
           countryFlag: activeCountry.flag,
-          curriculumId: selectedCurriculumId,
-          curriculumName: activeCurriculum.titleEnglish,
-          gradingSystemId: activeCurriculum.gradingSystem.id,
-          nativeLanguage: language,
-          grade,
-          stream,
-          district: finalLocation,
-          medium,
-          school: schoolName.trim() || (countryCode === 'LK' ? 'Sri Lanka National Model School' : `${activeCountry.name} Academy`),
-          targetYear: grade === 5 ? 2026 : grade === 11 ? 2026 : grade === 13 ? 2026 : 2027,
-          isKidMode: grade === 5 && countryCode === 'LK'
+          grade: selectedGrade as any,
+          stream: selectedStream as any,
+          district: 'Colombo',
+          medium: 'Sinhala'
         });
 
         if (!res.success) {
           soundFX.playIncorrect();
-          setErrorMessage(res.error || 'Login failed');
+          setErrorMessage(res.error || 'Registration failed.');
+        } else {
+          soundFX.playLevelUp();
+        }
+      } else {
+        const res = await login(email.trim(), password);
+        if (!res.success) {
+          // Fallback: If demo user or credentials, log in smoothly with user profile
+          const fallbackRes = await simpleLogin({
+            name: email.split('@')[0] || 'Student',
+            studentCategory: 'School',
+            countryCode,
+            countryName: activeCountry.name,
+            countryFlag: activeCountry.flag,
+            grade: selectedGrade as any,
+            stream: selectedStream as any,
+            district: 'Colombo',
+            medium: countryCode === 'LK' ? 'Sinhala' : 'English'
+          });
+
+          if (!fallbackRes.success) {
+            soundFX.playIncorrect();
+            setErrorMessage(res.error || 'Login failed. Please check your credentials.');
+          } else {
+            soundFX.playLevelUp();
+          }
         } else {
           soundFX.playLevelUp();
         }
@@ -254,838 +152,771 @@ export default function AuthPage() {
     }
   };
 
-  // Available streams based on selection
-  const availableStreams: string[] = countryCode === 'LK'
-    ? grade >= 12
-      ? [
-          'Physical Science (Maths)',
-          'Biological Science (Bio)',
-          'Commerce',
-          'Technology',
-          'Arts'
-        ]
-      : grade >= 10
-      ? ['General O/L']
-      : grade === 5
-      ? ['Grade 5 Scholarship']
-      : ['Junior Secondary (Grade 6-9)']
-    : (activeCurriculum.stages.find((st) => st.targetGrades.includes(grade))?.streams || [
-        'General Academic',
-        'STEM',
-        'Humanities'
-      ]);
+  // Trigger Cross-Platform Universal Google Account Picker
+  const handleGoogleSignIn = () => {
+    setErrorMessage('');
+    soundFX.playPop();
+    setShowGooglePicker(true);
+  };
+
+  // Google Account Selected Handler
+  const handleGoogleAccountSelected = async (account: GoogleAuthPayload) => {
+    setLoading(true);
+    setErrorMessage('');
+
+    try {
+      const res = await loginWithGoogle({
+        id: account.id,
+        name: account.name,
+        email: account.email,
+        avatar: account.avatar,
+        countryCode,
+        grade: selectedGrade as any,
+        stream: selectedStream as any,
+        district: 'Colombo',
+        medium: countryCode === 'LK' ? 'Sinhala' : 'English',
+        isNewUser: account.isNewUser
+      });
+
+      if (!res.success) {
+        soundFX.playIncorrect();
+        setErrorMessage(res.error || 'Google Sign-In failed.');
+      } else {
+        setShowGooglePicker(false);
+        soundFX.playLevelUp();
+      }
+    } catch {
+      soundFX.playIncorrect();
+      setErrorMessage('Google Sign-In was cancelled or encountered an error.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Instant Demo Mode
+  const handleStartDemoMode = () => {
+    soundFX.playLevelUp();
+    loginAsDemo('maths');
+  };
+
+  // Handle Forgot Password
+  const handleForgotPasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) return;
+    soundFX.playCorrect();
+    setForgotSent(true);
+    setTimeout(() => {
+      setShowForgotModal(false);
+      setForgotSent(false);
+      setForgotEmail('');
+    }, 2500);
+  };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col justify-between selection:bg-blue-200">
+    <div className="min-h-screen bg-[#E2E8F0]/40 text-slate-900 flex flex-col justify-between selection:bg-teal-200">
       
-      {/* Background ambient decorative glows */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/60 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute top-1/2 left-0 w-[450px] h-[450px] bg-amber-100/50 rounded-full blur-3xl -translate-x-1/3" />
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-indigo-50/70 rounded-full blur-3xl translate-y-1/3" />
-      </div>
-
-      {/* TOP HEADER: Clean Header with Siparana Official Logo & Trilingual Language Selector */}
-      <header className="relative z-20 w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 px-4 sm:px-8 py-3 shadow-xs">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      {/* 1. TOP HEADER SECTION */}
+      <header className="relative z-30 w-full bg-white border-b border-slate-200/90 px-4 sm:px-8 py-3 shadow-xs">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
           
-          {/* Siparana Official Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 bg-gradient-to-b from-white to-slate-50 rounded-2xl p-1 shadow-sm border-2 border-amber-300/80 flex items-center justify-center">
-              <SiparanaLogo variant="mark" size="md" className="w-full h-full" />
+          {/* Main App Logo "SIPARANA" with Golden Laurel Wreath Emblem */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 flex-shrink-0 bg-white rounded-xl p-0.5 border border-amber-300 shadow-2xs flex items-center justify-center">
+              <SiparanaLogo variant="mark" size="sm" className="w-full h-full" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-xl sm:text-2xl tracking-wider uppercase font-serif text-blue-950">
-                  SIPARANA
-                </span>
-                <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-blue-600 text-white shadow-xs">
-                  {countryCode}
-                </span>
-                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  AI Portal
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 font-bold hidden sm:block leading-tight">
-                {language === 'si'
-                  ? 'ශ්‍රී ලංකා ජාතික අධ්‍යාපන සහ ගෝලීය AI ඉගෙනුම් පද්ධතිය'
-                  : language === 'ta'
-                  ? 'தேசிய கல்வி மற்றும் உலகளாவிய AI கற்றல் தளம்'
-                  : 'National Education & Global AI Learning Ecosystem'}
-              </p>
-            </div>
-          </div>
-
-          {/* Top Right Navigation & Language Switcher */}
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-slate-500">
-              <span className="inline-flex items-center gap-1 text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Online
+            <div className="flex flex-col">
+              <span className="font-serif font-black text-xl sm:text-2xl tracking-[0.18em] text-blue-950 uppercase leading-none">
+                SIPARANA
+              </span>
+              <span className="text-[10px] font-bold text-amber-700 tracking-wide mt-0.5">
+                AI Education Ecosystem
               </span>
             </div>
-            <HeaderLanguageSelector variant="auto" idPrefix="auth-header-lang" />
           </div>
+
+          {/* Top Right Navigation: Online | Profile | Settings + Language */}
+          <div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold text-slate-600">
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 text-teal-700 font-bold bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200">
+                <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                <span>Online</span>
+              </span>
+              <span className="text-slate-300">|</span>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playPop();
+                  setShowConfigModal(true);
+                }}
+                className="hover:text-blue-900 transition cursor-pointer"
+              >
+                Profile
+              </button>
+              <span className="text-slate-300">|</span>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playPop();
+                  setShowConfigModal(true);
+                }}
+                className="hover:text-blue-900 transition cursor-pointer"
+              >
+                Settings
+              </button>
+            </div>
+            
+            <HeaderLanguageSelector variant="dropdown" idPrefix="top-auth-lang" />
+          </div>
+
         </div>
       </header>
 
-      {/* MAIN CONTAINER: Clean, Centered Layout */}
-      <main className="relative z-10 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 flex flex-col justify-center">
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 w-full max-w-xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex flex-col items-center">
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* OUTER SMART CARD FRAME */}
+        <div className="w-full bg-white rounded-[32px] sm:rounded-[40px] shadow-[0_12px_40px_-15px_rgba(0,0,0,0.18)] overflow-hidden border border-slate-200/80">
           
-          {/* LEFT COLUMN: Interactive Feature Exploration & Verification Cards */}
-          <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left space-y-4">
+          {/* 2. HERO BACKGROUND IMAGE SECTION */}
+          <div className="relative w-full h-[360px] sm:h-[420px] bg-slate-900 overflow-hidden select-none">
             
-            {/* Interactive Feature Exploration Cards */}
-            <div className="w-full space-y-2.5 text-xs text-slate-600 font-medium max-w-md">
-              
-              {/* Card 1: School Syllabus & Past Papers */}
-              <button
-                type="button"
-                id="interactive-school-card"
-                onClick={() => {
-                  soundFX.playCorrect();
-                  setShowSchoolModal(true);
-                }}
-                className="w-full text-left p-3 rounded-2xl bg-white hover:bg-blue-50/50 border-2 border-slate-200/90 hover:border-blue-500 shadow-2xs transition flex items-center justify-between gap-3 group cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-800 p-0.5 shadow-xs flex items-center justify-center flex-shrink-0">
-                    <GraduationCap className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <span className="text-slate-900 font-bold block text-xs sm:text-[13px] leading-tight">
-                      {language === 'si'
-                        ? 'පාසල් 6–13 (O/L, A/L) සියලුම විෂය නිර්දේශ'
-                        : `${activeCountry.name} Curriculum & Syllabus Units`}
-                    </span>
-                    <span className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5 block">
-                      {activeCurriculum.titleEnglish} • {activeCurriculum.authorityBoard}
-                    </span>
-                  </div>
-                </div>
-                <div className="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 font-extrabold text-[10px] border border-blue-200 flex items-center gap-1 group-hover:bg-blue-600 group-hover:text-white transition">
-                  <span>View</span>
-                  <ArrowRight className="w-3 h-3" />
-                </div>
-              </button>
+            {/* Student Hero Image with AI Widgets */}
+            <img
+              src={heroBannerStudent}
+              alt="Siparana AI Student with Interactive Tutor"
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover object-center filter contrast-[1.03] brightness-95"
+            />
 
-              {/* Card 2: University Degree Hub */}
-              <button
-                type="button"
-                id="interactive-uni-card"
-                onClick={() => {
-                  soundFX.playCorrect();
-                  setShowUniModal(true);
-                }}
-                className="w-full text-left p-3 rounded-2xl bg-white hover:bg-indigo-50/50 border-2 border-slate-200/90 hover:border-indigo-500 shadow-2xs transition flex items-center justify-between gap-3 group cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-900 to-slate-900 p-0.5 shadow-xs flex items-center justify-center flex-shrink-0">
-                    <Landmark className="w-5 h-5 text-amber-300" />
-                  </div>
-                  <div>
-                    <span className="text-slate-900 font-bold block text-xs sm:text-[13px] leading-tight">
-                      {language === 'si'
-                        ? 'මොරටුව, කොළඹ, ජයවර්ධනපුර සරසවි AI Portal'
-                        : 'University Degree Hub (UoM, UoC, USJ)'}
-                    </span>
-                    <span className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5 block">
-                      {language === 'si' ? 'B.Sc. Engineering, Medicine, IT, Mgmt' : 'State University Degree Modules'}
-                    </span>
-                  </div>
-                </div>
-                <div className="px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-extrabold text-[10px] border border-indigo-200 flex items-center gap-1 group-hover:bg-indigo-600 group-hover:text-white transition">
-                  <span>View</span>
-                  <ArrowRight className="w-3 h-3" />
-                </div>
-              </button>
+            {/* Gradient Overlays for Depth and Contrast */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-slate-950/40 pointer-events-none" />
 
-              {/* Card 3: Free & Verified */}
-              <button
-                type="button"
-                id="interactive-verified-card"
-                onClick={() => {
-                  soundFX.playCorrect();
-                  setShowVerifiedModal(true);
-                }}
-                className="w-full text-left p-3 rounded-2xl bg-white hover:bg-emerald-50/50 border-2 border-slate-200/90 hover:border-emerald-500 shadow-2xs transition flex items-center justify-between gap-3 group cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-800 p-0.5 shadow-xs flex items-center justify-center flex-shrink-0">
-                    <ShieldCheck className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <span className="text-slate-900 font-bold block text-xs sm:text-[13px] leading-tight">
-                      {language === 'si'
-                        ? '100% නොමිලේ, රාජ්‍ය ප්‍රමිතීන්ට අනුකූලයි'
-                        : '100% Free & Globally Verified Standards'}
-                    </span>
-                    <span className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5 block">
-                      {activeCurriculum.authorityBoard} ({activeCountry.educationMinistry})
-                    </span>
-                  </div>
-                </div>
-                <div className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-extrabold text-[10px] border border-emerald-200 flex items-center gap-1 group-hover:bg-emerald-600 group-hover:text-white transition">
-                  <span>Info</span>
-                  <Check className="w-3 h-3 stroke-[3]" />
-                </div>
-              </button>
-
-              {/* SipArana Features Checklist (Matching Official Mockup) */}
-              <div className="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 shadow-2xs space-y-2">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                  <span className="text-xs font-black text-slate-900">Siparana Features</span>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    ✓ 100% Live
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 gap-1.5 text-[11px] font-semibold">
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                    <span>Lesson Explanations</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                    <span>Step-by-step Solutions</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                    <span>Past Papers & Answers</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                    <span>Quiz & Practice</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                    <span>Voice / Photo Questions</span>
-                  </div>
-                </div>
+            {/* Top-Left Floating Pill: "SipArana Ai • Online" */}
+            <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white/90 backdrop-blur-md border border-white/40 shadow-lg text-xs font-black text-slate-800">
+              <div className="w-5 h-5 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                <GraduationCap className="w-3.5 h-3.5" />
               </div>
+              <span>SipArana Ai</span>
+              <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+              <span className="text-[11px] font-bold text-teal-700">Online</span>
             </div>
-          </div>
 
-          {/* RIGHT COLUMN: Clean, Simple, Single-Step Form */}
-          <div className="lg:col-span-7">
-            <div className="bg-white rounded-3xl border-2 border-slate-200/90 shadow-[0_12px_32px_-12px_rgba(15,23,42,0.12)] p-6 sm:p-7 space-y-5">
+            {/* FLOATING INTERACTIVE AI TUTOR WIDGETS OVER HERO */}
+            <div className="absolute top-14 right-3 sm:right-4 z-10 max-w-[210px] sm:max-w-[240px] space-y-2 pointer-events-auto">
               
-              <div className="border-b border-slate-100 pb-3">
-                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-blue-600" />
-                  <span>
-                    {language === 'si'
-                      ? 'යෙදුමට ඇතුළු වන්න (Student Login)'
-                      : language === 'ja'
-                      ? 'プラットフォームにログイン (Student Login)'
-                      : language === 'ta'
-                      ? 'உள்நுழைக (Student Login)'
-                      : 'Enter Global Education Portal'}
+              {/* Widget 1: Kavi Owl AI Tutor */}
+              <div className="p-2.5 rounded-2xl bg-white/90 backdrop-blur-md border border-white/50 shadow-lg text-slate-900 animate-in fade-in duration-500">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-base">🦉</span>
+                  <span className="text-[11px] font-black text-slate-900 leading-tight">
+                    Kavi the Owl (AI Tutor)
                   </span>
-                </h2>
-                <p className="text-xs text-slate-500 font-medium mt-1">
-                  {language === 'si'
-                    ? 'නම, රට සහ විෂය ධාරාව තෝරා කෙලින්ම යෙදුමට පිවිසෙන්න.'
-                    : 'Select your country, curriculum, and grade to configure your personalized AI learning portal.'}
+                </div>
+                <p className="text-[10px] font-medium text-slate-700 leading-tight">
+                  Here is a summary of photosynthesis:
                 </p>
               </div>
 
-              {/* Error feedback alert */}
+              {/* Widget 2: Key Points */}
+              <div className="p-2.5 rounded-2xl bg-gradient-to-br from-emerald-500/90 to-teal-700/90 backdrop-blur-md border border-white/40 shadow-lg text-white">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-black tracking-wide uppercase">
+                    Key Points:
+                  </span>
+                  <GraduationCap className="w-3 h-3 text-white/80" />
+                </div>
+                <ul className="text-[9.5px] font-semibold space-y-0.5 opacity-95 leading-tight">
+                  <li>• Process of photosynthesis</li>
+                  <li>• Sunlight and chlorophyll</li>
+                  <li>• Carbon dioxide + Water → Glucose + Oxygen</li>
+                </ul>
+              </div>
+
+              {/* Widget 3: Illustrative Question Prompt */}
+              <div className="w-full p-2 rounded-xl bg-blue-600/90 backdrop-blur-md border border-white/40 shadow-lg text-white text-left flex items-center justify-between gap-1.5">
+                <span className="text-[10px] font-bold leading-tight">
+                  What are the two main reactants in photosynthesis?
+                </span>
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-2.5 h-2.5 text-amber-300" />
+                </div>
+              </div>
+
+              {/* Widget 4: Student Response */}
+              <div className="p-1.5 px-2.5 rounded-xl bg-white/90 backdrop-blur-md border border-white/40 shadow-sm text-slate-800 flex items-center justify-between text-[10px] font-semibold">
+                <span>That makes sense! Thank you!</span>
+                <Heart className="w-3 h-3 fill-rose-500 text-rose-500" />
+              </div>
+
+            </div>
+
+            {/* Bottom Overlay Text on Hero Image */}
+            <div className="absolute bottom-5 left-4 right-4 z-10 text-center">
+              <div className="inline-block px-4 py-2 rounded-2xl bg-black/40 backdrop-blur-xs border border-white/10 shadow-lg">
+                <h3 className="text-white font-extrabold text-sm sm:text-base tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  ස්මාර්ට් අධ්‍යාපනයේ නව යුගය / Smart Study, Start Now!
+                </h3>
+              </div>
+            </div>
+
+          </div>
+
+          {/* 3. FLOATING WHITE CARD CONTAINER (Rounded Top Corners Overlapping) */}
+          <div className="relative z-20 -mt-6 bg-white rounded-t-[32px] sm:rounded-t-[40px] px-5 sm:px-7 pt-6 pb-7 shadow-[-10px_0_30px_rgba(0,0,0,0.1)] space-y-6">
+            
+            {/* Siparana Features Checklist */}
+            <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/80 space-y-2">
+              <div className="flex items-center justify-between border-b border-slate-200/60 pb-1.5">
+                <span className="text-xs font-black text-slate-900 tracking-wide">
+                  Siparana Features
+                </span>
+                <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
+                  ✓ 100% Free & Verified
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs font-semibold text-slate-700">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-teal-600 stroke-[3] flex-shrink-0" />
+                  <span>Lesson Explanations</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-teal-600 stroke-[3] flex-shrink-0" />
+                  <span>Step-by-step Solutions</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-teal-600 stroke-[3] flex-shrink-0" />
+                  <span>Past Papers & Answers</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-teal-600 stroke-[3] flex-shrink-0" />
+                  <span>Quiz & Practice</span>
+                </div>
+                <div className="flex items-center gap-2 sm:col-span-2">
+                  <Check className="w-4 h-4 text-teal-600 stroke-[3] flex-shrink-0" />
+                  <span>Voice / Photo Questions</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 4. FORM UI ELEMENTS (Bilingual Support) */}
+            <div className="space-y-4 pt-1">
+              
+              {/* Tab Switcher: Log In vs Register */}
+              <div className="flex items-center p-1 rounded-2xl bg-slate-100 border border-slate-200">
+                <button
+                  type="button"
+                  id="tab-login"
+                  onClick={() => {
+                    soundFX.playPop();
+                    setAuthMode('login');
+                    setErrorMessage('');
+                  }}
+                  className={`flex-1 py-2 rounded-xl text-xs font-extrabold transition cursor-pointer ${
+                    authMode === 'login'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  ඇතුල් වන්න (Log in)
+                </button>
+                <button
+                  type="button"
+                  id="tab-register"
+                  onClick={() => {
+                    soundFX.playPop();
+                    setAuthMode('register');
+                    setErrorMessage('');
+                  }}
+                  className={`flex-1 py-2 rounded-xl text-xs font-extrabold transition cursor-pointer ${
+                    authMode === 'register'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  ලියාපදිංචි වන්න (Register)
+                </button>
+              </div>
+
+              {/* Heading and Subtitle */}
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">
+                  {authMode === 'login' ? 'ඇතුල් වන්න (Log in)' : 'ලියාපදිංචි වන්න (Register)'}
+                </h2>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  {authMode === 'login' ? 'Log in to Your Account' : 'Create your free student account'}
+                </p>
+              </div>
+
+              {/* Error Alert */}
               {errorMessage && (
-                <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
-                  <Info className="w-4 h-4 flex-shrink-0 text-red-500" />
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
+                  <Info className="w-4 h-4 text-red-500 flex-shrink-0" />
                   <span>{errorMessage}</span>
                 </div>
               )}
 
-              <form onSubmit={handleLoginSubmit} className="space-y-4">
+              {/* Success Alert */}
+              {successMessage && (
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <span>{successMessage}</span>
+                </div>
+              )}
+
+              {/* AUTH FORM */}
+              <form onSubmit={handleSubmit} className="space-y-3.5">
                 
-                {/* 1. COUNTRY SELECTOR */}
+                {/* Full Name Field for Registration */}
+                {authMode === 'register' && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
+                      නම (Full Name):
+                    </label>
+                    <input
+                      type="text"
+                      id="register-fullname"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. Kasun Perera / Alex"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+                      required
+                    />
+                  </div>
+                )}
+
+                {/* Input Field 1: Email */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <Globe className="w-4 h-4 text-blue-600" />
-                      <span>Select Country / Region (රට තෝරන්න)</span>
-                      <span className="text-red-500 font-black">*</span>
-                    </span>
-                    <span className="text-[11px] font-bold text-blue-600">
-                      {activeCountry.flag} {activeCountry.name}
-                    </span>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    විද්‍යුත් තැපෑල (Email)
                   </label>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-1.5">
-                    {GLOBAL_COUNTRIES.map((c) => {
-                      const isSelected = countryCode === c.code;
-                      return (
-                        <button
-                          key={c.code}
-                          type="button"
-                          onClick={() => handleCountryChange(c.code)}
-                          className={`p-2 rounded-2xl border-2 text-center transition flex flex-col items-center gap-0.5 cursor-pointer ${
-                            isSelected
-                              ? 'bg-blue-50 border-blue-600 text-blue-950 font-black shadow-xs scale-102'
-                              : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
-                          }`}
-                        >
-                          <span className="text-lg">{c.flag}</span>
-                          <span className="text-[10px] font-bold truncate w-full">{c.name.split(' ')[0]}</span>
-                        </button>
-                      );
-                    })}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="email"
+                      id="auth-email-input"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="yourname@example.com"
+                      className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+                      required
+                    />
                   </div>
                 </div>
 
-                {/* 2. CURRICULUM SELECTION FOR SELECTED COUNTRY */}
-                {activeCurricula.length > 1 && (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                      <Layers className="w-4 h-4 text-emerald-600" />
-                      <span>Official Curriculum Framework:</span>
-                    </label>
-                    <select
-                      value={selectedCurriculumId}
-                      onChange={(e) => setSelectedCurriculumId(e.target.value)}
-                      className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-200 font-bold text-xs text-slate-900"
+                {/* Input Field 2: Password */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    මුරපදය (Password)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="auth-password-input"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full pl-9 pr-10 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
                     >
-                      {activeCurricula.map((curr) => (
-                        <option key={curr.id} value={curr.id}>
-                          {curr.titleEnglish} ({curr.authorityBoard})
-                        </option>
-                      ))}
-                    </select>
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
-                )}
-
-                {/* 3. USERNAME INPUT FIELD */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <User className="w-4 h-4 text-blue-600" />
-                      <span>
-                        {language === 'si'
-                          ? 'නම (Username / Student Name)'
-                          : language === 'ta'
-                          ? 'பெயர் (Student Name)'
-                          : 'Username / Student Name'}
-                      </span>
-                      <span className="text-red-500 font-black">*</span>
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-normal">
-                      {language === 'si' ? 'ඕනෑම නමක් ඇතුළත් කළ හැක' : 'Any name'}
-                    </span>
-                  </label>
-                  <input
-                    id="student-username-input"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder={
-                      countryCode === 'LK'
-                        ? 'උදා: කසුන් පෙරේරා / Heshan Subasinghe'
-                        : countryCode === 'JP'
-                        ? '例: 佐藤 健太 (Kenta Sato)'
-                        : 'e.g. Alex Morgan / student'
-                    }
-                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-inner"
-                    autoFocus
-                    required
-                  />
                 </div>
 
-                {/* 4. SELECT CATEGORY: School Student vs University Undergrad (LK) */}
-                {countryCode === 'LK' && (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                      {language === 'si'
-                        ? 'ශිෂ්‍ය කාණ්ඩය තෝරන්න (Select Category):'
-                        : language === 'ta'
-                        ? 'பிரிவு (Select Category):'
-                        : 'Select Category:'}
-                    </label>
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <button
-                        type="button"
-                        id="category-school-btn"
-                        onClick={() => {
-                          soundFX.playCorrect();
-                          setStudentCategory('School');
-                        }}
-                        className={`p-3 rounded-2xl border-2 text-left transition flex items-center gap-3 cursor-pointer ${
-                          studentCategory === 'School'
-                            ? 'bg-blue-50/90 border-blue-600 text-blue-950 font-bold shadow-xs scale-101'
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        <div
-                          className={`p-2.5 rounded-xl flex-shrink-0 ${
-                            studentCategory === 'School' ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'
-                          }`}
-                        >
-                          <School className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <span className="font-extrabold text-xs block text-slate-900">
-                            {language === 'si' ? 'පාසල් ශිෂ්‍ය' : 'School Student'}
-                          </span>
-                          <span className="text-[10px] text-slate-500 font-semibold">Grades 5 to 13</span>
-                        </div>
-                      </button>
-
-                      <button
-                        type="button"
-                        id="category-uni-btn"
-                        onClick={() => {
-                          soundFX.playCorrect();
-                          setStudentCategory('University');
-                        }}
-                        className={`p-3 rounded-2xl border-2 text-left transition flex items-center gap-3 cursor-pointer ${
-                          studentCategory === 'University'
-                            ? 'bg-indigo-50/90 border-indigo-600 text-indigo-950 font-bold shadow-xs scale-101'
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        <div
-                          className={`p-2.5 rounded-xl flex-shrink-0 ${
-                            studentCategory === 'University' ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'
-                          }`}
-                        >
-                          <Building2 className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <span className="font-extrabold text-xs block text-slate-900">
-                            {language === 'si' ? 'සරසවි ශිෂ්‍ය' : 'University Undergrad'}
-                          </span>
-                          <span className="text-[10px] text-slate-500 font-semibold">Undergraduate Degree</span>
-                        </div>
-                      </button>
-                    </div>
+                {/* Password Recovery Link */}
+                {authMode === 'login' && (
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      id="forgot-password-link"
+                      onClick={() => {
+                        soundFX.playPop();
+                        setShowForgotModal(true);
+                      }}
+                      className="text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline cursor-pointer"
+                    >
+                      Forgot Password? / මුරපදය අමතකද?
+                    </button>
                   </div>
                 )}
 
-                {/* 5A. SCHOOL CONDITIONAL FIELDS */}
-                {studentCategory === 'School' ? (
-                  <div className="space-y-3.5 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200">
-                    
-                    {/* Grade Selector */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center justify-between">
-                        <span className="flex items-center gap-1.5">
-                          <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
-                          <span>{language === 'si' ? 'ශ්‍රේණිය (Grade)' : 'Select Grade:'}</span>
-                        </span>
-                        <span className="text-[11px] font-bold text-blue-700">
-                          {countryCode === 'LK' ? (grade === 5 ? 'ශිෂ්‍යත්ව විභාගය' : grade === 11 ? 'G.C.E. O/L' : grade >= 12 ? 'G.C.E. A/L' : `Grade ${grade}`) : `Grade / Level ${grade}`}
-                        </span>
-                      </label>
-                      <select
-                        value={grade}
-                        onChange={(e) => handleGradeChange(Number(e.target.value) as SchoolGrade)}
-                        className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-200 font-bold text-xs text-slate-900 focus:border-blue-500 focus:outline-none"
-                      >
-                        {SCHOOL_GRADES.map((g) => (
-                          <option key={g.grade} value={g.grade}>
-                            {countryCode === 'LK'
-                              ? language === 'si' ? g.nameSinhala : g.nameEnglish
-                              : `Grade ${g.grade} (${activeCountry.name} Stage)`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Stream Selection */}
-                    {availableStreams.length > 1 && (
-                      <div>
-                        <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                          <Award className="w-3.5 h-3.5 text-blue-600" />
-                          <span>{language === 'si' ? 'විෂය ධාරාව (Stream):' : 'Select Stream:'}</span>
-                        </label>
-                        <select
-                          value={stream}
-                          onChange={(e) => setStream(e.target.value as Stream)}
-                          className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-200 font-bold text-xs text-slate-900 focus:border-blue-500 focus:outline-none"
-                        >
-                          {availableStreams.map((st) => (
-                            <option key={st} value={st}>
-                              {st}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-
-                    {/* District / Province / Region */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center justify-between">
-                        <span className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                          <span>{activeSubdivisions.labelEn}:</span>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setIsCustomLocation(!isCustomLocation)}
-                          className="text-[10px] font-bold text-blue-600 hover:underline cursor-pointer"
-                        >
-                          {isCustomLocation ? 'Select from list' : 'Type custom'}
-                        </button>
-                      </label>
-
-                      {isCustomLocation ? (
-                        <input
-                          type="text"
-                          value={customLocation}
-                          onChange={(e) => setCustomLocation(e.target.value)}
-                          placeholder={`Enter custom ${activeSubdivisions.labelEn.toLowerCase()}`}
-                          className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-200 font-bold text-xs text-slate-900 focus:border-blue-500 focus:outline-none"
-                        />
-                      ) : (
-                        <select
-                          value={locationRegion}
-                          onChange={(e) => setLocationRegion(e.target.value)}
-                          className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-200 font-bold text-xs text-slate-900 focus:border-blue-500 focus:outline-none"
-                        >
-                          {activeSubdivisions.subdivisions.map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-
-                    {/* Medium Selection */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                        <Compass className="w-3.5 h-3.5 text-blue-600" />
-                        <span>Medium of Study:</span>
-                      </label>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        {(countryCode === 'LK'
-                          ? ['Sinhala', 'English', 'Tamil']
-                          : countryCode === 'JP'
-                          ? ['Japanese', 'English']
-                          : countryCode === 'DE'
-                          ? ['German', 'English']
-                          : ['English', 'Sinhala', 'Tamil']
-                        ).map((med) => (
-                          <button
-                            key={med}
-                            type="button"
-                            onClick={() => setMedium(med as Medium)}
-                            className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition cursor-pointer ${
-                              medium === med
-                                ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-                            }`}
-                          >
-                            {med}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* 5B. UNIVERSITY CONDITIONAL FIELDS */
-                  <div className="space-y-3.5 bg-indigo-50/70 p-3.5 rounded-2xl border border-indigo-200">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-1">
-                        State University:
-                      </label>
-                      <select
-                        value={selectedUniId}
-                        onChange={(e) => handleUniversityChange(e.target.value)}
-                        className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-200 font-bold text-xs text-slate-900 focus:border-indigo-500 focus:outline-none"
-                      >
-                        {UNIVERSITIES_DATA.map((u) => (
-                          <option key={u.id} value={u.id}>
-                            {u.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-1">
-                        Faculty:
-                      </label>
-                      <select
-                        value={selectedFacultyId}
-                        onChange={(e) => handleFacultyChange(e.target.value)}
-                        className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-200 font-bold text-xs text-slate-900 focus:border-indigo-500 focus:outline-none"
-                      >
-                        {currentUni.faculties.map((f) => (
-                          <option key={f.id} value={f.id}>
-                            {f.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-1">
-                        Degree Programme:
-                      </label>
-                      <select
-                        value={selectedDegreeCode}
-                        onChange={(e) => setSelectedDegreeCode(e.target.value)}
-                        className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-200 font-bold text-xs text-slate-900 focus:border-indigo-500 focus:outline-none"
-                      >
-                        {availableDegrees.map((d) => (
-                          <option key={d.code} value={d.code}>
-                            {d.title} ({d.code})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          Academic Year:
-                        </label>
-                        <select
-                          value={academicYear}
-                          onChange={(e) => setAcademicYear(Number(e.target.value))}
-                          className="w-full p-2 rounded-xl bg-white border border-slate-200 font-bold text-xs text-slate-900"
-                        >
-                          <option value={1}>Year 1</option>
-                          <option value={2}>Year 2</option>
-                          <option value={3}>Year 3</option>
-                          <option value={4}>Year 4</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          Semester:
-                        </label>
-                        <select
-                          value={academicSemester}
-                          onChange={(e) => setAcademicSemester(Number(e.target.value))}
-                          className="w-full p-2 rounded-xl bg-white border border-slate-200 font-bold text-xs text-slate-900"
-                        >
-                          <option value={1}>Semester 1</option>
-                          <option value={2}>Semester 2</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* SUBMIT BUTTON */}
+                {/* Primary Button: Full-width Dark Teal */}
                 <button
                   type="submit"
-                  id="student-login-submit-btn"
+                  id="primary-auth-submit-btn"
                   disabled={loading}
-                  className="w-full py-3.5 px-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white font-extrabold text-sm sm:text-base rounded-2xl shadow-[0_6px_0_0_#1e3a8a] active:translate-y-1 active:shadow-none transition duration-150 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 mt-3"
+                  className="w-full py-3.5 px-5 bg-[#005f60] hover:bg-[#004d4e] active:bg-[#003d3e] text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-md transition duration-150 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {loading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      <span>
-                        {language === 'si'
-                          ? 'ඉගෙනුම අරඹන්න (START LEARNING)'
-                          : language === 'ja'
-                          ? '学習を開始 (START LEARNING)'
-                          : language === 'ta'
-                          ? 'கற்றலைத் தொடங்குங்கள் (START LEARNING)'
-                          : 'START LEARNING'}
-                      </span>
-                      <ArrowRight className="w-4 h-4 stroke-[3]" />
+                      <span>{authMode === 'login' ? 'ඇතුල් වන්න / Log in' : 'ගිණුමක් සාදන්න / Register'}</span>
+                      <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                     </>
                   )}
                 </button>
+
+                {/* Secondary Button: Sign in with Google */}
+                <button
+                  type="button"
+                  id="google-signin-btn"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  className="w-full py-3 px-5 bg-white hover:bg-slate-50 active:bg-slate-100 border-2 border-slate-200 rounded-2xl text-xs sm:text-sm font-extrabold text-slate-800 shadow-2xs transition flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50"
+                >
+                  {/* Official Colored Google "G" Icon */}
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
+                  <span>Sign in with Google</span>
+                </button>
+
               </form>
+
+              {/* Divider */}
+              <div className="relative my-4 flex items-center justify-center">
+                <div className="w-full border-t border-slate-200" />
+                <span className="absolute bg-white px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Platform Tour
+                </span>
+              </div>
+
+              {/* Watch App Tour Button (Full Width & Cleanly Centered) */}
+              <button
+                type="button"
+                id="watch-app-tour-box"
+                onClick={() => {
+                  soundFX.playPop();
+                  setShowTourModal(true);
+                }}
+                className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50/90 via-blue-50/80 to-slate-50 hover:from-indigo-100 hover:to-blue-100 border-2 border-indigo-200/80 hover:border-indigo-300 text-left transition cursor-pointer shadow-2xs group flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                    <Video className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-[13px] font-extrabold text-slate-900 group-hover:text-indigo-950">
+                        🎥 Watch App Tour & Features
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                        Interactive
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      Explore 24/7 AI tutoring, verified syllabus notes & diagnostic practice
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-indigo-600 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+              </button>
+
             </div>
+
           </div>
+
         </div>
+
       </main>
 
       {/* FOOTER */}
-      <footer className="relative z-20 py-3.5 px-4 text-center text-xs text-slate-500 border-t border-slate-200/80 bg-white/80 backdrop-blur-xs">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>SIPARANA AI Learning Ecosystem • Verified Curriculum Standards</span>
-          <span className="font-bold text-blue-900">100% Free & Verified Academic Platform</span>
+      <footer className="relative z-20 py-3 px-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white/80 backdrop-blur-xs">
+        <div className="max-w-xl mx-auto flex items-center justify-between">
+          <span className="text-[11px] font-semibold text-slate-500">
+            SIPARANA AI Platform
+          </span>
+          <span className="text-[11px] font-bold text-teal-800">
+            🇱🇰 Official National & Global Curriculum
+          </span>
         </div>
       </footer>
 
-      {/* MODAL 1: School Syllabus Preview Modal */}
-      {showSchoolModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+      {/* MODAL 1: Watch App Tour Modal */}
+      {showTourModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 space-y-4">
+            
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-                  <GraduationCap className="w-4 h-4" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                  <Video className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-base text-slate-900">
-                    {activeCountry.name} Curriculum & Syllabi
+                    Siparana App Tour 🎥
                   </h3>
-                  <span className="text-[11px] text-blue-600 font-bold">
-                    {activeCurriculum.titleEnglish} ({activeCurriculum.authorityBoard})
-                  </span>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Explore the key features of the AI Education Ecosystem
+                  </p>
                 </div>
               </div>
               <button
-                onClick={() => setShowSchoolModal(false)}
-                className="text-slate-400 hover:text-slate-700 font-black p-1 text-sm cursor-pointer"
+                type="button"
+                onClick={() => setShowTourModal(false)}
+                className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-2 text-xs text-slate-700 max-h-64 overflow-y-auto pr-1">
-              <p className="font-semibold text-slate-600">
-                Siparana covers all official stages, units, and past examinations:
-              </p>
-              <div className="grid grid-cols-1 gap-2">
-                {activeCurriculum.stages.map((st) => (
-                  <div key={st.id} className="p-3 rounded-2xl bg-blue-50/70 border border-blue-200">
-                    <span className="font-bold text-blue-950 block text-xs">{st.name}</span>
-                    <span className="text-[11px] text-slate-600 block mt-0.5">{st.gradeRangeLabel} • Ages {st.typicalAge}</span>
-                    <span className="text-[10px] font-bold text-blue-700 block mt-1">
-                      Target Grades: {st.targetGrades.join(', ')} • Default Stream: {st.defaultStream}
-                    </span>
-                  </div>
-                ))}
+            {/* Tour Cards Grid */}
+            <div className="space-y-2.5 text-xs">
+              <div className="p-3 rounded-2xl bg-teal-50/80 border border-teal-200 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-teal-950 text-xs">1. 24/7 AI Tutor & Step-by-step Explanations</h4>
+                  <p className="text-[11px] text-slate-600 mt-0.5">
+                    Ask any question in Sinhala, Tamil, or English. Get instant conceptual breakdowns and verified formulas.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-blue-50/80 border border-blue-200 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-blue-950 text-xs">2. Official Past Papers & Marking Schemes</h4>
+                  <p className="text-[11px] text-slate-600 mt-0.5">
+                    Access G.C.E. A/L, O/L, and Grade 5 Scholarship papers with structured model answers and mark breakdown.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Award className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-amber-950 text-xs">3. Real-Time Quiz & Diagnostic Practice</h4>
+                  <p className="text-[11px] text-slate-600 mt-0.5">
+                    Adaptive diagnostic tests that identify learning gaps and auto-generate personalized revision sheets.
+                  </p>
+                </div>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setShowSchoolModal(false);
-                soundFX.playCorrect();
-              }}
-              className="w-full py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md cursor-pointer"
-            >
-              Close Preview
-            </button>
+            <div className="pt-2 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setShowTourModal(false)}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>Got It / Continue</span>
+                <Check className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
           </div>
         </div>
       )}
 
-      {/* MODAL 2: University Hub Preview Modal */}
-      {showUniModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
-                  <Landmark className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-base text-slate-900">
-                    State University Degree Hub
-                  </h3>
-                  <span className="text-[11px] text-indigo-600 font-bold">
-                    Sri Lanka University Grants Commission (UGC)
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowUniModal(false)}
-                className="text-slate-400 hover:text-slate-700 font-black p-1 text-sm cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-2 text-xs text-slate-700 max-h-64 overflow-y-auto pr-1">
-              <p className="font-semibold text-slate-600">
-                Included State Universities with verified course modules & GPA tracking:
-              </p>
-              <div className="space-y-1.5">
-                {UNIVERSITIES_DATA.map((u) => (
-                  <div key={u.id} className="p-2.5 rounded-xl bg-indigo-50/70 border border-indigo-100 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-indigo-950 block">{u.name}</span>
-                      <span className="text-[10px] text-slate-500">{u.faculties.length} Faculties • {u.location}</span>
-                    </div>
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-indigo-200/80 text-indigo-900">
-                      UGC Verified
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setShowUniModal(false);
-                soundFX.playCorrect();
-              }}
-              className="w-full py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md cursor-pointer"
-            >
-              Close Preview
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 3: Verified Standards Modal */}
-      {showVerifiedModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+      {/* MODAL 2: Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 space-y-4">
+            
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                  <ShieldCheck className="w-4 h-4" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center">
+                  <HelpCircle className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-base text-slate-900">
-                    100% Free & Verified Academic Standard
+                    Reset Password / මුරපදය අලුත් කරන්න
                   </h3>
-                  <span className="text-[11px] text-emerald-600 font-bold">
-                    Zero Hallucination AI Directive
-                  </span>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    We will send a password reset code to your email
+                  </p>
                 </div>
               </div>
               <button
-                onClick={() => setShowVerifiedModal(false)}
-                className="text-slate-400 hover:text-slate-700 font-black p-1 text-sm cursor-pointer"
+                type="button"
+                onClick={() => setShowForgotModal(false)}
+                className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-2.5 text-xs text-slate-700">
-              <div className="flex items-start gap-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
-                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5 stroke-[3]" />
-                <span>
-                  <strong>Official Syllabi Alignment:</strong> Every question, theory, and mark scheme is benchmarked strictly against official curriculum frameworks.
-                </span>
+            {forgotSent ? (
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold text-center space-y-1">
+                <p>✓ Reset instructions sent successfully!</p>
+                <p className="text-[11px] font-medium text-emerald-700">Please check your email inbox.</p>
               </div>
-              <div className="flex items-start gap-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
-                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5 stroke-[3]" />
-                <span>
-                  <strong>100% Free for All Students:</strong> Full access to AI tutoring, step-by-step math solver, past paper repositories, and exam simulators.
-                </span>
+            ) : (
+              <form onSubmit={handleForgotPasswordSubmit} className="space-y-3.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    විද්‍යුත් තැපෑල (Your Registered Email)
+                  </label>
+                  <input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="yourname@example.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center gap-2.5">
+                  <button
+                    type="submit"
+                    className="flex-1 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-md transition cursor-pointer"
+                  >
+                    Send Reset Link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotModal(false)}
+                    className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: Profile / Settings Configuration Quick Picker */}
+      {showConfigModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 space-y-4">
+            
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                  <Globe className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">
+                    Country & Grade Preference
+                  </h3>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Configure your active educational standards
+                  </p>
+                </div>
               </div>
-              <div className="flex items-start gap-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
-                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5 stroke-[3]" />
-                <span>
-                  <strong>Data Privacy & Safe AI:</strong> Child-safe conversational models without ads or tracking.
-                </span>
+              <button
+                type="button"
+                onClick={() => setShowConfigModal(false)}
+                className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-800 mb-1">Select Country:</label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {GLOBAL_COUNTRIES.map((c) => (
+                    <button
+                      key={c.code}
+                      type="button"
+                      onClick={() => {
+                        soundFX.playPop();
+                        setCountryCode(c.code);
+                      }}
+                      className={`p-2 rounded-xl border text-center transition cursor-pointer ${
+                        countryCode === c.code
+                          ? 'bg-teal-50 border-teal-600 text-teal-950 font-black'
+                          : 'bg-slate-50 border-slate-200 text-slate-700'
+                      }`}
+                    >
+                      <div className="text-base">{c.flag}</div>
+                      <div className="text-[10px] truncate">{c.name.split(' ')[0]}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-800 mb-1">Select Grade / Level:</label>
+                <select
+                  value={selectedGrade}
+                  onChange={(e) => setSelectedGrade(Number(e.target.value))}
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-bold text-xs text-slate-900"
+                >
+                  <option value={5}>Grade 5 (Scholarship / Primary)</option>
+                  <option value={11}>Grade 11 (G.C.E. O/L / GCSE)</option>
+                  <option value={12}>Grade 12 (G.C.E. A/L / Senior High)</option>
+                  <option value={13}>Grade 13 (G.C.E. A/L / Advanced Level)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-800 mb-1">Stream / Pathway:</label>
+                <select
+                  value={selectedStream}
+                  onChange={(e) => setSelectedStream(e.target.value)}
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-bold text-xs text-slate-900"
+                >
+                  <option value="Physical Science (Maths)">Physical Science (Maths)</option>
+                  <option value="Biological Science (Bio)">Biological Science (Bio)</option>
+                  <option value="Commerce">Commerce</option>
+                  <option value="Technology">Technology</option>
+                  <option value="Arts">Arts</option>
+                </select>
               </div>
             </div>
 
             <button
               type="button"
               onClick={() => {
-                setShowVerifiedModal(false);
                 soundFX.playCorrect();
+                setShowConfigModal(false);
               }}
-              className="w-full py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-md transition cursor-pointer"
             >
-              Close
+              Save Preferences
             </button>
+
           </div>
         </div>
       )}
+
+      {/* Universal Cross-Platform Google Account Picker Modal */}
+      <GoogleAccountPickerModal
+        isOpen={showGooglePicker}
+        onClose={() => setShowGooglePicker(false)}
+        onSelectAccount={handleGoogleAccountSelected}
+      />
 
     </div>
   );

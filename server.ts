@@ -52,7 +52,8 @@ async function startServer() {
         subject,
         targetTier, // 'grade_5' | 'gce_ol' | 'gce_al' | 'university'
         language = 'auto',
-        additionalParams = {}
+        additionalParams = {},
+        studentMemoryContext
       } = req.body;
 
       if (!inputContent && feature !== 'model_paper') {
@@ -72,6 +73,10 @@ async function startServer() {
         rolePersona = `You are "SipArana University AI Core", an advanced academic research and higher education pedagogical AI tailored for Sri Lankan university undergraduates and postgraduates across Engineering, Medicine, IT, Management, and Science. Provide mathematically and scientifically rigorous, citation-backed analyses.`;
       } else {
         rolePersona = `You are "SipArana National Curriculum AI Core", expert educator aligned with the Sri Lankan Ministry of Education & National Institute of Education (NIE Guru Potha) for G.C.E. O/L and G.C.E. A/L (Physical Science, Bio, Commerce, Arts, Technology).`;
+      }
+
+      if (studentMemoryContext) {
+        rolePersona += `\n\n${studentMemoryContext}`;
       }
 
       let taskPrompt = '';
@@ -481,6 +486,7 @@ ${inputContent}
         moduleName,
         contextMode,
         history,
+        studentMemoryContext
       } = req.body;
 
       if (!prompt) {
@@ -489,7 +495,7 @@ ${inputContent}
 
       const ai = getGeminiClient();
 
-      const systemInstruction = `You are "SipArana Academic AI" (සිප්අරණ සරසවි අධ්‍යයන සහකාර), the specialized University Degree & Higher Education Study Assistant for undergraduate and postgraduate students in Sri Lanka.
+      let systemInstruction = `You are "SipArana Academic AI" (සිප්අරණ සරසවි අධ්‍යයන සහකාර), the specialized University Degree & Higher Education Study Assistant for undergraduate and postgraduate students in Sri Lanka.
 
 Target Student Context:
 - University: ${university || 'Sri Lankan University (e.g. UoM, UoC, UoP, USJ, UoK, UoR)'}
@@ -508,6 +514,10 @@ Your Goals & Guidelines:
 6. If Mode is 'assignment': Guide the student step-by-step through the problem-solving thought process, logic verification, and concept clarity (without generating blind copy-paste plagiarism).
 7. Language Style: Academic English mixed with clear Sinhala explanations (ද්විභාෂික විශ්වවිද්‍යාල ශෛලිය) where helpful, maintaining professional composure.
 8. Structure your response using markdown with clear headings, bullet points, latex equations or code blocks where appropriate.`;
+
+      if (studentMemoryContext) {
+        systemInstruction += `\n\n${studentMemoryContext}`;
+      }
 
       if (!ai) {
         // High quality informative response when API key is pending configuration
@@ -561,7 +571,7 @@ Your Goals & Guidelines:
   // General School Level AI Tutor Endpoint (for Grade 5 Scholarship & Grades 6-13)
   app.post('/api/gemini/school-tutor', async (req, res) => {
     try {
-      const { prompt, grade, subject, stream, medium, history } = req.body;
+      const { prompt, grade, subject, stream, medium, history, studentMemoryContext } = req.body;
       const ai = getGeminiClient();
 
       const isGrade5 = grade === 5 || grade === '5' || stream === 'Grade 5 Scholarship' || subject?.toLowerCase().includes('scholarship') || subject?.toLowerCase().includes('ශිෂ්‍යත්ව');
@@ -605,6 +615,10 @@ Specialized Domain Expertise:
    - Provide answers in the requested language (Sinhala, Tamil, or English).
    - Use clear markdown with headings, bullet points, and exam mnemonics.
    - Reference previous A/L & O/L past paper marking schemes and NIE Teacher Guides.`;
+      }
+
+      if (studentMemoryContext) {
+        systemInstruction += `\n\n${studentMemoryContext}`;
       }
 
       if (!ai) {

@@ -15,7 +15,8 @@ import {
   Save,
   GraduationCap,
   Layers,
-  Languages
+  Languages,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -165,6 +166,29 @@ export default function SettingsPage() {
             </div>
             <p className="text-xs text-slate-500">{profile?.email} • {profile?.school}</p>
           </div>
+        </div>
+
+        {/* Academic Onboarding Wizard Quick Launch */}
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <h4 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0" />
+              <span>{language === 'si' ? 'අධ්‍යයන ප්‍රවේශ පිහිටුවීම (Onboarding Wizard)' : 'Academic Background Onboarding Wizard'}</span>
+            </h4>
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {language === 'si'
+                ? 'රට, ශිෂ්‍ය නම, කාණ්ඩය (පාසල් / සරසවි) සහ විෂය ධාරාව 4-Step Wizard මඟින් යාවත්කාලීන කරන්න.'
+                : 'Update your country, student handle, academic category (School / University), and grade/stream via the 4-step wizard.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => updateProfile({ hasCompletedOnboarding: false })}
+            className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition flex-shrink-0 cursor-pointer"
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>{language === 'si' ? 'නැවත සකසන්න' : 'Reconfigure'}</span>
+          </button>
         </div>
 
         <form onSubmit={handleSaveProfile} className="space-y-5 text-xs">

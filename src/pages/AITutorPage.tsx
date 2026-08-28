@@ -31,13 +31,20 @@ import {
   Share2,
   Download,
   Flame,
-  ArrowRight
+  ArrowRight,
+  History,
+  BrainCircuit,
+  BookmarkCheck,
+  Trash2,
+  Eye,
+  RefreshCw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import FilePermissionHelperModal from '@/components/FilePermissionHelperModal';
 import { soundFX } from '@/utils/audioUtils';
+import { buildMemoryContextForGemini, getPersonalizedReturningGreeting } from '@/utils/userMemoryEngine';
 
 type CoreFeatureTab =
   | 'chat_tutor'
@@ -46,7 +53,8 @@ type CoreFeatureTab =
   | 'doc_analyzer'
   | 'mindmap_diagram'
   | 'model_paper'
-  | 'essay_evaluator';
+  | 'essay_evaluator'
+  | 'study_memory';
 
 interface ChatMessage {
   id: string;
@@ -59,7 +67,17 @@ interface ChatMessage {
 }
 
 export default function AITutorPage() {
-  const { profile, addXP } = useAuth();
+  const {
+    profile,
+    studyMemory,
+    addXP,
+    recordChat,
+    recordAsset,
+    recordEvaluation,
+    recordWeakArea,
+    resolveWeakArea,
+    clearStudySessionMemory
+  } = useAuth();
   const { language } = useLanguage();
 
   const [activeTab, setActiveTab] = useState<CoreFeatureTab>('content_quiz');
@@ -136,8 +154,29 @@ export default function AITutorPage() {
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
 
+  // Memory Hub View Sub-tab
+  const [memorySubTab, setMemorySubTab] = useState<'chats' | 'assets' | 'essays' | 'weak_areas'>('chats');
+  const [showClearMemoryConfirm, setShowClearMemoryConfirm] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load continuous chat history from studyMemory on email switch or load
+  useEffect(() => {
+    if (studyMemory && studyMemory.chatHistory && studyMemory.chatHistory.length > 0) {
+      setMessages(
+        studyMemory.chatHistory.map((m) => ({
+          id: m.id,
+          sender: m.sender,
+          text: m.text,
+          timestamp: m.timestamp,
+          subjectTag: m.subjectTag,
+          attachedImage: m.attachedImage,
+          attachedPdfName: m.attachedPdfName
+        }))
+      );
+    }
+  }, [studyMemory?.email]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -170,12 +209,13 @@ export default function AITutorPage() {
     soundFX.playCorrect();
   };
 
-  // Helper API Caller for the 6 Core Features
+  // Helper API Caller for the Core Features with Context Retention
   const executeEducationalCoreAPI = async (
     feature: string,
     inputContent: string,
     additionalParams: Record<string, any> = {}
   ) => {
+    const memoryContext = studyMemory ? buildMemoryContextForGemini(studyMemory) : undefined;
     const response = await fetch('/api/gemini/educational-core', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -187,7 +227,8 @@ export default function AITutorPage() {
         subject: selectedSubject,
         targetTier,
         language: language || 'auto',
-        additionalParams
+        additionalParams,
+        studentMemoryContext: memoryContext
       })
     });
     const data = await response.json();
@@ -206,6 +247,13 @@ export default function AITutorPage() {
         subType: contentSubType
       });
       setContentOutput(res);
+      recordAsset({
+        type: 'summary',
+        topic: contentTopic,
+        subject: String(selectedSubject),
+        grade: selectedGrade,
+        content: res
+      });
       addXP(30);
       soundFX.playLevelUp();
       confetti({ particleCount: 50, spread: 60, origin: { y: 0.85 } });
@@ -226,6 +274,13 @@ export default function AITutorPage() {
         targetFormat: selectedFormat
       });
       setMultiFormatOutput(res);
+      recordAsset({
+        type: 'adapted_format',
+        topic: multiFormatInput.slice(0, 60),
+        subject: String(selectedSubject),
+        grade: selectedGrade,
+        content: res
+      });
       addXP(30);
       soundFX.playLevelUp();
     } catch (err: any) {
@@ -268,6 +323,13 @@ export default function AITutorPage() {
         docType
       });
       setDocOutput(res);
+      recordAsset({
+        type: 'doc_analysis',
+        topic: `${docType}: ${docInputText.slice(0, 50)}`,
+        subject: String(selectedSubject),
+        grade: selectedGrade,
+        content: res
+      });
       addXP(40);
       soundFX.playLevelUp();
     } catch (err: any) {
@@ -285,6 +347,13 @@ export default function AITutorPage() {
     try {
       const res = await executeEducationalCoreAPI('mindmap_diagram', mindmapTopic);
       setMindmapOutput(res);
+      recordAsset({
+        type: 'mindmap',
+        topic: mindmapTopic,
+        subject: String(selectedSubject),
+        grade: selectedGrade,
+        content: res
+      });
       addXP(35);
       soundFX.playLevelUp();
     } catch (err: any) {
@@ -304,6 +373,13 @@ export default function AITutorPage() {
         examStandard
       });
       setExamPaperOutput(res);
+      recordAsset({
+        type: 'model_paper',
+        topic: topic,
+        subject: String(selectedSubject),
+        grade: selectedGrade,
+        content: res
+      });
       addXP(50);
       soundFX.playLevelUp();
       confetti({ particleCount: 70, spread: 70, origin: { y: 0.8 } });
@@ -325,6 +401,25 @@ export default function AITutorPage() {
         maxMarks: essayMaxMarks
       });
       setEssayOutput(res);
+
+      const estimatedScore = Math.round(essayMaxMarks * 0.85);
+      recordEvaluation({
+        question: essayQuestion || `${selectedSubject} Essay Question`,
+        answer: essayAnswer,
+        score: estimatedScore,
+        maxMarks: essayMaxMarks,
+        feedback: res,
+        weakPointsIdentified: [selectedSubject]
+      });
+
+      if (essayQuestion) {
+        recordWeakArea({
+          subject: String(selectedSubject),
+          topic: essayQuestion.slice(0, 45),
+          notes: 'Evaluated in Essay Assistant'
+        });
+      }
+
       addXP(45);
       soundFX.playLevelUp();
       confetti({ particleCount: 60, spread: 60, origin: { y: 0.8 } });
@@ -336,7 +431,7 @@ export default function AITutorPage() {
     }
   };
 
-  // Chat Q&A Sender
+  // Chat Q&A Sender with Continuous Context Recording
   const handleSendChatMessage = async (promptToSend?: string) => {
     const query = promptToSend || inputQuery.trim();
     if (!query && !attachedImage) return;
@@ -357,6 +452,7 @@ export default function AITutorPage() {
     setIsLoadingChat(true);
 
     try {
+      const memoryContext = studyMemory ? buildMemoryContextForGemini(studyMemory) : undefined;
       const response = await fetch('/api/gemini/school-tutor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -365,7 +461,8 @@ export default function AITutorPage() {
           grade: selectedGrade,
           subject: selectedSubject,
           stream: selectedStream,
-          medium: profile?.medium || 'Sinhala'
+          medium: profile?.medium || 'Sinhala',
+          studentMemoryContext: memoryContext
         })
       });
       const data = await response.json();
@@ -379,6 +476,7 @@ export default function AITutorPage() {
         subjectTag: selectedSubject
       };
       setMessages((prev) => [...prev, aiMsg]);
+      recordChat(userMsg, aiMsg);
       addXP(20);
       soundFX.playCorrect();
     } catch {
@@ -390,6 +488,7 @@ export default function AITutorPage() {
         subjectTag: selectedSubject
       };
       setMessages((prev) => [...prev, fallbackMsg]);
+      recordChat(userMsg, fallbackMsg);
     } finally {
       setIsLoadingChat(false);
     }
@@ -484,6 +583,8 @@ export default function AITutorPage() {
     if (file) processIncomingFile(file);
   };
 
+  const returningGreeting = getPersonalizedReturningGreeting(profile, studyMemory, language);
+
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       
@@ -495,14 +596,36 @@ export default function AITutorPage() {
         <div className="space-y-3 max-w-2xl relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-xs font-extrabold backdrop-blur-sm border border-white/10">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>SIPARANA Advanced Educational AI Core (6 Core Engines)</span>
+            <span>SIPARANA Advanced Educational AI Core (6 Core Engines + Continuous Memory)</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black font-serif tracking-tight">
-            අධ්‍යාපනික AI පද්ධතිය (Educational AI Core Studio)
+            {returningGreeting.headline}
           </h1>
           <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
-            Curriculum-grounded pedagogical AI core tailored specifically for Sri Lankan students from Grade 5 Scholarship, G.C.E. O/L, G.C.E. A/L (Science, Maths, Commerce, Arts, Tech) to University level.
+            {returningGreeting.subtext}
           </p>
+
+          {returningGreeting.hasPreviousHistory && returningGreeting.resumeTopic && (
+            <div className="pt-1 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playCorrect();
+                  setContentTopic(returningGreeting.resumeTopic);
+                  setActiveTab('content_quiz');
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>
+                  {language === 'si'
+                    ? `"${returningGreeting.resumeTopic}" පාඩම නැවත ආරම්භ කරන්න (Resume)`
+                    : `Resume Lesson: "${returningGreeting.resumeTopic}"`}
+                </span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Grade-Adaptive Controls */}
@@ -677,6 +800,22 @@ export default function AITutorPage() {
           >
             <Bot className="w-4 h-4" />
             <span>🎙️ AI Guru Voice Chat</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playCorrect();
+              setActiveTab('study_memory');
+            }}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer ${
+              activeTab === 'study_memory'
+                ? 'bg-amber-500 text-slate-950 shadow-sm'
+                : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50'
+            }`}
+          >
+            <BrainCircuit className="w-4 h-4" />
+            <span>🧠 මතකය & ඉතිහාසය (Memory Hub)</span>
           </button>
 
         </div>
@@ -1541,6 +1680,435 @@ export default function AITutorPage() {
               </p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 7. CONTINUOUS STUDY MEMORY & RETENTION HUB */}
+      {/* ========================================================================= */}
+      {activeTab === 'study_memory' && (
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-amber-300 dark:border-amber-700/60 p-6 sm:p-8 space-y-6 shadow-sm">
+          {/* Header & Sync Status */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold">
+                  <BrainCircuit className="w-5 h-5" />
+                </span>
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>{language === 'si' ? 'අඛණ්ඩ අධ්‍යයන මතක කේන්ද්‍රය' : 'Continuous Study Memory & Retention Hub'}</span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                      ⚡ Active Memory Synced
+                    </span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Linked to <span className="font-bold text-blue-600 dark:text-blue-400">{profile?.email || 'Logged-in Student'}</span> • Target: <span className="font-bold">{selectedGrade}</span> ({selectedStream})
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowClearMemoryConfirm(true)}
+                className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/60 text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 border border-slate-200 dark:border-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{language === 'si' ? 'මතකය හිස් කරන්න' : 'Clear Memory'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Metric Stats Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-300/60 dark:border-amber-700/60 space-y-1">
+              <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Past Inquiries</span>
+              </span>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">
+                {studyMemory?.chatHistory?.filter((m) => m.sender === 'user').length || 0}
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-300/60 dark:border-blue-700/60 space-y-1">
+              <span className="text-[11px] font-bold text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                <BookmarkCheck className="w-3.5 h-3.5" />
+                <span>Saved Assets</span>
+              </span>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">
+                {studyMemory?.savedAssets?.length || 0}
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-300/60 dark:border-emerald-700/60 space-y-1">
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                <Award className="w-3.5 h-3.5" />
+                <span>Evaluated Essays</span>
+              </span>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">
+                {studyMemory?.essayEvaluations?.length || 0}
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-300/60 dark:border-rose-700/60 space-y-1">
+              <span className="text-[11px] font-bold text-rose-800 dark:text-rose-300 flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span>Weak Focus Areas</span>
+              </span>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">
+                {studyMemory?.weakAreas?.filter((w) => !w.resolved).length || 0}
+              </p>
+            </div>
+          </div>
+
+          {/* Sub-Tabs Selector */}
+          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto">
+            <button
+              type="button"
+              onClick={() => setMemorySubTab('chats')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                memorySubTab === 'chats'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+              }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>පෙර විමසූ ප්‍රශ්න ({studyMemory?.chatHistory?.length || 0})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMemorySubTab('assets')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                memorySubTab === 'assets'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+              }`}
+            >
+              <BookmarkCheck className="w-3.5 h-3.5" />
+              <span>සාරාංශ & Mind Maps ({studyMemory?.savedAssets?.length || 0})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMemorySubTab('essays')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                memorySubTab === 'essays'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+              }`}
+            >
+              <Award className="w-3.5 h-3.5" />
+              <span>රචනා ඇගයීම් ({studyMemory?.essayEvaluations?.length || 0})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMemorySubTab('weak_areas')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                memorySubTab === 'weak_areas'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+              }`}
+            >
+              <AlertCircle className="w-3.5 h-3.5" />
+              <span>දුර්වල ඒකක ({studyMemory?.weakAreas?.filter((w) => !w.resolved).length || 0})</span>
+            </button>
+          </div>
+
+          {/* SUB-VIEW 1: PAST CHATS */}
+          {memorySubTab === 'chats' && (
+            <div className="space-y-3">
+              {(!studyMemory?.chatHistory || studyMemory.chatHistory.length === 0) ? (
+                <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-xs">
+                  තවමත් ප්‍රශ්න විමසා නොමැත. AI Guru Voice Chat වෙත ගොස් ඔබේ පළමු ප්‍රශ්නය විමසන්න!
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                  {studyMemory.chatHistory.map((chat) => (
+                    <div
+                      key={chat.id}
+                      className={`p-4 rounded-2xl border text-xs space-y-2 ${
+                        chat.sender === 'user'
+                          ? 'bg-blue-50/80 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'
+                          : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-black text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                          {chat.sender === 'user' ? <User className="w-3.5 h-3.5 text-blue-500" /> : <Bot className="w-3.5 h-3.5 text-amber-500" />}
+                          <span>{chat.sender === 'user' ? 'ඔබගේ ප්‍රශ්නය (You)' : 'සිප්අරණ Guru AI'}</span>
+                          {chat.subjectTag && (
+                            <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px]">
+                              {chat.subjectTag}
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-slate-400">{chat.timestamp}</span>
+                      </div>
+                      <p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
+                        {chat.text}
+                      </p>
+                      {chat.sender === 'ai' && (
+                        <div className="flex items-center justify-end gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(chat.id, chat.text)}
+                            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 cursor-pointer"
+                            title="Copy"
+                          >
+                            {copiedId === chat.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SUB-VIEW 2: SAVED ASSETS */}
+          {memorySubTab === 'assets' && (
+            <div className="space-y-3">
+              {(!studyMemory?.savedAssets || studyMemory.savedAssets.length === 0) ? (
+                <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-xs">
+                  තවමත් සාරාංශ හෝ Model Papers සුරැකී නොමැත. Core Tools භාවිතා කර නව සටහන් ජනනය කරන්න!
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {studyMemory.savedAssets.map((asset) => (
+                    <div
+                      key={asset.id}
+                      className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-2 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] mb-1">
+                          <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold uppercase tracking-wider text-[10px]">
+                            {asset.type.replace('_', ' ')}
+                          </span>
+                          <span className="text-slate-400">{new Date(asset.timestamp).toLocaleDateString()}</span>
+                        </div>
+                        <h4 className="font-black text-sm text-slate-900 dark:text-white line-clamp-1">
+                          {asset.topic}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          {asset.subject} • {asset.grade}
+                        </p>
+                        <div className="mt-2 p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 line-clamp-4 font-mono leading-relaxed">
+                          {asset.content}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFX.playCorrect();
+                            setContentTopic(asset.topic);
+                            setContentOutput(asset.content);
+                            setActiveTab('content_quiz');
+                          }}
+                          className="text-xs font-black text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Open in Studio</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyText(asset.id, asset.content)}
+                          className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1 cursor-pointer"
+                        >
+                          {copiedId === asset.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                          <span>Copy</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SUB-VIEW 3: ESSAY EVALUATIONS */}
+          {memorySubTab === 'essays' && (
+            <div className="space-y-3">
+              {(!studyMemory?.essayEvaluations || studyMemory.essayEvaluations.length === 0) ? (
+                <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-xs">
+                  තවමත් රචනා ඇගයීම් නොමැත. "6. Essay Feedback Evaluator" වෙත ගොස් ඔබේ රචනාව පරීක්ෂා කරගන්න!
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {studyMemory.essayEvaluations.map((evalItem) => (
+                    <div
+                      key={evalItem.id}
+                      className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-3"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="space-y-0.5">
+                          <h4 className="font-black text-sm text-slate-900 dark:text-white">
+                            {evalItem.question}
+                          </h4>
+                          <span className="text-[11px] text-slate-400">
+                            Evaluated: {new Date(evalItem.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-black text-sm border border-emerald-300/40 dark:border-emerald-800 self-start sm:self-auto">
+                          Score: {evalItem.score} / {evalItem.maxMarks}
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 space-y-2">
+                        <div className="font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+                          Evaluation & Feedback:
+                        </div>
+                        <div className="whitespace-pre-wrap line-clamp-6 leading-relaxed">
+                          {evalItem.feedback}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFX.playCorrect();
+                            setEssayQuestion(evalItem.question);
+                            setEssayAnswer(evalItem.answer);
+                            setEssayOutput(evalItem.feedback);
+                            setActiveTab('essay_evaluator');
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Re-evaluate / Review</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SUB-VIEW 4: WEAK SUBJECT AREAS */}
+          {memorySubTab === 'weak_areas' && (
+            <div className="space-y-3">
+              {(!studyMemory?.weakAreas || studyMemory.weakAreas.length === 0) ? (
+                <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-xs">
+                  🎉 මෙතෙක් දුර්වල ඒකක හඳුනාගෙන නොමැත. ඔබේ සියලු විෂයයන් විශිෂ්ට මට්ටමේ පවතී!
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {studyMemory.weakAreas.map((weak) => (
+                    <div
+                      key={weak.id}
+                      className={`p-4 rounded-2xl border flex items-center justify-between gap-3 ${
+                        weak.resolved
+                          ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900 opacity-70'
+                          : 'bg-rose-50/80 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900'
+                      }`}
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-black text-xs text-slate-900 dark:text-white">
+                            {weak.subject}
+                          </span>
+                          {weak.resolved ? (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-bold">
+                              ✓ Mastered
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 text-[10px] font-bold">
+                              Needs Practice
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          {weak.topic}
+                        </p>
+                        {weak.notes && (
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                            {weak.notes}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-1.5 flex-shrink-0">
+                        {!weak.resolved ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                soundFX.playCorrect();
+                                setContentTopic(weak.topic);
+                                setSelectedSubject(weak.subject);
+                                setActiveTab('content_quiz');
+                              }}
+                              className="px-2.5 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-700 cursor-pointer"
+                            >
+                              Practice
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                resolveWeakArea(weak.id);
+                                soundFX.playLevelUp();
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[10px] hover:bg-emerald-500 hover:text-white cursor-pointer transition"
+                            >
+                              Mark Solved
+                            </button>
+                          </>
+                        ) : (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Clear Memory Confirmation Dialog */}
+          {showClearMemoryConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border-2 border-red-200 dark:border-red-900 shadow-2xl space-y-4">
+                <div className="flex items-center gap-3 text-red-600">
+                  <AlertCircle className="w-6 h-6" />
+                  <h3 className="font-black text-base text-slate-900 dark:text-white">
+                    {language === 'si' ? 'අධ්‍යයන මතකය හිස් කිරීමට අවශ්‍යද?' : 'Reset Study Memory?'}
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  මෙමඟින් ඔබගේ විමසූ ප්‍රශ්න, ජනනය කළ සටහන්, රචනා ලකුණු සහ දුර්වල ඒකක දත්ත සම්පූර්ණයෙන්ම ඉවත් වේ. (පරිශීලක ගිණුම එලෙසම පවතී).
+                </p>
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowClearMemoryConfirm(false)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearStudySessionMemory();
+                      setShowClearMemoryConfirm(false);
+                      soundFX.playCorrect();
+                    }}
+                    className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs cursor-pointer shadow-md"
+                  >
+                    Yes, Clear Memory
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
