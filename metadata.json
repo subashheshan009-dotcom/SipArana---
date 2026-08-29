@@ -2,7 +2,8 @@
   "name": "SipArana Educational Web App",
   "description": "Global and Sri Lanka national AI digital educational platform supporting multi-country curricula (Sri Lanka NIE, UK Cambridge/Edexcel, US AP/Common Core, Japan MEXT, India CBSE/JEE, Australia ATAR, Global IB DP), autonomous curriculum self-evolving engine, localized AI mascot mentors (Kavi Owl, Fukurō Sensei, Sage Owl), interactive Grade 5 Scholarship wizard, and trilingual voice synthesis.",
   "requestFramePermissions": [
-    "microphone"
+    "microphone",
+    "camera"
   ],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

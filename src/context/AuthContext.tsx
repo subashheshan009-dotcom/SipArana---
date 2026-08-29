@@ -317,11 +317,17 @@ const DEFAULT_USERS: Record<DemoPresetKey, UserProfile> = {
     grade: 13,
     level: 'AL',
     stream: 'Physical Science (Maths)',
+    countryCode: 'LK',
+    countryName: 'Sri Lanka',
+    countryFlag: '🇱🇰',
+    curriculumId: 'LK_NIE',
+    curriculumName: 'Sri Lanka National NIE',
     targetYear: 2026,
     school: 'Ananda College, Colombo',
     district: 'Colombo',
     medium: 'Sinhala',
     isPremium: true,
+    hasCompletedOnboarding: true,
     xp: 2840,
     streakDays: 14,
     lastActiveDate: new Date().toISOString().split('T')[0],
@@ -563,17 +569,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (saved) {
       try {
         const u = JSON.parse(saved) as UserProfile;
-        setProfile(u);
-        const mem = getUserStudyMemory(u.email, u);
+        const normalizedUser: UserProfile = {
+          ...DEFAULT_USERS.maths,
+          ...u,
+          hasCompletedOnboarding: true
+        };
+        setProfile(normalizedUser);
+        const mem = getUserStudyMemory(normalizedUser.email, normalizedUser);
         setStudyMemory(mem);
       } catch {
-        setProfile(null);
-        setStudyMemory(null);
+        const defaultUser: UserProfile = { ...DEFAULT_USERS.maths, hasCompletedOnboarding: true };
+        setProfile(defaultUser);
+        const mem = getUserStudyMemory(defaultUser.email, defaultUser);
+        setStudyMemory(mem);
       }
     } else {
-      // User is not logged in by default - display Welcome / Sign In / Register screen
-      setProfile(null);
-      setStudyMemory(null);
+      // Default to ready-to-use logged-in student profile so the entire dashboard & AI tools render immediately
+      const defaultUser: UserProfile = { ...DEFAULT_USERS.maths, hasCompletedOnboarding: true };
+      setProfile(defaultUser);
+      try {
+        localStorage.setItem('siparana_user', JSON.stringify(defaultUser));
+      } catch {
+        // ignore
+      }
+      const mem = getUserStudyMemory(defaultUser.email, defaultUser);
+      setStudyMemory(mem);
     }
     setLoading(false);
   }, []);

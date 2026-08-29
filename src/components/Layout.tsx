@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   LayoutDashboard,
   BookOpen,
@@ -35,7 +35,12 @@ import {
   Headphones,
   Languages,
   Cpu,
-  CheckCircle2
+  CheckCircle2,
+  User,
+  Award,
+  CreditCard,
+  Radio,
+  ScanLine
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -56,9 +61,11 @@ import { Gift } from 'lucide-react';
 
 export type PageId =
   | 'dashboard'
+  | 'smart_evaluator'
   | 'planner'
   | 'flashcards'
   | 'audio'
+  | 'language_adventure'
   | 'modern_languages'
   | 'fun_english'
   | 'google_hub'
@@ -149,6 +156,15 @@ const RAW_NAV_ITEMS: Record<PageId, NavItemDef> = {
   },
 
   // GROUP 2: AI STUDY ASSISTANTS
+  smart_evaluator: {
+    id: 'smart_evaluator',
+    icon: ScanLine,
+    enLabel: 'AI File Evaluator & Mind-Maps',
+    siLabel: 'AI ගොනු ඇගයුම්කරු & මනෝ සිතියම්',
+    taLabel: 'AI கோப்பு மதிப்பீட்டாளர் & மன வரைபடம்',
+    badgeText: 'NEW',
+    badgeType: 'new'
+  },
   ai_tutor: {
     id: 'ai_tutor',
     icon: Bot,
@@ -183,6 +199,15 @@ const RAW_NAV_ITEMS: Record<PageId, NavItemDef> = {
   },
 
   // GROUP 3: LANGUAGES & SKILLS
+  language_adventure: {
+    id: 'language_adventure',
+    icon: Sparkles,
+    enLabel: 'Language Learning Adventure',
+    siLabel: 'භාෂා ඉගෙනුම් චාරිකාව',
+    taLabel: 'மொழி கற்றல் சாகசம்',
+    badgeText: 'NEW',
+    badgeType: 'new'
+  },
   modern_languages: {
     id: 'modern_languages',
     icon: Languages,
@@ -293,6 +318,32 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
   const [showGlobalCountryModal, setShowGlobalCountryModal] = useState(false);
   const [showChestModal, setShowChestModal] = useState(false);
   const [showStreakModal, setShowStreakModal] = useState(false);
+  const [streakModalTab, setStreakModalTab] = useState<'streak' | 'xp' | 'badges'>('streak');
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
+  // Click outside refs
+  const gradeDropdownRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (gradeDropdownRef.current && !gradeDropdownRef.current.contains(event.target as Node)) {
+        setShowGradeDropdown(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setShowProfileDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({
     academics: false,
     ai_assistants: false,
@@ -327,10 +378,12 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
 
   const GRADE5_ALLOWED_PAGES: PageId[] = [
     'dashboard',
+    'smart_evaluator',
     'subjects',
     'planner',
     'flashcards',
     'audio',
+    'language_adventure',
     'fun_english',
     'quizzes',
     'ai_tutor',
@@ -373,6 +426,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
           pastelBorder: 'border-purple-200/70 dark:border-purple-800/50',
           pastelText: 'text-purple-800 dark:text-purple-200',
           items: [
+            RAW_NAV_ITEMS.smart_evaluator,
             { ...RAW_NAV_ITEMS.ai_tutor, enLabel: 'Kavi Owl AI Tutor', siLabel: 'කවි බකමූණා AI ගුරු සහකාර' },
             { ...RAW_NAV_ITEMS.planner, enLabel: 'My Study Routine', siLabel: 'මගේ පාඩම් කාලසටහන' },
             { ...RAW_NAV_ITEMS.flashcards, enLabel: 'Scholarship Flashcards', siLabel: 'ක්ෂණික මතක කාඩ්' },
@@ -389,6 +443,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
           pastelBorder: 'border-amber-200/70 dark:border-amber-800/50',
           pastelText: 'text-amber-800 dark:text-amber-200',
           items: [
+            RAW_NAV_ITEMS.language_adventure,
             { ...RAW_NAV_ITEMS.fun_english, enLabel: 'Fun English & Relax', siLabel: 'ඉංග්‍රීසි පුහුණුව & විවේකය' }
           ]
         }
@@ -422,6 +477,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
         pastelBorder: 'border-purple-200/70 dark:border-purple-800/50',
         pastelText: 'text-purple-800 dark:text-purple-200',
         items: [
+          RAW_NAV_ITEMS.smart_evaluator,
           RAW_NAV_ITEMS.ai_tutor,
           RAW_NAV_ITEMS.planner,
           RAW_NAV_ITEMS.flashcards,
@@ -438,6 +494,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
         pastelBorder: 'border-amber-200/70 dark:border-amber-800/50',
         pastelText: 'text-amber-800 dark:text-amber-200',
         items: [
+          RAW_NAV_ITEMS.language_adventure,
           RAW_NAV_ITEMS.modern_languages,
           RAW_NAV_ITEMS.fun_english,
           RAW_NAV_ITEMS.free_courses
@@ -901,13 +958,17 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
 
           {/* Quick Stats / Grade Switcher / Indicators */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-shrink">
-            {/* Quick Grade Switcher Dropdown */}
+            {/* 1. Quick Grade Switcher Dropdown */}
             {profile && !isUniversityStudent && (
-              <div className="relative">
+              <div className="relative" ref={gradeDropdownRef}>
                 <button
                   id="grade-switcher-btn"
-                  onClick={() => setShowGradeDropdown(!showGradeDropdown)}
-                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60 rounded-xl text-blue-700 dark:text-blue-300 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/80 transition max-w-[140px] sm:max-w-none"
+                  type="button"
+                  onClick={() => {
+                    soundFX.playClick();
+                    setShowGradeDropdown(!showGradeDropdown);
+                  }}
+                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60 rounded-xl text-blue-700 dark:text-blue-300 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/80 transition max-w-[140px] sm:max-w-none cursor-pointer"
                   title="Change Active Grade / Stage"
                 >
                   <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
@@ -924,22 +985,22 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                 </button>
 
                 {showGradeDropdown && (
-                  <div className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 animate-in fade-in slide-in-from-top-2">
-                    <div className="px-2.5 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center justify-between">
+                  <div className="absolute left-0 sm:right-0 sm:left-auto mt-2 w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3 z-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="px-2 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 mb-2 flex items-center justify-between">
                       <span>{language === 'si' ? 'අධ්‍යාපන මට්ටම තෝරන්න' : `${country.name} Stages & Grades`}</span>
                       <span className="text-blue-500 font-extrabold">{country.code}</span>
                     </div>
-                    <div className="space-y-1.5 max-h-72 overflow-y-auto">
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                       {stages.map((stg) => {
                         const isStageActive = stg.targetGrades.includes(profile.grade);
                         const stageLabel = (language === 'si' && stg.nameLocal) ? stg.nameLocal : stg.name;
                         return (
-                          <div key={stg.id} className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                            <div className="px-1.5 py-0.5 flex items-center justify-between text-[11px] font-extrabold text-slate-800 dark:text-slate-200">
+                          <div key={stg.id} className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1.5">
+                            <div className="px-1 flex items-center justify-between text-[11px] font-extrabold text-slate-800 dark:text-slate-200">
                               <span>{stageLabel}</span>
                               <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold">{stg.typicalAge}</span>
                             </div>
-                            <div className="grid grid-cols-2 gap-1 mt-1">
+                            <div className="grid grid-cols-2 gap-1.5">
                               {stg.targetGrades.map((gNum) => {
                                 const isCurrent = profile.grade === gNum;
                                 const gradeName = countryCode === 'UK'
@@ -954,10 +1015,11 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                                     key={gNum}
                                     type="button"
                                     onClick={() => {
-                                      setGradeAndStream(gNum as SchoolGrade, stg.defaultStream as Stream);
+                                      soundFX.playCorrect();
+                                      setGradeAndStream(gNum as SchoolGrade, (gNum >= 12 ? (profile.stream || 'Physical Science') : stg.defaultStream) as Stream);
                                       setShowGradeDropdown(false);
                                     }}
-                                    className={`px-2 py-1.5 rounded-lg text-left text-xs font-bold flex items-center justify-between transition ${
+                                    className={`px-2 py-1.5 rounded-lg text-left text-xs font-bold flex items-center justify-between transition cursor-pointer ${
                                       isCurrent
                                         ? 'bg-blue-600 text-white shadow-xs'
                                         : 'hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-slate-800'
@@ -969,6 +1031,42 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                                 );
                               })}
                             </div>
+
+                            {/* Stream selector for A/L (Grades 12-13) */}
+                            {profile.grade >= 12 && isStageActive && (
+                              <div className="pt-1.5 mt-1 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1">
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block px-1">
+                                  {language === 'si' ? 'A/L විෂය ධාරාව තෝරන්න:' : 'Select A/L Stream:'}
+                                </span>
+                                <div className="grid grid-cols-1 gap-1">
+                                  {[
+                                    { id: 'Physical Science', label: 'Physical Science (Maths)', labelSi: 'භෞතික විද්‍යා (සංයුක්ත ගණිතය)' },
+                                    { id: 'Biological Science', label: 'Biological Science (Bio)', labelSi: 'ජීව විද්‍යා ධාරාව' },
+                                    { id: 'Commerce', label: 'Commerce Stream', labelSi: 'වාණිජ ධාරාව' },
+                                    { id: 'Technology', label: 'Technology Stream', labelSi: 'තාක්ෂණවේදය ධාරාව' },
+                                    { id: 'Arts', label: 'Arts & Humanities', labelSi: 'කලා ධාරාව' }
+                                  ].map(str => (
+                                    <button
+                                      key={str.id}
+                                      type="button"
+                                      onClick={() => {
+                                        soundFX.playCorrect();
+                                        setGradeAndStream(profile.grade, str.id as Stream);
+                                        setShowGradeDropdown(false);
+                                      }}
+                                      className={`px-2 py-1 rounded-md text-[11px] font-semibold text-left flex items-center justify-between transition cursor-pointer ${
+                                        profile.stream === str.id
+                                          ? 'bg-amber-500 text-slate-950 font-bold'
+                                          : 'hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                      }`}
+                                    >
+                                      <span>{language === 'si' ? str.labelSi : str.label}</span>
+                                      {profile.stream === str.id && <CheckCircle2 className="w-3 h-3 text-slate-950" />}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -978,10 +1076,14 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
               </div>
             )}
 
-            {/* Global Country & Curriculum Switcher Trigger */}
+            {/* 2. Global Country & Curriculum Switcher Trigger */}
             <button
+              type="button"
               id="header-global-country-btn"
-              onClick={() => setShowGlobalCountryModal(true)}
+              onClick={() => {
+                soundFX.playClick();
+                setShowGlobalCountryModal(true);
+              }}
               className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-blue-50/80 dark:bg-slate-800/80 border border-blue-200 dark:border-slate-700 rounded-xl text-blue-900 dark:text-blue-300 text-xs font-bold hover:bg-blue-100 dark:hover:bg-slate-700 transition shadow-2xs cursor-pointer"
               title="Change Country & Global Curriculum Framework"
             >
@@ -992,10 +1094,14 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
               </span>
             </button>
 
-            {/* Autonomous NIE Sync & Health Hub Trigger */}
+            {/* 3. Autonomous AI Core Status & Toggle Trigger */}
             <button
+              type="button"
               id="header-autonomous-sync-btn"
-              onClick={() => setShowAutonomousModal(true)}
+              onClick={() => {
+                soundFX.playClick();
+                setShowAutonomousModal(true);
+              }}
               className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-gradient-to-r from-amber-500/15 via-blue-500/10 to-emerald-500/15 dark:from-amber-950/40 dark:via-blue-950/30 dark:to-emerald-950/40 border border-amber-400/60 dark:border-amber-500/50 rounded-xl text-amber-800 dark:text-amber-300 text-xs font-black hover:border-amber-500 transition shadow-2xs cursor-pointer"
               title="Autonomous Syllabus & Real-Time Sync Hub"
             >
@@ -1006,7 +1112,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
               <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
             </button>
 
-            {/* Daily Mystery Chest Trigger */}
+            {/* 4. Daily Mystery Chest Trigger */}
             <button
               type="button"
               id="header-mystery-chest-btn"
@@ -1024,13 +1130,14 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
             </button>
 
-            {/* Streak indicator - Clickable with Modal */}
+            {/* 5. Study Streak indicator - Clickable with Modal */}
             {profile && (
               <button
                 type="button"
                 id="streak-badge"
                 onClick={() => {
                   soundFX.playStreak();
+                  setStreakModalTab('streak');
                   setShowStreakModal(true);
                 }}
                 title={`${profile.streakDays} Days Study Streak! Tap to view milestones.`}
@@ -1044,40 +1151,54 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
               </button>
             )}
 
-            {/* XP Points */}
+            {/* 6. XP Points Button - Clickable to open Level Progression */}
             {profile && (
-              <div
+              <button
+                type="button"
                 id="xp-badge"
-                title={`${profile.xp} Study XP Points`}
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 rounded-xl text-emerald-700 dark:text-emerald-300 text-xs font-bold"
+                onClick={() => {
+                  soundFX.playPop();
+                  setStreakModalTab('xp');
+                  setShowStreakModal(true);
+                }}
+                title={`${profile.xp} Study XP Points. Click to view level progression & badges.`}
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-900/60 rounded-xl text-emerald-700 dark:text-emerald-300 text-xs font-bold transition cursor-pointer hover:scale-103"
               >
                 <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 fill-emerald-500 flex-shrink-0" />
                 <span>{profile.xp.toLocaleString()}</span>
                 <span className="hidden sm:inline text-[11px] font-normal text-emerald-600 dark:text-emerald-400">
                   {t('xpPoints')}
                 </span>
-              </div>
+              </button>
             )}
 
-            {/* Modern Header Language Selector */}
+            {/* 7. Modern Header Language Selector */}
             <HeaderLanguageSelector variant="dropdown" idPrefix="nav-header-lang" align="right" />
 
-            {/* Theme switch */}
+            {/* 8. Theme Switch */}
             <button
+              type="button"
               id="theme-toggle-btn"
-              onClick={toggleTheme}
-              className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              onClick={() => {
+                soundFX.playPop();
+                toggleTheme();
+              }}
+              className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               title="Toggle Light / Dark theme"
             >
               {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
             </button>
 
-            {/* Notifications Button */}
-            <div className="relative">
+            {/* 9. Notifications Button & Popover */}
+            <div className="relative" ref={notificationsRef}>
               <button
+                type="button"
                 id="notifications-toggle-btn"
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 relative transition flex items-center justify-center"
+                onClick={() => {
+                  soundFX.playClick();
+                  setShowNotifications(!showNotifications);
+                }}
+                className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 relative transition flex items-center justify-center cursor-pointer"
                 title={t('notifications')}
               >
                 <Bell className="w-4 h-4" />
@@ -1175,7 +1296,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                         setShowNotifications(false);
                         onNavigate('news');
                       }}
-                      className="w-full py-1.5 text-center text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg transition"
+                      className="w-full py-1.5 text-center text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg transition cursor-pointer"
                     >
                       {language === 'si' ? 'සියලු විභාග චක්‍රලේඛ සහ නිවේදන බලන්න →' : 'View All Exam Bulletins & Circulars →'}
                     </button>
@@ -1184,19 +1305,133 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
               )}
             </div>
 
-            {/* Profile Avatar Quick Link */}
+            {/* 10. User Profile Avatar & Dropdown Menu */}
             {profile && (
-              <button
-                id="header-profile-btn"
-                onClick={() => onNavigate('settings')}
-                className="flex items-center gap-2 pl-0.5 sm:pl-1 hover:opacity-80 transition flex-shrink-0"
-              >
-                <img
-                  src={profile.avatar}
-                  alt={profile.name}
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover ring-2 ring-blue-500"
-                />
-              </button>
+              <div className="relative" ref={profileDropdownRef}>
+                <button
+                  type="button"
+                  id="header-profile-btn"
+                  onClick={() => {
+                    soundFX.playClick();
+                    setShowProfileDropdown(!showProfileDropdown);
+                  }}
+                  className="flex items-center gap-2 pl-0.5 sm:pl-1 hover:opacity-80 transition flex-shrink-0 cursor-pointer"
+                  title={`${profile.name} - Profile & Settings Menu`}
+                >
+                  <img
+                    src={profile.avatar}
+                    alt={profile.name}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover ring-2 ring-blue-500 hover:ring-amber-400 transition"
+                  />
+                </button>
+
+                {showProfileDropdown && (
+                  <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3 z-50 animate-in fade-in slide-in-from-top-2 space-y-2">
+                    {/* User Header */}
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                      <img
+                        src={profile.avatar}
+                        alt={profile.name}
+                        className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-extrabold text-slate-900 dark:text-white truncate">
+                          {profile.name}
+                        </h4>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                          {profile.email}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-xs">{activeCountryObj.flag}</span>
+                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                            Grade {profile.grade} {profile.stream ? `• ${profile.stream}` : ''}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pro Tier Status */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFX.playPop();
+                        setShowProfileDropdown(false);
+                        onNavigate('premium');
+                      }}
+                      className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-purple-500/15 border border-amber-400/50 flex items-center justify-between text-left cursor-pointer hover:border-amber-400 transition"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-4 h-4 text-amber-500" />
+                        <div>
+                          <span className="text-xs font-extrabold text-amber-700 dark:text-amber-300 block">SipArana Pro Pass</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                            {profile.isPro ? 'Active Membership' : 'Upgrade for Unlimited AI Tools'}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black">
+                        {profile.isPro ? 'PRO' : 'UPGRADE'}
+                      </span>
+                    </button>
+
+                    {/* Navigation items */}
+                    <div className="space-y-1 pt-1 border-t border-slate-100 dark:border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowProfileDropdown(false);
+                          onNavigate('settings');
+                        }}
+                        className="w-full px-2.5 py-2 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer"
+                      >
+                        <User className="w-4 h-4 text-slate-500" />
+                        <span>{language === 'si' ? 'මගේ ගිණුම් සැකසුම් (Account)' : 'My Account Settings'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowProfileDropdown(false);
+                          setStreakModalTab('badges');
+                          setShowStreakModal(true);
+                        }}
+                        className="w-full px-2.5 py-2 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer"
+                      >
+                        <Award className="w-4 h-4 text-amber-500" />
+                        <span>{language === 'si' ? 'ත්‍යාග සහ ගෞරව සම්මාන (Honors)' : 'Rewards & Badges Showcase'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowProfileDropdown(false);
+                          setShowAutonomousModal(true);
+                        }}
+                        className="w-full px-2.5 py-2 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer"
+                      >
+                        <Cpu className="w-4 h-4 text-emerald-500" />
+                        <span>{language === 'si' ? 'AI එන්ජින් තත්ත්වය (AI Core Specs)' : 'Autonomous AI Core Status'}</span>
+                      </button>
+                    </div>
+
+                    {/* Sign Out */}
+                    <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFX.playPop();
+                          setShowProfileDropdown(false);
+                          logout();
+                        }}
+                        className="w-full px-2.5 py-2 rounded-xl text-left text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 transition cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4 text-red-500" />
+                        <span>{t('signOut')}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </header>
@@ -1416,6 +1651,20 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
       <GlobalCountryCurriculumModal
         isOpen={showGlobalCountryModal}
         onClose={() => setShowGlobalCountryModal(false)}
+      />
+
+      {/* Daily Mystery Loot Chest Modal */}
+      <DailyMysteryChestModal
+        isOpen={showChestModal}
+        onClose={() => setShowChestModal(false)}
+      />
+
+      {/* Daily Streak, XP Level & Rewards Modal */}
+      <DailyStreakModal
+        isOpen={showStreakModal}
+        onClose={() => setShowStreakModal(false)}
+        onClaimMysteryChest={() => setShowChestModal(true)}
+        initialTab={streakModalTab}
       />
     </div>
   );

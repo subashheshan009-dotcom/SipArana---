@@ -456,7 +456,7 @@ export function clearUserStudyMemory(email: string, profile?: UserProfile): User
  */
 export function getPersonalizedReturningGreeting(
   profile: UserProfile | null,
-  memory: UserStudyMemory,
+  memory?: UserStudyMemory | null,
   language: string = 'si'
 ): {
   headline: string;
@@ -464,10 +464,13 @@ export function getPersonalizedReturningGreeting(
   resumeTopic: string;
   hasPreviousHistory: boolean;
 } {
-  const userName = profile?.name || memory.userName || 'ශිෂ්‍යයා';
-  const hasHistory = memory.chatHistory.length > 1 || memory.generatedAssets.length > 0 || memory.essayEvaluations.length > 0;
-  const lastTopic = memory.lastStudiedTopic?.topic || 'පාඩම් ඒකකය';
-  const lastSubject = memory.lastStudiedTopic?.subject || profile?.stream || 'විෂය';
+  const userName = profile?.name || memory?.userName || 'ශිෂ්‍යයා';
+  const chatHistory = memory?.chatHistory || [];
+  const generatedAssets = memory?.generatedAssets || [];
+  const essayEvaluations = memory?.essayEvaluations || [];
+  const hasHistory = chatHistory.length > 1 || generatedAssets.length > 0 || essayEvaluations.length > 0;
+  const lastTopic = memory?.lastStudiedTopic?.topic || 'පාඩම් ඒකකය';
+  const lastSubject = memory?.lastStudiedTopic?.subject || profile?.stream || 'විෂය';
 
   if (!hasHistory) {
     if (language === 'si') {
@@ -522,22 +525,26 @@ export function getPersonalizedReturningGreeting(
 /**
  * Format active student memory context for injection into Gemini AI prompts
  */
-export function buildMemoryContextForGemini(memory: UserStudyMemory): string {
-  const recentQuestions = memory.chatHistory
+export function buildMemoryContextForGemini(memory?: UserStudyMemory | null): string {
+  if (!memory) {
+    return 'No prior memory recorded.';
+  }
+
+  const recentQuestions = (memory.chatHistory || [])
     .filter(m => m.sender === 'user')
     .slice(-4)
     .map(m => `- "${m.text}" (${m.subjectTag || 'General'})`)
     .join('\n');
 
-  const weakAreas = memory.weakSubjectAreas
+  const weakAreas = (memory.weakSubjectAreas || [])
     .filter(w => !w.isResolved)
     .slice(0, 3)
     .map(w => `- ${w.subject}: ${w.topic} (Urgency: ${w.urgency}, Identified from ${w.identifiedFrom})`)
     .join('\n');
 
-  const recentEvaluations = memory.essayEvaluations
+  const recentEvaluations = (memory.essayEvaluations || [])
     .slice(0, 2)
-    .map(e => `- Topic: ${e.topic}, Score: ${e.estimatedMarks}/${e.maxMarks}, Improvement Focus: ${e.areasForImprovement[0] || 'Structured formatting'}`)
+    .map(e => `- Topic: ${e.topic}, Score: ${e.estimatedMarks}/${e.maxMarks}, Improvement Focus: ${e.areasForImprovement?.[0] || 'Structured formatting'}`)
     .join('\n');
 
   const lastTopic = memory.lastStudiedTopic ? `${memory.lastStudiedTopic.topic} (${memory.lastStudiedTopic.subject})` : 'None';

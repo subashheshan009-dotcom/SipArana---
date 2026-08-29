@@ -30,6 +30,8 @@ import FreeCoursesPage from '@/pages/FreeCoursesPage';
 import GoogleStudentHubPage from '@/pages/GoogleStudentHubPage';
 import FunEnglishRelaxPage from '@/pages/FunEnglishRelaxPage';
 import ModernLanguagesPage from '@/pages/ModernLanguagesPage';
+import LanguageAdventurePage from '@/pages/LanguageAdventurePage';
+import SmartFileEvaluatorPage from '@/pages/SmartFileEvaluatorPage';
 import OnboardingFlow from '@/components/OnboardingFlow';
 
 function AppContent() {
@@ -71,12 +73,16 @@ function AppContent() {
     switch (page) {
       case 'dashboard':
         return <Dashboard onNavigate={handleNavigate} />;
+      case 'smart_evaluator':
+        return <SmartFileEvaluatorPage onNavigateFlashcards={() => handleNavigate('flashcards')} />;
       case 'planner':
         return <StudyPlannerPage />;
       case 'flashcards':
         return <FlashcardsPage />;
       case 'audio':
         return <AudioSummariesPage />;
+      case 'language_adventure':
+        return <LanguageAdventurePage onNavigate={handleNavigate} />;
       case 'modern_languages':
         return <ModernLanguagesPage onNavigate={handleNavigate} />;
       case 'fun_english':

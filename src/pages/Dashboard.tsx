@@ -33,7 +33,9 @@ import {
   Languages,
   Brain,
   BrainCircuit,
-  Newspaper
+  Newspaper,
+  ScanLine,
+  UploadCloud
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -48,6 +50,10 @@ import Grade5ScholarshipWizard from '@/components/Grade5ScholarshipWizard';
 import StudentRoleIsolationBanner from '@/components/StudentRoleIsolationBanner';
 import KaviStepByStepMentor from '@/components/KaviStepByStepMentor';
 import AutonomousCurriculumSyncModal from '@/components/AutonomousCurriculumSyncModal';
+import LiveStudyPulseBanner from '@/components/LiveStudyPulseBanner';
+import KaviStudyPetWidget from '@/components/KaviStudyPetWidget';
+import FocusZoneWidget from '@/components/FocusZoneWidget';
+import LiveLeaderboardCard from '@/components/LiveLeaderboardCard';
 import { GlobalCurriculumEngine } from '@/utils/globalCurriculumEngine';
 import { soundFX } from '@/utils/audioUtils';
 import { getPersonalizedReturningGreeting } from '@/utils/userMemoryEngine';
@@ -215,6 +221,9 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
   return (
     <div className="space-y-6">
+      {/* 0. LIVE COMMUNITY STUDY PULSE & PERSONALIZED AI GOAL GREETING */}
+      <LiveStudyPulseBanner />
+
       {/* 1. HORIZONTAL HERO BANNER */}
       <section
         id="dashboard-hero-banner"
@@ -322,14 +331,21 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       {/* 2b. KAVI THE OWL STEP-BY-STEP ADAPTIVE MENTOR (SINHALA VOICE & SCRIPT) */}
       <KaviStepByStepMentor onNavigate={onNavigate} />
 
-      {/* 2c. ARANA 3D MASCOT MENTOR & STUDY ADVISOR */}
-      <section id="arana-mascot-mentor-card" className="bg-gradient-to-r from-amber-500/10 via-blue-500/10 to-indigo-500/10 border-2 border-amber-400/40 dark:border-amber-500/30 rounded-3xl p-4 sm:p-5 shadow-lg backdrop-blur-xs">
-        <AranaMascot
-          size="md"
-          mood={quizScore === true ? 'celebrating' : quizScore === false ? 'encouraging' : 'happy'}
-          interactive={true}
-        />
-      </section>
+      {/* 2c. ARANA & KAVI INTERACTIVE AI COMPANIONS & STUDY PET */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <div className="md:col-span-6">
+          <KaviStudyPetWidget />
+        </div>
+        <div className="md:col-span-6 flex flex-col justify-between">
+          <section id="arana-mascot-mentor-card" className="h-full bg-gradient-to-r from-amber-500/10 via-blue-500/10 to-indigo-500/10 border-2 border-amber-400/40 dark:border-amber-500/30 rounded-3xl p-4 sm:p-5 shadow-lg backdrop-blur-xs flex items-center">
+            <AranaMascot
+              size="md"
+              mood={quizScore === true ? 'celebrating' : quizScore === false ? 'encouraging' : 'happy'}
+              interactive={true}
+            />
+          </section>
+        </div>
+      </div>
 
       {/* 2d. COUNTRY-SPECIFIC STAGE BANNER */}
       {isSriLanka ? (
@@ -618,6 +634,51 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
               </span>
             </div>
 
+            {/* AI Smart File Evaluator & Mind-Map Studio Hero Banner */}
+            <div
+              id="dash-tool-smart-evaluator-banner"
+              onClick={() => onNavigate('smart_evaluator')}
+              className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-500/15 via-teal-500/15 to-emerald-500/15 border-2 border-cyan-400/50 dark:border-cyan-500/40 shadow-md hover:shadow-xl hover:border-cyan-400 transition-all cursor-pointer group"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-emerald-500 text-slate-950 flex items-center justify-center font-bold shadow-lg flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <ScanLine className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-cyan-500 text-slate-950 px-2 py-0.5 rounded-full shadow-xs">
+                        ⭐ NEW AI FEATURE
+                      </span>
+                      <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400">
+                        Camera OCR • 3D Mind-Maps • NIE Rubrics
+                      </span>
+                    </div>
+                    <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                      {language === 'si'
+                        ? 'AI ස්මාර්ට් ලේඛන ඇගයුම්කරු සහ මනෝ සිතියම් මැදිරිය 🦉'
+                        : 'AI Smart File Evaluator & Mind-Map Studio'}
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1">
+                      {language === 'si'
+                        ? 'අතින් ලියූ පිළිතුරු පත්‍ර ලකුණු කරන්න, PDF වලින් 3D මනෝ සිතියම් හදන්න සහ ගණිත ගැටලු විසඳන්න.'
+                        : 'Upload photo/PDF to evaluate handwritten answers, generate interactive mind-maps, and solve step-by-step.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-center flex-shrink-0">
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-black text-xs shadow-md group-hover:shadow-lg transition-all flex items-center gap-1.5"
+                  >
+                    <span>{language === 'si' ? 'විවෘත කරන්න' : 'Launch Studio'}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Continuous Study Memory & Saved Assets Sync Widget */}
             <div
               onClick={() => onNavigate('ai_tutor')}
@@ -776,16 +837,40 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                     {language === 'si' ? 'භාෂා සහ ඉගෙනුම්' : language === 'ta' ? 'மொழிகள் & திறன்கள்' : 'LANGUAGES & SKILLS'}
                   </h3>
                   <p className="text-[10px] text-amber-700/70 dark:text-amber-300/70 font-medium leading-none">
-                    {language === 'si' ? 'Foreign Languages, English Practice & Online Courses' : 'විදේශ භාෂා, ඉංග්‍රීසි පුහුණුව සහ පාඨමාලා'}
+                    {language === 'si' ? 'Language Adventure, Foreign Languages, English Practice & Online Courses' : 'භාෂා චාරිකාව, විදේශ භාෂා, ඉංග්‍රීසි පුහුණුව සහ පාඨමාලා'}
                   </p>
                 </div>
               </div>
               <span className="text-[10px] font-extrabold text-amber-700 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-900/60 px-2 py-0.5 rounded-full">
-                3 Tools
+                4 Tools
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* Language Learning Adventure */}
+              <button
+                id="dash-tool-lang-adventure"
+                onClick={() => onNavigate('language_adventure')}
+                className="p-3.5 rounded-xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 dark:from-indigo-950/60 dark:to-purple-950/50 border border-indigo-300 dark:border-indigo-700/80 hover:border-indigo-500 hover:-translate-y-0.5 hover:shadow-md transition-all text-left space-y-2 group cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="p-2 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-bold group-hover:scale-105 transition-transform shadow-xs">
+                    <Sparkles className="w-4 h-4 text-amber-300" />
+                  </div>
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200/70">
+                    ADVENTURE
+                  </span>
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-[13px] font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">
+                    {language === 'si' ? 'භාෂා ඉගෙනුම් චාරිකාව' : 'Language Adventure'}
+                  </h4>
+                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-normal leading-tight mt-0.5 truncate">
+                    {language === 'si' ? 'Speaking, Writing & Reading' : 'කතා කරන, ලියන, කියවන'}
+                  </p>
+                </div>
+              </button>
+
               {/* Modern & Foreign Languages */}
               <button
                 id="dash-tool-languages"
@@ -1311,8 +1396,14 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
+
+          {/* Weekly Live Top Students Leaderboard */}
+          <LiveLeaderboardCard />
         </div>
       </div>
+
+      {/* 5. FOCUS STUDY ZONE & POMODORO TIMER + AMBIENT SOUND GENERATOR */}
+      <FocusZoneWidget />
 
       {/* Grade 5 Scholarship Interactive Guided Wizard Modal */}
       <Grade5ScholarshipWizard
