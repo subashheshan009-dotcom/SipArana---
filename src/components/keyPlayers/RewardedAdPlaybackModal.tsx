@@ -77,28 +77,27 @@ export const RewardedAdPlaybackModal: React.FC<RewardedAdPlaybackModalProps> = (
 
     if (secondsRemaining > 0) {
       const timer = setTimeout(() => {
-        setSecondsRemaining((prev) => prev - 1);
+        if (secondsRemaining <= 1) {
+          // Reached 0s - Instant completion and immediate auto-close
+          setIsCompleted(true);
+          setSecondsRemaining(0);
+          soundFX.playLevelUp();
+
+          try {
+            confetti({
+              particleCount: 80,
+              spread: 90,
+              origin: { y: 0.55 }
+            });
+          } catch {}
+
+          // Immediately trigger completion callback to unmount modal without delay
+          onAdCompleted();
+        } else {
+          setSecondsRemaining((prev) => prev - 1);
+        }
       }, 1000);
       return () => clearTimeout(timer);
-    } else {
-      // Reached 0 - Trigger completion sequence & auto-return
-      setIsCompleted(true);
-      soundFX.playLevelUp();
-
-      try {
-        confetti({
-          particleCount: 80,
-          spread: 90,
-          origin: { y: 0.55 }
-        });
-      } catch {}
-
-      // Auto close and return to leaderboard seamlessly after 600ms transition
-      const closeTimer = setTimeout(() => {
-        onAdCompleted();
-      }, 600);
-
-      return () => clearTimeout(closeTimer);
     }
   }, [isOpen, secondsRemaining, isCompleted, onAdCompleted]);
 

@@ -105,6 +105,24 @@ export const AvatarFrameRenderer: React.FC<AvatarFrameRendererProps> = ({
         badgeLabel = 'GRANDMASTER';
         badgeClass = 'bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 text-slate-950 font-black';
         break;
+      case 'frame-galactic':
+        frameBorderClass = 'border-4 border-fuchsia-400 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500';
+        frameGlowClass = 'ring-4 ring-fuchsia-400/80 shadow-2xl shadow-purple-600/80 animate-pulse';
+        badgeLabel = 'GALACTIC';
+        badgeClass = 'bg-gradient-to-r from-indigo-700 via-purple-600 to-pink-500 text-white font-black';
+        break;
+      case 'frame-cyberpunk':
+        frameBorderClass = 'border-4 border-emerald-400 bg-gradient-to-tr from-emerald-500 via-teal-400 to-cyan-500';
+        frameGlowClass = 'ring-4 ring-emerald-400/80 shadow-2xl shadow-emerald-500/80 animate-pulse';
+        badgeLabel = 'CYBERPUNK';
+        badgeClass = 'bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-400 text-slate-950 font-black';
+        break;
+      case 'frame-crownjewel':
+        frameBorderClass = 'border-4 border-yellow-300 bg-gradient-to-tr from-amber-500 via-yellow-300 to-amber-400';
+        frameGlowClass = 'ring-4 ring-yellow-400/90 shadow-2xl shadow-yellow-500/90 animate-pulse';
+        badgeLabel = 'SOVEREIGN';
+        badgeClass = 'bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 text-slate-950 font-black';
+        break;
       case 'frame-diamond':
         frameBorderClass = 'border-4 border-purple-400 bg-gradient-to-tr from-purple-600 via-pink-500 to-indigo-400';
         frameGlowClass = 'ring-4 ring-purple-400/80 shadow-2xl shadow-purple-500/60';

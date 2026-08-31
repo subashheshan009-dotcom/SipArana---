@@ -231,6 +231,253 @@ export const AVATAR_FRAMES: AvatarFrame[] = [
       badgeStyle: 'bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 text-slate-950 font-black',
       bannerText: 'GRANDMASTER'
     }
+  },
+  {
+    id: 'frame-galactic',
+    name: 'Galactic Nebula Cosmic Frame',
+    unlockLevel: 1,
+    tier: 'rank_exclusive',
+    icon: '🔮✨',
+    description: 'Deep cosmic violet aura with spinning starlight supernova dust (Lucky Spin Reward)',
+    themeStyle: {
+      outerBorder: 'border-4 border-fuchsia-400',
+      glow: 'shadow-2xl shadow-fuchsia-500/80 ring-4 ring-indigo-400/80 animate-pulse',
+      cornerAccent: 'bg-fuchsia-400',
+      badgeStyle: 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white font-black',
+      bannerText: 'GALACTIC'
+    }
+  },
+  {
+    id: 'frame-cyberpunk',
+    name: 'Cyberpunk Neon Laser Frame',
+    unlockLevel: 1,
+    tier: 'rank_exclusive',
+    icon: '⚡🛡️',
+    description: 'High-voltage emerald laser grid with cybernetic pulse circuit (Lucky Spin Reward)',
+    themeStyle: {
+      outerBorder: 'border-4 border-emerald-400',
+      glow: 'shadow-2xl shadow-emerald-500/80 ring-4 ring-teal-300/80',
+      cornerAccent: 'bg-emerald-400',
+      badgeStyle: 'bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-400 text-slate-950 font-black',
+      bannerText: 'CYBERPUNK'
+    }
+  },
+  {
+    id: 'frame-crownjewel',
+    name: 'Crown Jewel Sovereign Imperial Frame',
+    unlockLevel: 1,
+    tier: 'rank_exclusive',
+    icon: '👑💎',
+    description: 'Ruby-studded 24K imperial gold filigree with eternal celestial glow (Lucky Spin Jackpot)',
+    themeStyle: {
+      outerBorder: 'border-4 border-yellow-300',
+      glow: 'shadow-2xl shadow-yellow-400/90 ring-4 ring-amber-400 animate-pulse',
+      cornerAccent: 'bg-yellow-300',
+      badgeStyle: 'bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 text-slate-950 font-black',
+      bannerText: 'SOVEREIGN'
+    }
+  }
+];
+
+export interface InstitutionAchiever {
+  id: string;
+  rank: number;
+  name: string;
+  shortName: string;
+  category: 'National High School' | 'Collegiate University' | 'International School' | 'Primary / Junior College';
+  countryCode: string;
+  countryFlag: string;
+  countryName: string;
+  city: string;
+  totalStudents: number;
+  totalXP: number;
+  averageAccuracy: number;
+  topStream: string;
+  cheersCount: number;
+  shieldBadge: string;
+  crestColor: string;
+}
+
+export const TOP_INSTITUTIONS_LIST: InstitutionAchiever[] = [
+  {
+    id: 'inst-1',
+    rank: 1,
+    name: 'Royal College, Colombo',
+    shortName: 'Royal College',
+    category: 'National High School',
+    countryCode: 'LK',
+    countryFlag: '🇱🇰',
+    countryName: 'Sri Lanka',
+    city: 'Colombo 07',
+    totalStudents: 1420,
+    totalXP: 184500,
+    averageAccuracy: 94.8,
+    topStream: 'Physical Science (Maths)',
+    cheersCount: 2840,
+    shieldBadge: '👑 Royal Blue & Gold Crest',
+    crestColor: 'from-blue-600 via-yellow-500 to-blue-700'
+  },
+  {
+    id: 'inst-2',
+    rank: 2,
+    name: 'Ananda College, Colombo',
+    shortName: 'Ananda College',
+    category: 'National High School',
+    countryCode: 'LK',
+    countryFlag: '🇱🇰',
+    countryName: 'Sri Lanka',
+    city: 'Colombo 10',
+    totalStudents: 1380,
+    totalXP: 176200,
+    averageAccuracy: 94.2,
+    topStream: 'Biological Science (Bio)',
+    cheersCount: 2610,
+    shieldBadge: '🦁 Maroon & Gold Standard',
+    crestColor: 'from-red-700 via-amber-500 to-red-800'
+  },
+  {
+    id: 'inst-3',
+    rank: 3,
+    name: 'University of Moratuwa',
+    shortName: 'UoM Engineering',
+    category: 'Collegiate University',
+    countryCode: 'LK',
+    countryFlag: '🇱🇰',
+    countryName: 'Sri Lanka',
+    city: 'Moratuwa',
+    totalStudents: 980,
+    totalXP: 169800,
+    averageAccuracy: 97.4,
+    topStream: 'Computer Science & AI',
+    cheersCount: 3120,
+    shieldBadge: '⚡ Tech & Innovation Shield',
+    crestColor: 'from-cyan-600 via-blue-600 to-indigo-700'
+  },
+  {
+    id: 'inst-4',
+    rank: 4,
+    name: 'Musaeus College, Colombo',
+    shortName: 'Musaeus College',
+    category: 'National High School',
+    countryCode: 'LK',
+    countryFlag: '🇱🇰',
+    countryName: 'Sri Lanka',
+    city: 'Colombo 07',
+    totalStudents: 1120,
+    totalXP: 154300,
+    averageAccuracy: 93.6,
+    topStream: 'Biological Science (Bio)',
+    cheersCount: 1980,
+    shieldBadge: '🌺 Blue & White Lotus Crest',
+    crestColor: 'from-blue-500 via-sky-400 to-indigo-600'
+  },
+  {
+    id: 'inst-5',
+    rank: 5,
+    name: 'Nalanda College, Colombo',
+    shortName: 'Nalanda College',
+    category: 'National High School',
+    countryCode: 'LK',
+    countryFlag: '🇱🇰',
+    countryName: 'Sri Lanka',
+    city: 'Colombo 10',
+    totalStudents: 1060,
+    totalXP: 148900,
+    averageAccuracy: 92.9,
+    topStream: 'Technology & ICT',
+    cheersCount: 1840,
+    shieldBadge: '☀️ Maroon & Silver Crest',
+    crestColor: 'from-red-800 via-slate-400 to-red-900'
+  },
+  {
+    id: 'inst-6',
+    rank: 6,
+    name: 'University of Cambridge',
+    shortName: 'Cambridge',
+    category: 'Collegiate University',
+    countryCode: 'UK',
+    countryFlag: '🇬🇧',
+    countryName: 'United Kingdom',
+    city: 'Cambridge',
+    totalStudents: 740,
+    totalXP: 142600,
+    averageAccuracy: 98.2,
+    topStream: 'Natural Sciences & Math',
+    cheersCount: 2450,
+    shieldBadge: '🏰 Cambridge Blue Crest',
+    crestColor: 'from-teal-600 via-cyan-500 to-blue-700'
+  },
+  {
+    id: 'inst-7',
+    rank: 7,
+    name: 'Indian Institute of Technology (IIT Bombay)',
+    shortName: 'IIT Bombay',
+    category: 'Collegiate University',
+    countryCode: 'IN',
+    countryFlag: '🇮🇳',
+    countryName: 'India',
+    city: 'Mumbai',
+    totalStudents: 890,
+    totalXP: 139400,
+    averageAccuracy: 97.8,
+    topStream: 'Advanced Physics & JEE Tech',
+    cheersCount: 2190,
+    shieldBadge: '🔥 IIT Excellence Wheel',
+    crestColor: 'from-orange-600 via-amber-500 to-red-700'
+  },
+  {
+    id: 'inst-8',
+    rank: 8,
+    name: 'Trinity College, Kandy',
+    shortName: 'Trinity Kandy',
+    category: 'National High School',
+    countryCode: 'LK',
+    countryFlag: '🇱🇰',
+    countryName: 'Sri Lanka',
+    city: 'Kandy',
+    totalStudents: 920,
+    totalXP: 132100,
+    averageAccuracy: 92.1,
+    topStream: 'Physical Science (Maths)',
+    cheersCount: 1720,
+    shieldBadge: '🦁 Red, Gold & Blue Lion',
+    crestColor: 'from-red-600 via-amber-400 to-blue-600'
+  },
+  {
+    id: 'inst-9',
+    rank: 9,
+    name: 'Visakha Vidyalaya, Colombo',
+    shortName: 'Visakha Vidyalaya',
+    category: 'National High School',
+    countryCode: 'LK',
+    countryFlag: '🇱🇰',
+    countryName: 'Sri Lanka',
+    city: 'Colombo 04',
+    totalStudents: 980,
+    totalXP: 129700,
+    averageAccuracy: 94.0,
+    topStream: 'Commerce & Law',
+    cheersCount: 1680,
+    shieldBadge: '🌸 Gold & Blue Crest',
+    crestColor: 'from-yellow-500 via-blue-600 to-amber-600'
+  },
+  {
+    id: 'inst-10',
+    rank: 10,
+    name: 'Massachusetts Institute of Technology (MIT)',
+    shortName: 'MIT',
+    category: 'Collegiate University',
+    countryCode: 'US',
+    countryFlag: '🇺🇸',
+    countryName: 'United States',
+    city: 'Cambridge, MA',
+    totalStudents: 620,
+    totalXP: 125400,
+    averageAccuracy: 98.9,
+    topStream: 'Artificial Intelligence & Quantum',
+    cheersCount: 2310,
+    shieldBadge: '⚙️ Cardinal & Grey Seal',
+    crestColor: 'from-red-700 via-slate-400 to-zinc-800'
   }
 ];
 

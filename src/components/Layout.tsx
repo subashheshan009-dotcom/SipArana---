@@ -722,7 +722,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
               <button
                 id="nav-item-dashboard"
                 onClick={() => onNavigate('dashboard')}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
+                className={`w-full min-h-[48px] flex items-center justify-between px-4 py-3 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer ${
                   isActive
                     ? isGrade5
                       ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs shadow-orange-500/25 ring-1 ring-amber-400/50'
@@ -730,9 +730,9 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                     : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:translate-x-0.5'
                 }`}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                       isActive
                         ? 'bg-white/20 text-white'
                         : isGrade5
@@ -740,12 +740,12 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                         : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-4 h-4 flex-shrink-0" />
                   </div>
-                  <div className="text-left leading-tight">
-                    <div className="font-bold text-[13px]">{getNavLabel(dashItem)}</div>
+                  <div className="text-left min-w-0 flex-1 leading-tight">
+                    <div className="font-bold text-[13px] truncate">{getNavLabel(dashItem)}</div>
                     <span
-                      className={`text-[10px] block font-normal leading-none mt-0.5 ${
+                      className={`text-[10.5px] block font-normal leading-none mt-0.5 truncate ${
                         isActive ? 'text-blue-100' : 'text-slate-400'
                       }`}
                     >
@@ -766,29 +766,29 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                 key={group.id}
                 className={`rounded-2xl border transition-all duration-200 ${
                   group.pastelBorder
-                } ${group.pastelBg} p-1.5 shadow-2xs`}
+                } ${group.pastelBg} p-2 shadow-2xs`}
               >
                 {/* Section Header Accordion Trigger */}
                 <button
                   type="button"
                   id={`nav-group-toggle-${group.id}`}
                   onClick={() => toggleGroup(group.id)}
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer text-left"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-sm select-none">{group.icon}</span>
-                    <div className="min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <span className="text-sm select-none flex-shrink-0">{group.icon}</span>
+                    <div className="min-w-0 flex-1">
                       <span
                         className={`text-[11px] font-black tracking-wide uppercase block truncate ${group.pastelText}`}
                       >
                         {getGroupTitle(group)}
                       </span>
-                      <span className="text-[9.5px] font-medium text-slate-500 dark:text-slate-400 block leading-none truncate">
+                      <span className="text-[9.5px] font-medium text-slate-500 dark:text-slate-400 block leading-none truncate mt-0.5">
                         {getGroupSubTitle(group)}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0 text-slate-400">
+                  <div className="flex items-center gap-1.5 flex-shrink-0 text-slate-400 ml-2">
                     {hasActiveChild && (
                       <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                     )}
@@ -802,7 +802,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
 
                 {/* Group Items */}
                 {!isCollapsed && (
-                  <div className="mt-1 space-y-0.5 pt-0.5 border-t border-black/5 dark:border-white/5">
+                  <div className="mt-1.5 space-y-1 pt-1 border-t border-black/5 dark:border-white/5">
                     {group.items.map((item) => {
                       const Icon = item.icon;
                       const isActive = current === item.id;
@@ -811,7 +811,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                           key={item.id}
                           id={`nav-item-${item.id}`}
                           onClick={() => onNavigate(item.id)}
-                          className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all duration-150 cursor-pointer ${
+                          className={`w-full min-h-[44px] flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-150 cursor-pointer ${
                             isActive
                               ? isGrade5
                                 ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs font-semibold'
@@ -819,7 +819,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                               : 'text-slate-700 dark:text-slate-200 hover:bg-white/80 dark:hover:bg-slate-800/80 hover:shadow-2xs font-medium'
                           }`}
                         >
-                          <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
                             <Icon
                               className={`w-4 h-4 flex-shrink-0 ${
                                 isActive
@@ -829,7 +829,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                                   : 'text-slate-500 dark:text-slate-400'
                               }`}
                             />
-                            <div className="text-left min-w-0 leading-tight">
+                            <div className="text-left min-w-0 flex-1 leading-tight">
                               <div className="text-[12.5px] font-semibold truncate">
                                 {getNavLabel(item)}
                               </div>
@@ -843,7 +843,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                             </div>
                           </div>
 
-                          <div className="flex-shrink-0 ml-1.5">
+                          <div className="flex-shrink-0 ml-2">
                             {renderBadge(item, isActive)}
                           </div>
                         </button>
@@ -856,54 +856,57 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
           })}
 
           {/* Quick Settings & Key Players footer shortcuts */}
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+          <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
             {/* Key Players Button */}
             <button
               id="nav-item-key-players"
               onClick={() => onNavigate('key_players')}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
+              className={`w-full min-h-[48px] flex items-center justify-between px-4 py-3 rounded-xl text-xs transition cursor-pointer ${
                 current === 'key_players' || current === 'premium'
                   ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 text-slate-950 font-bold shadow-xs'
                   : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 font-semibold'
               }`}
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
-                  <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-600 dark:text-amber-400" />
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                  <Crown className="w-4 h-4 fill-amber-500 text-amber-600 dark:text-amber-400" />
                 </div>
-                <div className="text-left leading-tight min-w-0">
-                  <div className="text-[12.5px] font-bold flex items-center gap-1">
-                    <span>{language === 'si' ? 'විශිෂ්ටයින් (Key Players)' : 'Key Players'}</span>
+                <div className="text-left min-w-0 flex-1 leading-tight">
+                  <div className="text-[12.5px] font-bold truncate">
+                    {language === 'si' ? 'විශිෂ්ටයින් (Key Players)' : 'Key Players'}
                   </div>
-                  <span className="text-[9.5px] opacity-85 block truncate">
+                  <span className="text-[9.5px] opacity-85 block truncate mt-0.5">
                     {language === 'si' ? 'ඉහළම සාධකයින් & ජයග්‍රාහක පුවරුව' : 'Top Achievers & Leaderboard'}
                   </span>
                 </div>
               </div>
-              <span className="text-sm flex-shrink-0 ml-1">👑</span>
+              <ChevronRight className="w-3.5 h-3.5 opacity-60 flex-shrink-0 ml-2" />
             </button>
 
             {/* Settings Button */}
             <button
               id="nav-item-settings"
               onClick={() => onNavigate('settings')}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition ${
+              className={`w-full min-h-[48px] flex items-center justify-between px-4 py-3 rounded-xl text-xs transition cursor-pointer ${
                 current === 'settings'
                   ? 'bg-blue-600 text-white font-semibold shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'
               }`}
             >
-              <div className="flex items-center gap-2.5">
-                <Settings className="w-4 h-4 text-slate-500" />
-                <div className="text-left leading-tight">
-                  <div className="text-[12.5px] font-semibold">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 text-slate-500">
+                  <Settings className="w-4 h-4" />
+                </div>
+                <div className="text-left min-w-0 flex-1 leading-tight">
+                  <div className="text-[12.5px] font-semibold truncate">
                     {getNavLabel(RAW_NAV_ITEMS.settings)}
                   </div>
-                  <span className="text-[9.5px] text-slate-400 block">
+                  <span className="text-[9.5px] text-slate-400 block truncate mt-0.5">
                     {getSubLabel(RAW_NAV_ITEMS.settings)}
                   </span>
                 </div>
               </div>
+              <ChevronRight className="w-3.5 h-3.5 opacity-60 flex-shrink-0 ml-2" />
             </button>
           </div>
         </nav>
@@ -1527,19 +1530,21 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                         onNavigate('dashboard');
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${
+                      className={`w-full min-h-[46px] flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
                         isActive
                           ? isGrade5
-                            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold'
-                            : 'bg-blue-600 text-white font-bold'
+                            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-xs'
+                            : 'bg-blue-600 text-white font-bold shadow-xs'
                           : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                       }`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className="w-4 h-4" />
-                        <div className="text-left">
-                          <div>{getNavLabel(dashItem)}</div>
-                          <span className="text-[9.5px] opacity-75 block font-normal">{getSubLabel(dashItem)}</span>
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-white/20 text-white' : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400'}`}>
+                          <Icon className="w-4 h-4 flex-shrink-0" />
+                        </div>
+                        <div className="text-left min-w-0 flex-1 leading-tight">
+                          <div className="truncate font-bold text-[13px]">{getNavLabel(dashItem)}</div>
+                          <span className="text-[10px] opacity-75 block font-normal truncate mt-0.5">{getSubLabel(dashItem)}</span>
                         </div>
                       </div>
                     </button>
@@ -1552,24 +1557,24 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                   return (
                     <div
                       key={group.id}
-                      className={`rounded-2xl border ${group.pastelBorder} ${group.pastelBg} p-1.5`}
+                      className={`rounded-2xl border ${group.pastelBorder} ${group.pastelBg} p-2`}
                     >
                       <button
                         type="button"
                         onClick={() => toggleGroup(group.id)}
-                        className="w-full flex items-center justify-between px-2 py-1 rounded-xl text-left"
+                        className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left cursor-pointer"
                       >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-sm">{group.icon}</span>
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <span className="text-sm flex-shrink-0">{group.icon}</span>
                           <span className={`text-[11px] font-black uppercase truncate ${group.pastelText}`}>
                             {getGroupTitle(group)}
                           </span>
                         </div>
-                        {isCollapsed ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-400" />}
+                        {isCollapsed ? <ChevronDown className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 ml-1.5" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 ml-1.5" />}
                       </button>
 
                       {!isCollapsed && (
-                        <div className="mt-1 space-y-0.5 pt-1 border-t border-black/5 dark:border-white/5">
+                        <div className="mt-1 space-y-1 pt-1 border-t border-black/5 dark:border-white/5">
                           {group.items.map((item) => {
                             const Icon = item.icon;
                             const isActive = current === item.id;
@@ -1580,22 +1585,24 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                                   onNavigate(item.id);
                                   setMobileMenuOpen(false);
                                 }}
-                                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition ${
+                                className={`w-full min-h-[44px] flex items-center justify-between px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
                                   isActive
                                     ? isGrade5
-                                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold'
-                                      : 'bg-blue-600 text-white font-bold'
+                                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-xs'
+                                      : 'bg-blue-600 text-white font-bold shadow-xs'
                                     : 'text-slate-700 dark:text-slate-200 hover:bg-white/70 dark:hover:bg-slate-800'
                                 }`}
                               >
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
-                                  <div className="text-left min-w-0">
-                                    <div className="font-semibold truncate text-[12px]">{getNavLabel(item)}</div>
-                                    <span className="text-[9px] opacity-75 block font-normal truncate">{getSubLabel(item)}</span>
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                  <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                                  <div className="text-left min-w-0 flex-1 leading-tight">
+                                    <div className="font-semibold truncate text-[12.5px]">{getNavLabel(item)}</div>
+                                    <span className="text-[9.5px] opacity-75 block font-normal truncate mt-0.5">{getSubLabel(item)}</span>
                                   </div>
                                 </div>
-                                {renderBadge(item, isActive)}
+                                <div className="flex-shrink-0 ml-2">
+                                  {renderBadge(item, isActive)}
+                                </div>
                               </button>
                             );
                           })}
@@ -1606,34 +1613,42 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                 })}
 
                 {/* Mobile Settings & Key Players */}
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+                <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
                   <button
                     onClick={() => {
                       onNavigate('key_players');
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs text-amber-900 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60"
+                    className="w-full min-h-[48px] flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs text-amber-900 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 cursor-pointer"
                   >
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-md bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
-                        <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-600 dark:text-amber-300" />
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 flex-shrink-0">
+                        <Crown className="w-4 h-4 fill-amber-500 text-amber-600 dark:text-amber-300" />
                       </div>
-                      <div className="text-left leading-tight">
-                        <span className="block">{language === 'si' ? 'Key Players (විශිෂ්ටයින්)' : 'Key Players'}</span>
-                        <span className="text-[9px] font-normal opacity-80 block">{language === 'si' ? 'ජයග්‍රාහක පුවරුව' : 'Top Achievers & Leaderboard'}</span>
+                      <div className="text-left leading-tight min-w-0 flex-1">
+                        <span className="block truncate text-[12.5px] font-bold">{language === 'si' ? 'Key Players (විශිෂ්ටයින්)' : 'Key Players'}</span>
+                        <span className="text-[9.5px] font-normal opacity-80 block truncate mt-0.5">{language === 'si' ? 'ජයග්‍රාහක පුවරුව' : 'Top Achievers & Leaderboard'}</span>
                       </div>
                     </div>
-                    <span className="text-sm">👑</span>
+                    <ChevronRight className="w-3.5 h-3.5 opacity-60 flex-shrink-0 ml-2" />
                   </button>
                   <button
                     onClick={() => {
                       onNavigate('settings');
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold"
+                    className="w-full min-h-[48px] flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold cursor-pointer"
                   >
-                    <Settings className="w-4 h-4 text-slate-500" />
-                    <span>{getNavLabel(RAW_NAV_ITEMS.settings)}</span>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 flex-shrink-0">
+                        <Settings className="w-4 h-4" />
+                      </div>
+                      <div className="text-left leading-tight min-w-0 flex-1">
+                        <span className="block truncate text-[12.5px] font-semibold">{getNavLabel(RAW_NAV_ITEMS.settings)}</span>
+                        <span className="text-[9.5px] font-normal text-slate-400 block truncate mt-0.5">{getSubLabel(RAW_NAV_ITEMS.settings)}</span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-3.5 h-3.5 opacity-60 flex-shrink-0 ml-2" />
                   </button>
                 </div>
               </div>

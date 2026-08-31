@@ -29,8 +29,10 @@ import type { PageId } from '@/components/Layout';
 import { GlobalRankCard } from '@/components/keyPlayers/GlobalRankCard';
 import { TestScoreProgressionChart } from '@/components/keyPlayers/TestScoreProgressionChart';
 import { DailyAdRewardSection } from '@/components/keyPlayers/DailyAdRewardSection';
+import { ReferralAndSocialShareSection } from '@/components/keyPlayers/ReferralAndSocialShareSection';
 import { Top3Podium } from '@/components/keyPlayers/Top3Podium';
 import { Top50Leaderboard } from '@/components/keyPlayers/Top50Leaderboard';
+import { TopInstitutionsLeaderboard } from '@/components/keyPlayers/TopInstitutionsLeaderboard';
 import { StudyScheduleTable } from '@/components/keyPlayers/StudyScheduleTable';
 import { RankTiersShowcase } from '@/components/keyPlayers/RankTiersShowcase';
 import { ProfileCustomizerModal } from '@/components/keyPlayers/ProfileCustomizerModal';
@@ -44,6 +46,7 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
   const { language } = useLanguage();
   const { leaderboard, top3, refreshLeaderboard } = useLeaderboard();
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+  const [activeLeaderboardTab, setActiveLeaderboardTab] = useState<'scholars' | 'institutions'>('scholars');
 
   const handleCheerStudent = async (id: string) => {
     // Reward user +5 XP for supporting fellow global scholars
@@ -55,9 +58,7 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
   return (
     <div id="key-players-page" className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-9 max-w-7xl mx-auto">
       {/* =========================================================================
-          SECTION 1: GLOWING "WATCH AD (+100 XP) 🎬" WITH 20 DAILY LIMIT + DAILY CLAIM (10 XP)
-          Placed at the VERY TOP of the page as Section 1 with prominent live counter,
-          progress bar, and +100 XP claim trigger.
+          SECTION 1: GLOWING "WATCH AD & LUCKY SPIN WHEEL 🎡" WITH 20 DAILY LIMIT + DAILY CLAIM
           ========================================================================= */}
       <section id="section-daily-ad-rewards" className="space-y-3">
         <DailyAdRewardSection
@@ -68,8 +69,25 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
       </section>
 
       {/* =========================================================================
-          SECTION 2: TOP 3 PODIUM (3D VISUAL GOLD, SILVER, BRONZE MASTER FRAMES)
-          Directly beneath the Watch Ad section (rendered with real genuine users)
+          SECTION 2: VIRAL GROWTH & REFERRAL ACCELERATOR (Invite Friends + WhatsApp Rank Share)
+          ========================================================================= */}
+      <section id="section-viral-referral-sharing" className="space-y-3">
+        <div className="flex items-center gap-2 px-1">
+          <Sparkles className="w-4 h-4 text-emerald-400" />
+          <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
+            Viral Growth & Social Rank Sharing (+200 XP Referrals)
+          </h2>
+        </div>
+        <ReferralAndSocialShareSection
+          currentRank={14}
+          onXPClaimed={() => {
+            refreshLeaderboard();
+          }}
+        />
+      </section>
+
+      {/* =========================================================================
+          SECTION 3: TOP 3 PODIUM (3D VISUAL GOLD, SILVER, BRONZE MASTER FRAMES)
           ========================================================================= */}
       <section id="section-top-3-podium" className="space-y-3">
         <div className="flex items-center gap-2 px-1">
@@ -85,20 +103,56 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
       </section>
 
       {/* =========================================================================
-          SECTION 3: CLEAN TOP 50 GLOBAL LEADERBOARD TABLE
-          Directly beneath the podium
+          SECTION 4: UNIFIED LEADERBOARDS: TOP 50 SCHOLARS 🏆 VS TOP INSTITUTIONS 🏫
           ========================================================================= */}
-      <section id="section-top-50-leaderboard" className="space-y-3">
-        <div className="flex items-center gap-2 px-1">
-          <Trophy className="w-4 h-4 text-amber-400" />
-          <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
-            Top 50 Unified Global Leaderboard (100% Real Live Accounts)
-          </h2>
+      <section id="section-unified-leaderboard-tabs" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-amber-400" />
+            <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
+              Global Ranks & Inter-School Battle Arena
+            </h2>
+          </div>
+
+          {/* Tab Switcher for Scholars vs Institutions */}
+          <div className="flex items-center p-1 bg-slate-900 rounded-2xl border border-slate-800 self-start sm:self-auto shadow-inner">
+            <button
+              type="button"
+              onClick={() => setActiveLeaderboardTab('scholars')}
+              className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer ${
+                activeLeaderboardTab === 'scholars'
+                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5" />
+              <span>Top 50 Scholars 🏆</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveLeaderboardTab('institutions')}
+              className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer ${
+                activeLeaderboardTab === 'institutions'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Top Institutions 🏫</span>
+            </button>
+          </div>
         </div>
-        <Top50Leaderboard
-          students={leaderboard}
-          onCheerStudent={handleCheerStudent}
-        />
+
+        {activeLeaderboardTab === 'scholars' ? (
+          <Top50Leaderboard
+            students={leaderboard}
+            onCheerStudent={handleCheerStudent}
+          />
+        ) : (
+          <TopInstitutionsLeaderboard
+            onOpenProfileCustomizer={() => setIsCustomizerOpen(true)}
+          />
+        )}
       </section>
 
       {/* =========================================================================
