@@ -158,11 +158,9 @@ export default function SettingsPage() {
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold">
                 {profile?.grade} ශ්‍රේණිය
               </span>
-              {profile?.isPremium && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 font-bold">
-                  PRO
-                </span>
-              )}
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-extrabold flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" /> 100% FREE SCHOLAR
+              </span>
             </div>
             <p className="text-xs text-slate-500">{profile?.email} • {profile?.school}</p>
           </div>

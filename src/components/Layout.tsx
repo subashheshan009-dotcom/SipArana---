@@ -81,6 +81,7 @@ export type PageId =
   | 'campus'
   | 'utilities'
   | 'news'
+  | 'key_players'
   | 'premium'
   | 'settings';
 
@@ -288,13 +289,21 @@ const RAW_NAV_ITEMS: Record<PageId, NavItemDef> = {
     siLabel: 'පාඩම් මෙවලම්',
     taLabel: 'படிப்பு கருவிகள்'
   },
-  premium: {
-    id: 'premium',
+  key_players: {
+    id: 'key_players',
     icon: Crown,
-    enLabel: 'SipArana Pro',
-    siLabel: 'ප්‍රෝ සාමාජිකත්වය',
-    taLabel: 'புரோ உறுப்பினர்',
-    isPro: true
+    enLabel: 'Key Players',
+    siLabel: 'විශිෂ්ටයින් (Key Players)',
+    taLabel: 'சிறந்த சாதனையாளர்கள்',
+    badgeText: 'TOP 10',
+    badgeType: 'default'
+  },
+  premium: {
+    id: 'key_players',
+    icon: Crown,
+    enLabel: 'Key Players',
+    siLabel: 'විශිෂ්ටයින් (Key Players)',
+    taLabel: 'சிறந்த சாதனையாளர்கள்'
   },
   settings: {
     id: 'settings',
@@ -388,6 +397,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
     'quizzes',
     'ai_tutor',
     'offline_syllabus',
+    'key_players',
     'settings'
   ];
 
@@ -510,6 +520,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
         pastelBorder: 'border-emerald-200/70 dark:border-emerald-800/50',
         pastelText: 'text-emerald-800 dark:text-emerald-200',
         items: [
+          RAW_NAV_ITEMS.key_players,
           RAW_NAV_ITEMS.analytics,
           isUniversityStudent ? RAW_NAV_ITEMS.university : RAW_NAV_ITEMS.campus,
           {
@@ -844,35 +855,33 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
             );
           })}
 
-          {/* Quick Settings & Pro footer shortcuts */}
+          {/* Quick Settings & Key Players footer shortcuts */}
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
-            {/* Pro Button if not Grade 5 */}
-            {!isGrade5 && (
-              <button
-                id="nav-item-premium"
-                onClick={() => onNavigate('premium')}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition ${
-                  current === 'premium'
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-xs'
-                    : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 font-semibold'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Crown className="w-4 h-4 text-amber-500" />
-                  <div className="text-left leading-tight">
-                    <div className="text-[12.5px] font-bold">
-                      {language === 'si' ? 'සිප්අරණ ප්‍රෝ' : 'SipArana Pro'}
-                    </div>
-                    <span className="text-[9.5px] opacity-80 block">
-                      {language === 'si' ? 'විශේෂ පහසුකම්' : 'Unlock All Features'}
-                    </span>
-                  </div>
+            {/* Key Players Button */}
+            <button
+              id="nav-item-key-players"
+              onClick={() => onNavigate('key_players')}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
+                current === 'key_players' || current === 'premium'
+                  ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 text-slate-950 font-bold shadow-xs'
+                  : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 font-semibold'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                  <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-600 dark:text-amber-400" />
                 </div>
-                <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500 text-white">
-                  PRO
-                </span>
-              </button>
-            )}
+                <div className="text-left leading-tight min-w-0">
+                  <div className="text-[12.5px] font-bold flex items-center gap-1">
+                    <span>{language === 'si' ? 'විශිෂ්ටයින් (Key Players)' : 'Key Players'}</span>
+                  </div>
+                  <span className="text-[9.5px] opacity-85 block truncate">
+                    {language === 'si' ? 'ඉහළම සාධකයින් & ජයග්‍රාහක පුවරුව' : 'Top Achievers & Leaderboard'}
+                  </span>
+                </div>
+              </div>
+              <span className="text-sm flex-shrink-0 ml-1">👑</span>
+            </button>
 
             {/* Settings Button */}
             <button
@@ -1350,27 +1359,32 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                       </div>
                     </div>
 
-                    {/* Pro Tier Status */}
+                    {/* Key Players & Free Scholar Status */}
                     <button
                       type="button"
                       onClick={() => {
                         soundFX.playPop();
                         setShowProfileDropdown(false);
-                        onNavigate('premium');
+                        onNavigate('key_players');
                       }}
-                      className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-purple-500/15 border border-amber-400/50 flex items-center justify-between text-left cursor-pointer hover:border-amber-400 transition"
+                      className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-yellow-500/15 to-amber-500/10 border border-amber-400/50 flex items-center justify-between text-left cursor-pointer hover:border-amber-400 transition"
                     >
                       <div className="flex items-center gap-2">
-                        <Crown className="w-4 h-4 text-amber-500" />
+                        <div className="w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 flex-shrink-0">
+                          <Crown className="w-4 h-4 fill-amber-500 text-amber-600 dark:text-amber-300" />
+                        </div>
                         <div>
-                          <span className="text-xs font-extrabold text-amber-700 dark:text-amber-300 block">SipArana Pro Pass</span>
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                            {profile.isPro ? 'Active Membership' : 'Upgrade for Unlimited AI Tools'}
+                          <span className="text-xs font-extrabold text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                            <span>Key Players Hall of Fame</span>
+                            <span className="text-xs">👑</span>
+                          </span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
+                            {language === 'si' ? 'ඉහළම සාධකයින් & ඔබේ ශ්‍රේණිගත කිරීම' : 'Top Achievers & Your Live Rank'}
                           </span>
                         </div>
                       </div>
-                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black">
-                        {profile.isPro ? 'PRO' : 'UPGRADE'}
+                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black flex items-center gap-0.5">
+                        <span>TOP 10</span>
                       </span>
                     </button>
 
@@ -1591,23 +1605,26 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
                   );
                 })}
 
-                {/* Mobile Settings & Pro */}
+                {/* Mobile Settings & Key Players */}
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
-                  {!isGrade5 && (
-                    <button
-                      onClick={() => {
-                        onNavigate('premium');
-                        setMobileMenuOpen(false);
-                      }}
-                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs text-amber-700 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/40"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Crown className="w-4 h-4 text-amber-500" />
-                        <span>SipArana Pro</span>
+                  <button
+                    onClick={() => {
+                      onNavigate('key_players');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs text-amber-900 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-md bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                        <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-600 dark:text-amber-300" />
                       </div>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500 text-white font-black">PRO</span>
-                    </button>
-                  )}
+                      <div className="text-left leading-tight">
+                        <span className="block">{language === 'si' ? 'Key Players (විශිෂ්ටයින්)' : 'Key Players'}</span>
+                        <span className="text-[9px] font-normal opacity-80 block">{language === 'si' ? 'ජයග්‍රාහක පුවරුව' : 'Top Achievers & Leaderboard'}</span>
+                      </div>
+                    </div>
+                    <span className="text-sm">👑</span>
+                  </button>
                   <button
                     onClick={() => {
                       onNavigate('settings');

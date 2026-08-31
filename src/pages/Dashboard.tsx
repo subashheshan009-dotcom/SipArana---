@@ -1398,7 +1398,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           </div>
 
           {/* Weekly Live Top Students Leaderboard */}
-          <LiveLeaderboardCard />
+          <LiveLeaderboardCard onNavigate={onNavigate} />
         </div>
       </div>
 

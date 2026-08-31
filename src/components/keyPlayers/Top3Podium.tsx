@@ -1,0 +1,233 @@
+import React from 'react';
+import { Crown, Trophy, Medal, Flame, Zap, CheckCircle2, GraduationCap, Globe, ThumbsUp } from 'lucide-react';
+import { soundFX } from '@/utils/audioUtils';
+import { AvatarFrameRenderer } from './AvatarFrameRenderer';
+import type { StudentAchiever } from '@/data/keyPlayersData';
+import confetti from 'canvas-confetti';
+
+interface Top3PodiumProps {
+  topStudents: StudentAchiever[];
+  onCheerStudent: (id: string) => void;
+}
+
+export const Top3Podium: React.FC<Top3PodiumProps> = ({
+  topStudents,
+  onCheerStudent
+}) => {
+  const rank1 = topStudents[0];
+  const rank2 = topStudents[1];
+  const rank3 = topStudents[2];
+
+  const handleCheer = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    soundFX.playPop();
+    try {
+      confetti({
+        particleCount: 35,
+        spread: 60,
+        origin: { y: 0.6 }
+      });
+    } catch {}
+    onCheerStudent(id);
+  };
+
+  if (!rank1) return null;
+
+  return (
+    <div id="top-3-podium-section" className="space-y-4">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center gap-2">
+          <Crown className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+          <h3 className="text-base sm:text-lg font-black text-white">
+            Top 3 Global Champions Podium (3D Master Frames)
+          </h3>
+        </div>
+        <span className="text-xs px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-extrabold">
+          WORLD APEX 🌍
+        </span>
+      </div>
+
+      {/* Podium Grid: #2 on left, #1 in center (tallest), #3 on right */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-4 lg:gap-6 items-end pt-6 max-w-full">
+        {/* RANK #2 - SILVER PODIUM */}
+        {rank2 && (
+          <div className="relative w-full max-w-full rounded-3xl bg-gradient-to-b from-slate-800/80 via-slate-900 to-slate-950 border-2 border-slate-300/60 p-5 sm:p-6 shadow-2xl flex flex-col items-center text-center space-y-3.5 order-2 md:order-1 ring-1 ring-slate-300/30 hover:scale-102 transition duration-300 min-w-0">
+            {/* Top Silver Rank Badge */}
+            <div className="absolute -top-3.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-slate-300 to-slate-100 text-slate-950 font-black text-[11px] sm:text-xs shadow-lg flex items-center gap-1 z-10">
+              <span>🥈 RANK #2</span>
+            </div>
+
+            <div className="pt-4 pb-1">
+              <AvatarFrameRenderer
+                avatarUrl={rank2.avatar}
+                name={rank2.name}
+                frameId="frame-silver"
+                rank={2}
+                size="lg"
+                showCrown={true}
+              />
+            </div>
+
+            <div className="space-y-1.5 w-full min-w-0">
+              <div className="flex items-center justify-center gap-1.5 flex-wrap px-1">
+                <h4 className="text-sm sm:text-base font-black text-slate-100 truncate max-w-[180px]">{rank2.name}</h4>
+                <span className="text-base flex-shrink-0" title={rank2.countryName}>{rank2.countryFlag}</span>
+                {rank2.isVerified && <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />}
+              </div>
+              <p className="text-xs text-slate-400 font-medium truncate max-w-full px-2">
+                {rank2.institution}
+              </p>
+              <div className="flex items-center justify-center">
+                <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300 font-bold inline-block border border-slate-700 max-w-[200px] truncate">
+                  {rank2.stream}
+                </span>
+              </div>
+            </div>
+
+            {/* Score Stats */}
+            <div className="w-full pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-center min-w-0">
+                <span className="text-[10px] text-slate-400 font-bold block truncate">XP SCORE</span>
+                <span className="text-xs sm:text-sm font-black text-slate-200 truncate block">{rank2.allTimeXP.toLocaleString()}</span>
+              </div>
+              <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-center min-w-0">
+                <span className="text-[10px] text-slate-400 font-bold block truncate">ACCURACY</span>
+                <span className="text-xs sm:text-sm font-black text-emerald-400 truncate block">{rank2.quizAccuracy}%</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={(e) => handleCheer(e, rank2.id)}
+              className="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer border border-slate-700 active:scale-95 shadow-xs"
+            >
+              <ThumbsUp className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
+              <span className="truncate">Cheer ({rank2.cheersCount})</span>
+            </button>
+          </div>
+        )}
+
+        {/* RANK #1 - GOLD PODIUM (TALLL & GLOWING) */}
+        {rank1 && (
+          <div className="relative w-full max-w-full rounded-3xl bg-gradient-to-b from-amber-950/80 via-slate-900 to-slate-950 border-2 border-yellow-400 p-6 sm:p-7 shadow-2xl flex flex-col items-center text-center space-y-4 order-1 md:order-2 ring-2 ring-yellow-400/50 shadow-yellow-500/20 transform md:-translate-y-3 hover:scale-103 transition duration-300 min-w-0">
+            {/* Top Gold Rank 1 Crown Badge */}
+            <div className="absolute -top-4.5 px-4 sm:px-5 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl flex items-center gap-1.5 animate-pulse z-10 whitespace-nowrap">
+              <Crown className="w-4 h-4 fill-slate-950 flex-shrink-0" />
+              <span>👑 SOVEREIGN RANK #1</span>
+            </div>
+
+            <div className="pt-5 pb-1">
+              <AvatarFrameRenderer
+                avatarUrl={rank1.avatar}
+                name={rank1.name}
+                frameId="frame-gold"
+                rank={1}
+                size="xl"
+                showCrown={true}
+                showTierTag={true}
+              />
+            </div>
+
+            <div className="space-y-1.5 w-full min-w-0">
+              <div className="flex items-center justify-center gap-1.5 flex-wrap px-1">
+                <h4 className="text-base sm:text-lg font-black text-yellow-300 truncate max-w-[200px]">{rank1.name}</h4>
+                <span className="text-lg flex-shrink-0" title={rank1.countryName}>{rank1.countryFlag}</span>
+                {rank1.isVerified && <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+              </div>
+              <p className="text-xs text-amber-200 font-semibold truncate max-w-full px-2">
+                {rank1.institution}
+              </p>
+              <div className="flex items-center justify-center gap-1.5 pt-0.5 flex-wrap px-1">
+                <span className="text-xs px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30 truncate max-w-[150px]">
+                  {rank1.stream}
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 font-bold truncate max-w-[120px]">
+                  {rank1.specialBadge}
+                </span>
+              </div>
+            </div>
+
+            {/* Score Stats */}
+            <div className="w-full pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2 sm:p-2.5 rounded-xl bg-slate-950/90 border border-yellow-500/30 text-center min-w-0">
+                <span className="text-[10px] text-amber-400 font-bold block truncate">ALL-TIME XP</span>
+                <span className="text-sm sm:text-base font-black text-yellow-300 truncate block">{rank1.allTimeXP.toLocaleString()}</span>
+              </div>
+              <div className="p-2 sm:p-2.5 rounded-xl bg-slate-950/90 border border-yellow-500/30 text-center min-w-0">
+                <span className="text-[10px] text-amber-400 font-bold block truncate">ACCURACY</span>
+                <span className="text-sm sm:text-base font-black text-emerald-400 truncate block">{rank1.quizAccuracy}%</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={(e) => handleCheer(e, rank1.id)}
+              className="w-full py-2.5 sm:py-3 px-3 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-400 hover:from-yellow-400 hover:to-amber-300 text-slate-950 text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md shadow-yellow-500/20 active:scale-95"
+            >
+              <ThumbsUp className="w-4 h-4 fill-slate-950 flex-shrink-0" />
+              <span className="truncate">Cheer Champion ({rank1.cheersCount})</span>
+            </button>
+          </div>
+        )}
+
+        {/* RANK #3 - BRONZE PODIUM */}
+        {rank3 && (
+          <div className="relative w-full max-w-full rounded-3xl bg-gradient-to-b from-amber-950/60 via-slate-900 to-slate-950 border-2 border-amber-700/70 p-5 sm:p-6 shadow-2xl flex flex-col items-center text-center space-y-3.5 order-3 md:order-3 ring-1 ring-amber-700/40 hover:scale-102 transition duration-300 min-w-0">
+            {/* Top Bronze Rank Badge */}
+            <div className="absolute -top-3.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-700 to-amber-500 text-amber-100 font-black text-[11px] sm:text-xs shadow-lg flex items-center gap-1 z-10">
+              <span>🥉 RANK #3</span>
+            </div>
+
+            <div className="pt-4 pb-1">
+              <AvatarFrameRenderer
+                avatarUrl={rank3.avatar}
+                name={rank3.name}
+                frameId="frame-bronze"
+                rank={3}
+                size="lg"
+                showCrown={true}
+              />
+            </div>
+
+            <div className="space-y-1.5 w-full min-w-0">
+              <div className="flex items-center justify-center gap-1.5 flex-wrap px-1">
+                <h4 className="text-sm sm:text-base font-black text-amber-200 truncate max-w-[180px]">{rank3.name}</h4>
+                <span className="text-base flex-shrink-0" title={rank3.countryName}>{rank3.countryFlag}</span>
+                {rank3.isVerified && <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />}
+              </div>
+              <p className="text-xs text-slate-400 font-medium truncate max-w-full px-2">
+                {rank3.institution}
+              </p>
+              <div className="flex items-center justify-center">
+                <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300 font-bold inline-block border border-slate-700 max-w-[200px] truncate">
+                  {rank3.stream}
+                </span>
+              </div>
+            </div>
+
+            {/* Score Stats */}
+            <div className="w-full pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-center min-w-0">
+                <span className="text-[10px] text-slate-400 font-bold block truncate">XP SCORE</span>
+                <span className="text-xs sm:text-sm font-black text-amber-300 truncate block">{rank3.allTimeXP.toLocaleString()}</span>
+              </div>
+              <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-center min-w-0">
+                <span className="text-[10px] text-slate-400 font-bold block truncate">ACCURACY</span>
+                <span className="text-xs sm:text-sm font-black text-emerald-400 truncate block">{rank3.quizAccuracy}%</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={(e) => handleCheer(e, rank3.id)}
+              className="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer border border-slate-700 active:scale-95 shadow-xs"
+            >
+              <ThumbsUp className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+              <span className="truncate">Cheer ({rank3.cheersCount})</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

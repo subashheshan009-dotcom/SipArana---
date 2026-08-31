@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserProfile, Stream, ExamLevel, Medium, SchoolGrade, StudentCategory, GlobalCountryCode, AppLanguage } from '@/types';
 import { getCountryByCode, getCurriculumById, getCountrySubdivisions } from '@/data/globalCurriculumData';
+import { syncUserWithBackend } from '@/services/leaderboardService';
 import {
   getUserStudyMemory,
   saveUserStudyMemory,
@@ -577,11 +578,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(normalizedUser);
         const mem = getUserStudyMemory(normalizedUser.email, normalizedUser);
         setStudyMemory(mem);
+        syncUserWithBackend(normalizedUser);
       } catch {
         const defaultUser: UserProfile = { ...DEFAULT_USERS.maths, hasCompletedOnboarding: true };
         setProfile(defaultUser);
         const mem = getUserStudyMemory(defaultUser.email, defaultUser);
         setStudyMemory(mem);
+        syncUserWithBackend(defaultUser);
       }
     } else {
       // Default to ready-to-use logged-in student profile so the entire dashboard & AI tools render immediately
@@ -594,6 +597,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       const mem = getUserStudyMemory(defaultUser.email, defaultUser);
       setStudyMemory(mem);
+      syncUserWithBackend(defaultUser);
     }
     setLoading(false);
   }, []);
@@ -604,6 +608,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('siparana_user', JSON.stringify(user));
       const mem = getUserStudyMemory(user.email, user);
       setStudyMemory(mem);
+
+      // Asynchronously sync with backend database
+      syncUserWithBackend(user);
 
       // Keep user in registered accounts repository so future email logins retrieve exact profile
       try {

@@ -47,6 +47,12 @@ export interface UserProfile {
   
   hasCompletedOnboarding?: boolean;
   
+  // Custom Profile & Free Fire Rank Tier Attributes
+  bio?: string;
+  targetUniversity?: string;
+  statusQuote?: string;
+  customAvatarFrameId?: string;
+  
   // Global Country & Multi-Curriculum Core Attributes
   countryCode?: GlobalCountryCode;
   countryName?: string;

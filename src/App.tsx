@@ -19,7 +19,7 @@ import SubjectsPage from '@/pages/SubjectsPage';
 import CampusPage from '@/pages/CampusPage';
 import UtilitiesPage from '@/pages/UtilitiesPage';
 import NewsPage from '@/pages/NewsPage';
-import PremiumPage from '@/pages/PremiumPage';
+import KeyPlayersPage from '@/pages/KeyPlayersPage';
 import SettingsPage from '@/pages/SettingsPage';
 import QuizzesPage from '@/pages/QuizzesPage';
 import AITutorPage from '@/pages/AITutorPage';
@@ -119,8 +119,9 @@ function AppContent() {
         return <UtilitiesPage />;
       case 'news':
         return <NewsPage />;
+      case 'key_players':
       case 'premium':
-        return <PremiumPage />;
+        return <KeyPlayersPage onNavigate={handleNavigate} />;
       case 'settings':
         return <SettingsPage />;
       default:

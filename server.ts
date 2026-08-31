@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
@@ -9,6 +10,155 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Real Users Persistent Database Storage File
+const DATA_DIR = path.join(process.cwd(), 'data');
+const USERS_FILE = path.join(DATA_DIR, 'registered_users.json');
+
+interface StoredUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  studentCategory?: 'School' | 'University';
+  grade?: number;
+  level?: string;
+  stream?: string;
+  school?: string;
+  university?: string;
+  district?: string;
+  countryCode?: string;
+  countryName?: string;
+  countryFlag?: string;
+  xp: number;
+  streakDays: number;
+  quizzesSolved?: number;
+  completedLessonsCount?: number;
+  quizAccuracy?: number;
+  customAvatarFrameId?: string;
+  bio?: string;
+  statusQuote?: string;
+  targetUniversity?: string;
+  cheersCount?: number;
+  isVerified?: boolean;
+  lastActiveDate?: string;
+  registeredAt?: string;
+}
+
+// In-Memory User Store with disk persistence
+let storedUsers: StoredUser[] = [];
+
+function loadStoredUsers(): StoredUser[] {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (fs.existsSync(USERS_FILE)) {
+      const data = fs.readFileSync(USERS_FILE, 'utf-8');
+      storedUsers = JSON.parse(data);
+    } else {
+      storedUsers = [];
+    }
+  } catch (err) {
+    console.error('Error loading stored users:', err);
+    storedUsers = [];
+  }
+  return storedUsers;
+}
+
+function saveStoredUsers() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(USERS_FILE, JSON.stringify(storedUsers, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error saving stored users:', err);
+  }
+}
+
+// Initialize stored users on server boot
+loadStoredUsers();
+
+// Helper to map a real stored user into the clean Leaderboard Achiever format
+function mapUserToAchiever(user: StoredUser, rank: number) {
+  const isUni = user.studentCategory === 'University' || user.level === 'CAMPUS';
+  const grade = user.grade || 12;
+  
+  let academicCategory: 'University' | 'A-Level / High School' | 'O-Level / Secondary' | 'Scholarship / Primary' = 'A-Level / High School';
+  let gradeLevel = 'Grade 12 (A/L)';
+  
+  if (isUni) {
+    academicCategory = 'University';
+    gradeLevel = 'Undergraduate';
+  } else if (grade === 5 || user.level === 'SCHOLARSHIP') {
+    academicCategory = 'Scholarship / Primary';
+    gradeLevel = 'Grade 5 (Primary)';
+  } else if (grade <= 11 || user.level === 'OL' || user.level === 'JUNIOR') {
+    academicCategory = 'O-Level / Secondary';
+    gradeLevel = `Grade ${grade} (Secondary)`;
+  } else {
+    academicCategory = 'A-Level / High School';
+    gradeLevel = `Grade ${grade} (Senior)`;
+  }
+
+  const specialBadge =
+    rank === 1 ? '👑 National Sovereign Rank 1' :
+    rank === 2 ? '🥈 Global Runner Up' :
+    rank === 3 ? '🥉 Global Bronze Scholar' :
+    user.xp >= 5000 ? '🔥 Grandmaster Scholar' :
+    user.xp >= 3000 ? '💎 Diamond Master' :
+    user.xp >= 1500 ? '⚡ Speed & Precision Ace' :
+    '📚 Active Scholar';
+
+  const honorTitle =
+    user.stream?.includes('Math') ? 'Pure & Applied Mathematics' :
+    user.stream?.includes('Bio') ? 'Biological Science Virtuoso' :
+    user.stream?.includes('Commerce') ? 'Economics & Corporate Finance' :
+    user.stream?.includes('Tech') ? 'Engineering Tech & Robotics' :
+    user.stream?.includes('Computer') || isUni ? 'Computer Science & Algorithms' :
+    'National Curriculum Scholar';
+
+  return {
+    id: user.id,
+    rank,
+    name: user.name || 'Scholar',
+    avatar: user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
+    institution: user.university || user.school || (user.countryCode === 'LK' ? 'National College' : 'Premier Academy'),
+    districtOrCity: user.district || (user.countryCode === 'LK' ? 'Colombo' : 'National'),
+    countryCode: user.countryCode || 'LK',
+    countryFlag: user.countryFlag || '🇱🇰',
+    countryName: user.countryName || 'Sri Lanka',
+    stream: user.stream || 'General Curriculum',
+    academicCategory,
+    gradeLevel,
+    weeklyXP: Math.round(user.xp * 0.45) || user.xp,
+    monthlyXP: Math.round(user.xp * 0.85) || user.xp,
+    allTimeXP: user.xp || 0,
+    streakDays: user.streakDays || 1,
+    quizAccuracy: user.quizAccuracy || 96.5,
+    quizzesSolved: user.quizzesSolved || user.completedLessonsCount || 1,
+    specialBadge,
+    honorTitle,
+    isVerified: user.isVerified ?? true,
+    cheersCount: user.cheersCount || 0,
+    bioQuote: user.bio || user.statusQuote || 'Studying hard daily with SipArana past paper drills.',
+    targetUniversity: user.targetUniversity || 'University of Moratuwa / Oxford',
+    frameId: user.customAvatarFrameId || (
+      user.xp >= 15000 ? 'frame-grandmaster' :
+      user.xp >= 10000 ? 'frame-diamond' :
+      user.xp >= 6000 ? 'frame-platinum' :
+      user.xp >= 3000 ? 'frame-gold' :
+      user.xp >= 1500 ? 'frame-silver' :
+      'frame-bronze'
+    )
+  };
+}
+
+function getLeaderboardAchievers() {
+  const sorted = [...storedUsers].sort((a, b) => (b.xp || 0) - (a.xp || 0));
+  return sorted.map((user, idx) => mapUserToAchiever(user, idx + 1));
+}
 
 async function startServer() {
   const app = express();
@@ -39,6 +189,152 @@ async function startServer() {
       hasApiKey: Boolean(process.env.GEMINI_API_KEY),
       platform: 'SipArana LK Full-Stack Ecosystem'
     });
+  });
+
+  // ==========================================
+  // REAL USER & LIVE LEADERBOARD REST API
+  // ==========================================
+
+  // Get Live Global Leaderboard (100% Real Registered Users Only)
+  app.get('/api/leaderboard', (req, res) => {
+    try {
+      const achievers = getLeaderboardAchievers();
+      return res.json({
+        success: true,
+        count: achievers.length,
+        leaderboard: achievers,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error('Error fetching leaderboard:', error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Sync / Register Real User Profile with live DB
+  app.post('/api/users/sync', (req, res) => {
+    try {
+      const user = req.body;
+      if (!user || !user.id) {
+        return res.status(400).json({ success: false, error: 'User ID is required' });
+      }
+
+      const existingIndex = storedUsers.findIndex(u => u.id === user.id || (user.email && u.email && u.email.toLowerCase() === user.email.toLowerCase()));
+
+      const updatedUser: StoredUser = {
+        id: user.id,
+        name: user.name || 'Scholar',
+        email: user.email || '',
+        avatar: user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
+        studentCategory: user.studentCategory || 'School',
+        grade: user.grade || 12,
+        level: user.level || 'AL',
+        stream: user.stream || 'Physical Science (Maths)',
+        school: user.school || '',
+        university: user.university || '',
+        district: user.district || 'Colombo',
+        countryCode: user.countryCode || 'LK',
+        countryName: user.countryName || 'Sri Lanka',
+        countryFlag: user.countryFlag || '🇱🇰',
+        xp: Number(user.xp) || 0,
+        streakDays: Number(user.streakDays) || 1,
+        quizzesSolved: Number(user.quizzesSolved || user.completedLessonsCount) || 1,
+        completedLessonsCount: Number(user.completedLessonsCount) || 0,
+        quizAccuracy: Number(user.quizAccuracy) || 96.5,
+        customAvatarFrameId: user.customAvatarFrameId || user.frameId,
+        bio: user.bio || user.statusQuote || '',
+        statusQuote: user.statusQuote || user.bio || '',
+        targetUniversity: user.targetUniversity || '',
+        cheersCount: existingIndex >= 0 ? (storedUsers[existingIndex].cheersCount || 0) : (Number(user.cheersCount) || 0),
+        isVerified: user.isVerified ?? true,
+        lastActiveDate: new Date().toISOString().split('T')[0],
+        registeredAt: existingIndex >= 0 ? (storedUsers[existingIndex].registeredAt || new Date().toISOString()) : new Date().toISOString()
+      };
+
+      if (existingIndex >= 0) {
+        // Keep highest XP if existing has higher
+        if (storedUsers[existingIndex].xp > updatedUser.xp && !req.body.forceOverrideXP) {
+          updatedUser.xp = storedUsers[existingIndex].xp;
+        }
+        storedUsers[existingIndex] = updatedUser;
+      } else {
+        storedUsers.push(updatedUser);
+      }
+
+      saveStoredUsers();
+
+      const achievers = getLeaderboardAchievers();
+      const userRank = achievers.findIndex(a => a.id === updatedUser.id) + 1;
+
+      return res.json({
+        success: true,
+        user: updatedUser,
+        userRank: userRank || achievers.length,
+        leaderboard: achievers
+      });
+    } catch (error: any) {
+      console.error('Error syncing user:', error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Cheer a genuine registered student on the leaderboard
+  app.post('/api/users/cheer', (req, res) => {
+    try {
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ success: false, error: 'User ID is required' });
+      }
+
+      const user = storedUsers.find(u => u.id === userId);
+      if (!user) {
+        return res.status(404).json({ success: false, error: 'Student not found in database' });
+      }
+
+      user.cheersCount = (user.cheersCount || 0) + 1;
+      saveStoredUsers();
+
+      return res.json({
+        success: true,
+        userId: user.id,
+        cheersCount: user.cheersCount
+      });
+    } catch (error: any) {
+      console.error('Error cheering user:', error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Award genuine XP to an active user
+  app.post('/api/users/add-xp', (req, res) => {
+    try {
+      const { userId, amount } = req.body;
+      if (!userId || typeof amount !== 'number') {
+        return res.status(400).json({ success: false, error: 'userId and numeric amount are required' });
+      }
+
+      const user = storedUsers.find(u => u.id === userId);
+      if (!user) {
+        return res.status(404).json({ success: false, error: 'Student not found in database' });
+      }
+
+      user.xp = (user.xp || 0) + Math.max(0, amount);
+      user.lastActiveDate = new Date().toISOString().split('T')[0];
+      saveStoredUsers();
+
+      const achievers = getLeaderboardAchievers();
+      const userRank = achievers.findIndex(a => a.id === user.id) + 1;
+
+      return res.json({
+        success: true,
+        newXP: user.xp,
+        userRank,
+        leaderboard: achievers
+      });
+    } catch (error: any) {
+      console.error('Error adding XP:', error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
   });
 
   // Comprehensive Educational AI Core Endpoint (6 Core Functionalities)

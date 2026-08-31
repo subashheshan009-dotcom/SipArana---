@@ -81,7 +81,7 @@ export default function DailyMysteryChestModal({
       setIsOpening(false);
       setHasOpened(true);
 
-      const xpAmount = Math.floor(Math.random() * 150) + 100; // 100 - 250 XP
+      const xpAmount = 10; // +10 XP Daily Mystery Chest Attendance Reward
       const randomBadge = BADGE_REWARDS[Math.floor(Math.random() * BADGE_REWARDS.length)];
 
       setRewardWon({
