@@ -55,6 +55,11 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import SyllabusGuideMascot from '@/components/SyllabusGuideMascot';
 import FilePermissionHelperModal from '@/components/FilePermissionHelperModal';
+import {
+  isDailyActionClaimedToday,
+  recordDailyActionClaim,
+  triggerDailyLockToast
+} from '@/utils/dailyXpLockEngine';
 
 type WizardStep = 'category' | 'stream' | 'subject' | 'documents';
 
@@ -254,11 +259,26 @@ export default function OfflineSyllabusPage() {
 
   const handleDownloadPDF = (item: SyllabusItem) => {
     setDownloadingId(item.id);
+    const userKey = profile?.email || profile?.id || 'guest_user';
+    const actionKey = `syllabus_download_${item.id}`;
+    const isClaimedToday = isDailyActionClaimedToday(actionKey, userKey);
+
     setTimeout(() => {
       const res = generateSyllabusPDF(item, profile?.name || 'SipArana Student');
       setDownloadingId(null);
       setCachedIds((prev) => ({ ...prev, [item.id]: true }));
-      addXP(15);
+      
+      if (!isClaimedToday) {
+        const recorded = recordDailyActionClaim(actionKey, userKey);
+        if (recorded) {
+          addXP(15);
+        }
+      } else {
+        triggerDailyLockToast(
+          '⚠️ You have already downloaded and claimed daily XP for this document today! Document saved to cache; XP resets at midnight.',
+          item.titleSinhala || item.title
+        );
+      }
 
       if (res && (!res.success || res.isPopupBlocked)) {
         if (res.blobUrl) {
@@ -280,6 +300,10 @@ export default function OfflineSyllabusPage() {
 
   const handleDownloadAllSubject = () => {
     setBatchDownloading(true);
+    const userKey = profile?.email || profile?.id || 'guest_user';
+    const batchActionKey = `syllabus_batch_download_${selectedSubject?.id || 'all'}`;
+    const isBatchClaimedToday = isDailyActionClaimedToday(batchActionKey, userKey);
+
     setTimeout(() => {
       const newCached = { ...cachedIds };
       filteredDocuments.forEach((it) => {
@@ -287,7 +311,18 @@ export default function OfflineSyllabusPage() {
       });
       setCachedIds(newCached);
       setBatchDownloading(false);
-      addXP(30);
+
+      if (!isBatchClaimedToday) {
+        const recorded = recordDailyActionClaim(batchActionKey, userKey);
+        if (recorded) {
+          addXP(30);
+        }
+      } else {
+        triggerDailyLockToast(
+          '⚠️ You have already claimed batch download XP for this subject package today! Files cached; XP resets at midnight.',
+          selectedSubject?.name || 'Subject Package'
+        );
+      }
     }, 1000);
   };
 

@@ -562,7 +562,7 @@ export function convertProfileToAchiever(
   };
 }
 
-// 100% Real Registered Users (empty initial array, dynamically populated from real database API)
+// 100% Real Registered Users (empty initial array, dynamically populated from real database / auth accounts)
 export const INITIAL_TOP_50_GLOBAL_STUDENTS: StudentAchiever[] = [];
 
 export interface DayStudyData {

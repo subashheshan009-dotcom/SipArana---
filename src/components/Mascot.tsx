@@ -140,23 +140,23 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
   };
 
   return (
-    <div id="siparana-mascot-container" className="fixed bottom-4 right-3 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2.5 max-w-[calc(100vw-1.5rem)] pointer-events-none">
+    <div id="siparana-mascot-container" className="fixed bottom-20 right-3 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2.5 max-w-[calc(100vw-1.5rem)] pointer-events-none transition-all duration-300">
       {/* Speech bubble for Kavi Owl AI Assistant */}
       {isOpen && (
         <div
           id="mascot-speech-bubble"
-          className="pointer-events-auto mb-2 w-76 sm:w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-500/50 p-3.5 sm:p-4 rounded-3xl shadow-2xl text-xs space-y-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200 ring-2 ring-amber-400/20"
+          className="pointer-events-auto mb-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-slate-900/95 border border-amber-400/60 p-3.5 sm:p-4 rounded-3xl shadow-2xl text-xs space-y-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200 ring-2 ring-amber-400/20 backdrop-blur-xl"
         >
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-1.5">
-            <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold">
-              <Bot className="w-3.5 h-3.5 flex-shrink-0" />
+          <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+            <div className="flex items-center gap-1.5 text-amber-400 font-bold">
+              <Bot className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
               <span className="truncate">{mascotTitle}</span>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 type="button"
                 onClick={handleSpeak}
-                className="p-1 rounded-lg hover:bg-amber-100 dark:hover:bg-slate-800 text-amber-600 dark:text-amber-400 transition cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-slate-800 text-amber-400 transition cursor-pointer"
                 title="Listen to Kavi speak"
               >
                 <Volume2 className="w-3.5 h-3.5" />
@@ -165,7 +165,7 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
                 id="mascot-close-btn"
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg cursor-pointer"
+                className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

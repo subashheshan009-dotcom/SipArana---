@@ -33,6 +33,7 @@ import ModernLanguagesPage from '@/pages/ModernLanguagesPage';
 import LanguageAdventurePage from '@/pages/LanguageAdventurePage';
 import SmartFileEvaluatorPage from '@/pages/SmartFileEvaluatorPage';
 import OnboardingFlow from '@/components/OnboardingFlow';
+import { GlobalDailyLockToastContainer } from '@/components/GlobalDailyLockToastContainer';
 
 function AppContent() {
   const { profile, loading } = useAuth();
@@ -135,6 +136,7 @@ function AppContent() {
         {renderPage()}
       </Layout>
       <Mascot trigger={highFive} onNavigate={handleNavigate} />
+      <GlobalDailyLockToastContainer />
     </>
   );
 }

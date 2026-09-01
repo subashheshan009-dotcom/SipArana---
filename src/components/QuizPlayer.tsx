@@ -21,6 +21,11 @@ import type { UnitQuiz, MCQQuestion } from '@/data/quizData';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import type { TestAttemptRecord } from '@/data/analyticsData';
+import {
+  isDailyActionClaimedToday,
+  recordDailyActionClaim,
+  triggerDailyLockToast
+} from '@/utils/dailyXpLockEngine';
 
 interface QuizPlayerProps {
   quiz: UnitQuiz;
@@ -31,6 +36,7 @@ interface QuizPlayerProps {
 export default function QuizPlayer({ quiz, onExit, onViewAnalytics }: QuizPlayerProps) {
   const { addXP, profile } = useAuth();
   const { language } = useLanguage();
+  const userKey = profile?.email || profile?.id || 'guest_user';
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({}); // questionId -> optionId
@@ -38,6 +44,8 @@ export default function QuizPlayer({ quiz, onExit, onViewAnalytics }: QuizPlayer
   const [flaggedQuestions, setFlaggedQuestions] = useState<Record<string, boolean>>({});
   const [secondsRemaining, setSecondsRemaining] = useState(quiz.timeLimitMinutes * 60);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [earnedXpAwarded, setEarnedXpAwarded] = useState<number>(0);
+  const [wasAlreadyClaimedToday, setWasAlreadyClaimedToday] = useState<boolean>(false);
   const [reviewFilter, setReviewFilter] = useState<'all' | 'wrong' | 'flagged'>('all');
   const [startTime] = useState(Date.now());
 
@@ -108,10 +116,30 @@ export default function QuizPlayer({ quiz, onExit, onViewAnalytics }: QuizPlayer
     const scorePct = Math.round((correctCount / quiz.questions.length) * 100);
     const timeSpentSeconds = Math.round((Date.now() - startTime) / 1000);
 
-    // Award XP
+    // Strict 1-Time Daily XP Lock for Quiz completion
+    const quizActionKey = `unit_quiz_${quiz.id}`;
+    const isClaimedToday = isDailyActionClaimedToday(quizActionKey, userKey);
     const earnedXP = Math.round((scorePct / 100) * quiz.xpReward);
-    if (earnedXP > 0) {
-      addXP(earnedXP);
+
+    if (isClaimedToday) {
+      setWasAlreadyClaimedToday(true);
+      setEarnedXpAwarded(0);
+      triggerDailyLockToast(
+        `⚠️ You have already completed and earned XP for this quiz today! Practice score recorded, but XP resets at midnight.`,
+        quiz.titleSinhala || quiz.title
+      );
+    } else {
+      if (earnedXP > 0) {
+        const recorded = recordDailyActionClaim(quizActionKey, userKey);
+        if (recorded) {
+          addXP(earnedXP);
+          setEarnedXpAwarded(earnedXP);
+          setWasAlreadyClaimedToday(false);
+        } else {
+          setWasAlreadyClaimedToday(true);
+          setEarnedXpAwarded(0);
+        }
+      }
     }
 
     if (scorePct >= 70) {
@@ -453,10 +481,16 @@ export default function QuizPlayer({ quiz, onExit, onViewAnalytics }: QuizPlayer
                   <div className="text-emerald-300 font-bold">
                     ✓ {correctTotal} Correct of {quiz.questions.length}
                   </div>
-                  <div className="text-amber-300 font-bold flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>+{Math.round((scorePercent / 100) * quiz.xpReward)} XP Earned</span>
-                  </div>
+                  {wasAlreadyClaimedToday ? (
+                    <div className="text-slate-300 font-bold flex items-center gap-1 bg-slate-800/80 px-2 py-0.5 rounded-lg border border-slate-700">
+                      <span>Claimed Today ✅ (0 fresh XP)</span>
+                    </div>
+                  ) : (
+                    <div className="text-amber-300 font-bold flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>+{earnedXpAwarded} XP Earned</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

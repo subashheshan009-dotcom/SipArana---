@@ -3,6 +3,10 @@ import type { UserProfile, Stream, ExamLevel, Medium, SchoolGrade, StudentCatego
 import { getCountryByCode, getCurriculumById, getCountrySubdivisions } from '@/data/globalCurriculumData';
 import { syncUserWithBackend } from '@/services/leaderboardService';
 import {
+  captureIncomingReferral,
+  processVerifiedReferralOnRegistration
+} from '@/services/referralService';
+import {
   getUserStudyMemory,
   saveUserStudyMemory,
   recordChatToMemory,
@@ -565,6 +569,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    // Capture any incoming referral query params from URL (e.g. ?ref=SCHOLAR_123456)
+    captureIncomingReferral();
+
     // Check if user session exists in local storage
     const saved = localStorage.getItem('siparana_user');
     if (saved) {
@@ -751,6 +758,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     persistUser(userProfile);
+    processVerifiedReferralOnRegistration(userProfile.id, userProfile.name);
     return { success: true };
   };
 
@@ -999,6 +1007,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     persistUser(newUser);
+    processVerifiedReferralOnRegistration(newUser.id, newUser.name);
     return { success: true, isNewUser: true };
   };
 
@@ -1077,6 +1086,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     persistUser(newUser);
+    processVerifiedReferralOnRegistration(newUser.id, newUser.name);
     return { success: true };
   };
 

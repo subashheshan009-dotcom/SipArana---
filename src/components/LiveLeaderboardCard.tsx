@@ -107,15 +107,26 @@ export default function LiveLeaderboardCard({ onNavigate }: LiveLeaderboardCardP
           top5.map((student, idx) => {
             const rank = idx + 1;
             const xp = filterPeriod === 'weekly' ? student.weeklyXP : student.allTimeXP;
+            const isRank3Challenger = rank === 3;
             return (
               <div
                 key={student.id}
-                className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                className={`relative flex items-center justify-between p-3 rounded-2xl border transition-all ${
                   rank === 1
                     ? 'bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-amber-300/80 dark:border-amber-700/60 shadow-xs'
+                    : isRank3Challenger
+                    ? 'bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent border-orange-400/80 dark:border-orange-600/70 shadow-xs ring-1 ring-orange-400/30'
                     : 'bg-slate-50/70 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
+                {/* Rank 3 Challenger Highlight Badge */}
+                {isRank3Challenger && (
+                  <div className="absolute -top-2 right-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-[9px] font-black text-white shadow-xs flex items-center gap-1">
+                    <Flame className="w-2.5 h-2.5 fill-white" />
+                    <span>CHALLENGER SPOT</span>
+                  </div>
+                )}
+
                 {/* Rank + Avatar + Name */}
                 <div className="flex items-center gap-3">
                   {getRankMedal(rank)}
@@ -159,30 +170,97 @@ export default function LiveLeaderboardCard({ onNavigate }: LiveLeaderboardCardP
         )}
       </div>
 
-      {/* User's current rank snippet */}
-      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-black text-xs">
-            #{userRank > 0 ? userRank : 1}
-          </div>
-          <div>
-            <div className="text-xs font-black flex items-center gap-1.5">
-              <span>{profile?.name || 'Your Profile'}</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-400 text-slate-950 font-black">
-                Active Scholar
-              </span>
-            </div>
-            <p className="text-[11px] text-blue-100/90">
-              Watch daily ads & complete mock quizzes to climb the global leaderboard!
-            </p>
-          </div>
-        </div>
+      {/* DYNAMIC DISTANCE TO TOP 3 PODIUM TRACKER */}
+      {(() => {
+        const userXP = profile?.xp || 0;
+        const userRankNum = userRank > 0 ? userRank : leaderboard.findIndex(u => u.name === profile?.name) + 1 || 1;
+        const rank3Scholar = leaderboard.length >= 3 ? leaderboard[2] : leaderboard[leaderboard.length - 1];
+        const rank3XP = rank3Scholar ? rank3Scholar.allTimeXP : 0;
+        const isInsideTop3 = userRankNum > 0 && userRankNum <= 3;
+        const xpDifference = isInsideTop3 ? 0 : Math.max(0, rank3XP - userXP + 1);
+        const adsNeeded = Math.ceil(xpDifference / 100);
+        const quizzesNeeded = Math.ceil(xpDifference / 50);
+        const targetXP = isInsideTop3 ? (leaderboard[0]?.allTimeXP || (userXP + 100)) : (rank3XP > 0 ? rank3XP : userXP + 100);
+        const progressPercent = Math.min(100, targetXP > 0 ? Math.max(10, Math.round((userXP / targetXP) * 100)) : 100);
 
-        <div className="flex items-center gap-1.5 font-black text-xs bg-black/20 px-3 py-1.5 rounded-xl backdrop-blur-xs">
-          <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-          <span>{profile?.xp || 0} XP</span>
-        </div>
-      </div>
+        return (
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/50 text-white space-y-3 shadow-lg">
+            {/* Header / Callout */}
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-[10px] uppercase flex items-center gap-1">
+                    <Flame className="w-3 h-3 fill-slate-950" />
+                    <span>Challenger Zone 🔥</span>
+                  </span>
+                  <span className="text-[11px] font-extrabold text-amber-300">
+                    Your Rank #{userRankNum}
+                  </span>
+                </div>
+                <h4 className="text-xs sm:text-sm font-black text-white leading-snug">
+                  {isInsideTop3 ? (
+                    language === 'si' ? '👑 ඔබ දැනටමත් Top 3 වේදිකාවේ සිටී!' : '👑 You are on the Global Top 3 Podium!'
+                  ) : (
+                    language === 'si'
+                      ? `🎯 ඔබ Top 3 වේදිකාවට ඇතුළු වීමට තවත් XP ${xpDifference.toLocaleString()} ක් පමණක් පිටුපසින්!`
+                      : `🎯 You are only ${xpDifference.toLocaleString()} XP away from entering the Top 3 Podium!`
+                  )}
+                </h4>
+              </div>
+
+              <div className="text-right shrink-0 bg-white/10 px-2.5 py-1.5 rounded-xl border border-white/15">
+                <span className="text-[9px] text-slate-300 block uppercase font-bold">Your Score</span>
+                <span className="text-xs font-black text-amber-300 flex items-center justify-end gap-1">
+                  <Zap className="w-3 h-3 fill-amber-300" />
+                  {userXP.toLocaleString()} XP
+                </span>
+              </div>
+            </div>
+
+            {/* Progress bar towards Podium #3 */}
+            <div className="space-y-1">
+              <div className="w-full bg-slate-950 rounded-full h-2.5 p-0.5 border border-slate-700 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-orange-500 via-amber-400 to-yellow-300 h-full rounded-full transition-all duration-500 relative"
+                  style={{ width: `${progressPercent}%` }}
+                >
+                  <div className="absolute inset-0 bg-white/20 animate-pulse rounded-full" />
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold">
+                <span>Current: {userXP.toLocaleString()} XP</span>
+                <span className="text-amber-400">{progressPercent}% to Podium</span>
+                <span>Cutoff: {rank3XP.toLocaleString()} XP</span>
+              </div>
+            </div>
+
+            {/* Actionable Strategy Tip */}
+            {!isInsideTop3 && (
+              <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] text-slate-300 flex items-center justify-between gap-2">
+                <p className="line-clamp-2">
+                  <strong className="text-amber-300">Action Tip: </strong>
+                  {language === 'si'
+                    ? `දිනපතා දැන්වීම් ${adsNeeded} ක් හෝ ප්‍රශ්නාවලි ${quizzesNeeded} ක් සම්පූර්ණ කර Top 3 ස්ථානය දිනාගන්න!`
+                    : `Watch ~${adsNeeded} daily video ads (+100 XP) or complete ~${quizzesNeeded} quizzes (+50 XP) to claim your spot!`}
+                </p>
+                {onNavigate && (
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('quizzes')}
+                    className="shrink-0 px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] transition cursor-pointer"
+                  >
+                    Solve Quiz
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div className="text-[10.5px] text-amber-300/90 font-bold flex items-center gap-1">
+              <span>The Champion's Crown is within your reach! 🏆</span>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Full Key Players Page Link */}
       {onNavigate && (

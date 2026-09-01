@@ -44,6 +44,11 @@ import {
   COURSE_CATEGORIES,
   type FreeCourse
 } from '@/data/freeCoursesData';
+import {
+  isDailyActionClaimedToday,
+  recordDailyActionClaim,
+  triggerDailyLockToast
+} from '@/utils/dailyXpLockEngine';
 
 interface FreeCoursesPageProps {
   onNavigate?: (page: string) => void;
@@ -87,10 +92,24 @@ export default function FreeCoursesPage({ onNavigate }: FreeCoursesPageProps) {
   const handleBookmarkClick = (course: FreeCourse) => {
     toggleBookmark(course.id, course.titleSinhala || course.title);
     const isSaved = bookmarkedIds.includes(course.id);
+    const userKey = profile?.email || profile?.id || 'guest_user';
+    const actionKey = `course_bookmark_${course.id}`;
+    const isClaimedToday = isDailyActionClaimedToday(actionKey, userKey);
+
     if (!isSaved) {
       soundFX.playCorrect();
-      addXP(10);
-      triggerToast(`⭐ "${course.titleSinhala || course.title}" ඔබගේ සුරැකි පාඨමාලා ලැයිස්තුවට එක්විය! (+10 XP)`);
+      if (!isClaimedToday) {
+        const recorded = recordDailyActionClaim(actionKey, userKey);
+        if (recorded) {
+          addXP(10);
+        }
+      } else {
+        triggerDailyLockToast(
+          '⚠️ You have already claimed daily XP for saving this course today! Course bookmarked; XP resets at midnight.',
+          course.titleSinhala || course.title
+        );
+      }
+      triggerToast(`⭐ "${course.titleSinhala || course.title}" ඔබගේ සුරැකි පාඨමාලා ලැයිස්තුවට එක්විය!`);
     } else {
       triggerToast(`"${course.titleSinhala || course.title}" සුරැකි ලැයිස්තුවෙන් ඉවත් කරන ලදී.`);
     }
@@ -98,6 +117,10 @@ export default function FreeCoursesPage({ onNavigate }: FreeCoursesPageProps) {
 
   const handleMascotCheer = () => {
     setIsHighFiving(true);
+    const userKey = profile?.email || profile?.id || 'guest_user';
+    const actionKey = 'mascot_cheer_free_courses';
+    const isClaimedToday = isDailyActionClaimedToday(actionKey, userKey);
+
     try {
       soundFX.playCorrect();
       confetti({
@@ -108,9 +131,22 @@ export default function FreeCoursesPage({ onNavigate }: FreeCoursesPageProps) {
     } catch {
       // safe fallback
     }
-    addXP(15);
+
+    if (!isClaimedToday) {
+      const recorded = recordDailyActionClaim(actionKey, userKey);
+      if (recorded) {
+        addXP(15);
+        triggerToast('🎉 අරණ මාස්කොට් සමඟ එක්වී +15 XP උපයාගත්තා!');
+      }
+    } else {
+      triggerDailyLockToast(
+        '⚠️ You have already given Arana Mascot a high-five and claimed XP today! Come back at midnight.',
+        'Arana Mascot High-Five'
+      );
+      triggerToast('🦉 අරණ: "අද දිනට අපි එකට ඉගෙන ගත්තා! හෙට නැවත හමුවෙමු!"');
+    }
+
     setActiveMascotSpeechIdx((prev) => (prev + 1) % MASCOT_SPEECHES.length);
-    triggerToast('🎉 අරණ මාස්කොට් සමඟ එක්වී +15 XP උපයාගත්තා!');
     setTimeout(() => setIsHighFiving(false), 700);
   };
 

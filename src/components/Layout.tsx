@@ -1666,10 +1666,164 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
           </div>
         )}
 
-        {/* Page Body */}
-        <main id="main-content-scroll" className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-24 md:pb-8 min-w-0 overflow-x-hidden">
+        {/* Page Body with safe area padding */}
+        <main id="main-content-scroll" className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-28 md:pb-8 min-w-0 overflow-x-hidden">
           {children}
         </main>
+
+        {/* Device-Adaptive Mobile Bottom Navigation Bar (Fixed 1-Tap Thumb Navigation) */}
+        <nav
+          id="mobile-bottom-navbar"
+          aria-label="Mobile Navigation"
+          className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/90 px-1 py-1 shadow-2xl safe-pb flex items-center justify-around select-none"
+        >
+          {/* 1. Dashboard Tab */}
+          <button
+            type="button"
+            id="mobile-nav-tab-dashboard"
+            onClick={() => {
+              soundFX.playClick();
+              onNavigate('dashboard');
+            }}
+            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[56px] py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+              current === 'dashboard'
+                ? 'text-cyan-400 font-bold scale-105'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className="relative">
+              <LayoutDashboard className={`w-5 h-5 ${current === 'dashboard' ? 'text-cyan-400' : 'text-slate-400'}`} />
+              {current === 'dashboard' && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400" />
+              )}
+            </div>
+            <span className="text-[10px] mt-1 tracking-tight leading-none font-semibold truncate max-w-[62px]">
+              {language === 'si' ? 'මුල් පිටුව' : 'Home'}
+            </span>
+          </button>
+
+          {/* 2. Quizzes Tab */}
+          <button
+            type="button"
+            id="mobile-nav-tab-quizzes"
+            onClick={() => {
+              soundFX.playClick();
+              onNavigate('quizzes');
+            }}
+            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[56px] py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+              current === 'quizzes'
+                ? 'text-amber-400 font-bold scale-105'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className="relative">
+              <FileQuestion className={`w-5 h-5 ${current === 'quizzes' ? 'text-amber-400' : 'text-slate-400'}`} />
+              <span className="absolute -top-1 -right-1.5 px-1 py-0.2 rounded-full bg-rose-500 text-white font-black text-[7px] leading-none animate-pulse">
+                LIVE
+              </span>
+              {current === 'quizzes' && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400" />
+              )}
+            </div>
+            <span className="text-[10px] mt-1 tracking-tight leading-none font-semibold truncate max-w-[62px]">
+              {language === 'si' ? 'ප්‍රශ්න' : 'Quizzes'}
+            </span>
+          </button>
+
+          {/* 3. AI Evaluator & Tutor Tab */}
+          <button
+            type="button"
+            id="mobile-nav-tab-ai"
+            onClick={() => {
+              soundFX.playPop();
+              onNavigate('smart_evaluator');
+            }}
+            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[56px] py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+              current === 'smart_evaluator' || current === 'ai_tutor'
+                ? 'text-purple-400 font-bold scale-105'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className="relative">
+              <Bot className={`w-5 h-5 ${current === 'smart_evaluator' || current === 'ai_tutor' ? 'text-purple-400' : 'text-slate-400'}`} />
+              <span className="absolute -top-1 -right-1 px-1 py-0.2 rounded-full bg-purple-500 text-white font-black text-[7px] leading-none">
+                AI
+              </span>
+              {(current === 'smart_evaluator' || current === 'ai_tutor') && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-purple-400 shadow-sm shadow-purple-400" />
+              )}
+            </div>
+            <span className="text-[10px] mt-1 tracking-tight leading-none font-semibold truncate max-w-[62px]">
+              {language === 'si' ? 'AI ගුරු' : 'AI Hub'}
+            </span>
+          </button>
+
+          {/* 4. Subjects Tab */}
+          <button
+            type="button"
+            id="mobile-nav-tab-subjects"
+            onClick={() => {
+              soundFX.playClick();
+              onNavigate('subjects');
+            }}
+            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[56px] py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+              current === 'subjects' || current === 'offline_syllabus'
+                ? 'text-blue-400 font-bold scale-105'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className="relative">
+              <BookOpen className={`w-5 h-5 ${current === 'subjects' || current === 'offline_syllabus' ? 'text-blue-400' : 'text-slate-400'}`} />
+              {(current === 'subjects' || current === 'offline_syllabus') && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-400 shadow-sm shadow-blue-400" />
+              )}
+            </div>
+            <span className="text-[10px] mt-1 tracking-tight leading-none font-semibold truncate max-w-[62px]">
+              {language === 'si' ? 'විෂයන්' : 'Subjects'}
+            </span>
+          </button>
+
+          {/* 5. Key Players / Leaderboard Tab */}
+          <button
+            type="button"
+            id="mobile-nav-tab-keyplayers"
+            onClick={() => {
+              soundFX.playCorrect();
+              onNavigate('key_players');
+            }}
+            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[56px] py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+              current === 'key_players'
+                ? 'text-yellow-400 font-bold scale-105'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className="relative">
+              <Crown className={`w-5 h-5 ${current === 'key_players' ? 'fill-yellow-400 text-yellow-400' : 'text-slate-400'}`} />
+              {current === 'key_players' && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-sm shadow-yellow-400" />
+              )}
+            </div>
+            <span className="text-[10px] mt-1 tracking-tight leading-none font-semibold truncate max-w-[62px]">
+              {language === 'si' ? 'ශ්‍රේණි' : 'Ranks'}
+            </span>
+          </button>
+
+          {/* 6. More / Menu Drawer Trigger */}
+          <button
+            type="button"
+            id="mobile-nav-tab-more"
+            onClick={() => {
+              soundFX.playClick();
+              setMobileMenuOpen(true);
+            }}
+            className="flex flex-col items-center justify-center min-h-[48px] min-w-[56px] py-1 px-1.5 rounded-xl text-slate-400 hover:text-slate-200 transition-all cursor-pointer"
+          >
+            <Menu className="w-5 h-5 text-slate-400" />
+            <span className="text-[10px] mt-1 tracking-tight leading-none font-semibold truncate max-w-[62px]">
+              {language === 'si' ? 'තවත්' : 'Menu'}
+            </span>
+          </button>
+        </nav>
       </div>
 
       {/* Autonomous NIE Curriculum Sync & Diagnostics Modal */}

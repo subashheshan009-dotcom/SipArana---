@@ -28,9 +28,10 @@ import type { PageId } from '@/components/Layout';
 
 import { GlobalRankCard } from '@/components/keyPlayers/GlobalRankCard';
 import { TestScoreProgressionChart } from '@/components/keyPlayers/TestScoreProgressionChart';
-import { DailyAdRewardSection } from '@/components/keyPlayers/DailyAdRewardSection';
+import { FreeFireAdCard } from '@/components/keyPlayers/FreeFireAdCard';
 import { ReferralAndSocialShareSection } from '@/components/keyPlayers/ReferralAndSocialShareSection';
 import { Top3Podium } from '@/components/keyPlayers/Top3Podium';
+import { PodiumChallengerTracker } from '@/components/PodiumChallengerTracker';
 import { Top50Leaderboard } from '@/components/keyPlayers/Top50Leaderboard';
 import { TopInstitutionsLeaderboard } from '@/components/keyPlayers/TopInstitutionsLeaderboard';
 import { StudyScheduleTable } from '@/components/keyPlayers/StudyScheduleTable';
@@ -44,7 +45,7 @@ interface KeyPlayersPageProps {
 export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
   const { profile, addXP } = useAuth();
   const { language } = useLanguage();
-  const { leaderboard, top3, refreshLeaderboard } = useLeaderboard();
+  const { leaderboard, top3, userRank, refreshLeaderboard } = useLeaderboard();
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [activeLeaderboardTab, setActiveLeaderboardTab] = useState<'scholars' | 'institutions'>('scholars');
 
@@ -56,38 +57,9 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
   };
 
   return (
-    <div id="key-players-page" className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-9 max-w-7xl mx-auto">
+    <div id="key-players-page" className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
       {/* =========================================================================
-          SECTION 1: GLOWING "WATCH AD & LUCKY SPIN WHEEL 🎡" WITH 20 DAILY LIMIT + DAILY CLAIM
-          ========================================================================= */}
-      <section id="section-daily-ad-rewards" className="space-y-3">
-        <DailyAdRewardSection
-          onRewardClaimed={() => {
-            refreshLeaderboard();
-          }}
-        />
-      </section>
-
-      {/* =========================================================================
-          SECTION 2: VIRAL GROWTH & REFERRAL ACCELERATOR (Invite Friends + WhatsApp Rank Share)
-          ========================================================================= */}
-      <section id="section-viral-referral-sharing" className="space-y-3">
-        <div className="flex items-center gap-2 px-1">
-          <Sparkles className="w-4 h-4 text-emerald-400" />
-          <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
-            Viral Growth & Social Rank Sharing (+200 XP Referrals)
-          </h2>
-        </div>
-        <ReferralAndSocialShareSection
-          currentRank={14}
-          onXPClaimed={() => {
-            refreshLeaderboard();
-          }}
-        />
-      </section>
-
-      {/* =========================================================================
-          SECTION 3: TOP 3 PODIUM (3D VISUAL GOLD, SILVER, BRONZE MASTER FRAMES)
+          SECTION 1: TOP 3 PODIUM & PODIUM CHALLENGER TRACKER
           ========================================================================= */}
       <section id="section-top-3-podium" className="space-y-3">
         <div className="flex items-center gap-2 px-1">
@@ -100,17 +72,24 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
           topStudents={top3}
           onCheerStudent={handleCheerStudent}
         />
+
+        {/* Podium Challenger & XP Goal Tracker */}
+        <PodiumChallengerTracker
+          onNavigate={onNavigate}
+        />
       </section>
 
       {/* =========================================================================
-          SECTION 4: UNIFIED LEADERBOARDS: TOP 50 SCHOLARS 🏆 VS TOP INSTITUTIONS 🏫
+          SECTION 2: DUAL-COLUMN FREE FIRE ARENA LAYOUT
+          - Left Column: Compact Ad Monetization & Lucky Spin Card + My Identity Card
+          - Right Column: High-Density Scrollable Top 50 Leaderboard
           ========================================================================= */}
-      <section id="section-unified-leaderboard-tabs" className="space-y-4">
+      <section id="section-dual-column-battle-arena" className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
           <div className="flex items-center gap-2">
             <Trophy className="w-4 h-4 text-amber-400" />
             <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
-              Global Ranks & Inter-School Battle Arena
+              Free Fire Arena • Live Rankings & Sponsor Boosts
             </h2>
           </div>
 
@@ -119,7 +98,7 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
             <button
               type="button"
               onClick={() => setActiveLeaderboardTab('scholars')}
-              className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer ${
                 activeLeaderboardTab === 'scholars'
                   ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
                   : 'text-slate-400 hover:text-white'
@@ -131,7 +110,7 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
             <button
               type="button"
               onClick={() => setActiveLeaderboardTab('institutions')}
-              className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer ${
                 activeLeaderboardTab === 'institutions'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
                   : 'text-slate-400 hover:text-white'
@@ -143,40 +122,58 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
           </div>
         </div>
 
-        {activeLeaderboardTab === 'scholars' ? (
-          <Top50Leaderboard
-            students={leaderboard}
-            onCheerStudent={handleCheerStudent}
-          />
-        ) : (
-          <TopInstitutionsLeaderboard
-            onOpenProfileCustomizer={() => setIsCustomizerOpen(true)}
-          />
-        )}
+        {/* 2-Column Responsive Battle Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* LEFT SIDE COLUMN: Compact Ad Monetization & Lucky Spin Card */}
+          <div className="lg:col-span-4 space-y-5">
+            <FreeFireAdCard
+              onRewardClaimed={() => {
+                refreshLeaderboard();
+              }}
+            />
+
+            {/* My Scholar Identity Card on Left Column */}
+            <GlobalRankCard
+              topStudents={leaderboard}
+              onOpenCustomizer={() => setIsCustomizerOpen(true)}
+              onNavigateToQuiz={() => onNavigate?.('quizzes')}
+            />
+          </div>
+
+          {/* RIGHT SIDE COLUMN: Top 50 Student Leaderboard */}
+          <div className="lg:col-span-8">
+            {activeLeaderboardTab === 'scholars' ? (
+              <Top50Leaderboard
+                students={leaderboard}
+                onCheerStudent={handleCheerStudent}
+                currentUserId={profile?.id}
+              />
+            ) : (
+              <TopInstitutionsLeaderboard
+                onOpenProfileCustomizer={() => setIsCustomizerOpen(true)}
+              />
+            )}
+          </div>
+        </div>
       </section>
 
       {/* =========================================================================
-          SECTION 4: MY PROFILE CARD
-          Custom Avatar, Bio, Country Flag, Global Rank, and Daily Streak Counter (🔥)
+          SECTION 3: VIRAL GROWTH & REFERRAL ACCELERATOR (+200 XP Referrals)
           ========================================================================= */}
-      <section id="section-my-profile-card" className="space-y-3">
+      <section id="section-viral-referral-sharing" className="space-y-3">
         <div className="flex items-center gap-2 px-1">
-          <Award className="w-4 h-4 text-amber-400" />
+          <Sparkles className="w-4 h-4 text-emerald-400" />
           <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
-            My Scholar Identity & Global Rank
+            Viral Growth & Social Rank Sharing (+200 XP Referrals)
           </h2>
         </div>
-        <GlobalRankCard
-          topStudents={leaderboard}
-          onOpenCustomizer={() => setIsCustomizerOpen(true)}
-          onNavigateToQuiz={() => onNavigate?.('quizzes')}
+        <ReferralAndSocialShareSection
+          currentRank={userRank || 1}
         />
       </section>
 
       {/* =========================================================================
-          SECTION 5: INTERACTIVE "TEST SCORE PROGRESSION & TRAJECTORY" AREA CHART
-          Smooth curved area chart (Test #1 to Test #5), 0-100%, Vibrant Blue Line
-          with soft gradient fill and "Latest: 100%" badge.
+          SECTION 4: SCORE PROGRESSION TRAJECTORY CHART
           ========================================================================= */}
       <section id="section-score-progression" className="space-y-3">
         <div className="flex items-center gap-2 px-1">
@@ -188,7 +185,9 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
         <TestScoreProgressionChart />
       </section>
 
-      {/* BONUS: FREE FIRE RANK TIERS & UNLOCKABLE AVATAR FRAMES SHOWCASE */}
+      {/* =========================================================================
+          SECTION 5: FREE FIRE RANK TIERS & UNLOCKABLE AVATAR FRAMES SHOWCASE
+          ========================================================================= */}
       <section id="section-rank-tiers" className="space-y-3">
         <div className="flex items-center gap-2 px-1">
           <Sparkles className="w-4 h-4 text-purple-400" />
@@ -199,7 +198,9 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
         <RankTiersShowcase />
       </section>
 
-      {/* BONUS: WEEKLY HIGH-PRECISION STUDY SCHEDULE TABLE */}
+      {/* =========================================================================
+          SECTION 6: WEEKLY HIGH-PRECISION STUDY SCHEDULE TABLE
+          ========================================================================= */}
       <section id="section-study-schedule" className="space-y-3">
         <div className="flex items-center gap-2 px-1">
           <BookOpen className="w-4 h-4 text-emerald-400" />
@@ -210,7 +211,9 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
         <StudyScheduleTable />
       </section>
 
-      {/* 6. AI STUDY ACCELERATOR CTA */}
+      {/* =========================================================================
+          SECTION 7: AI STUDY ACCELERATOR CTA
+          ========================================================================= */}
       <div className="rounded-3xl bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/60 border border-blue-500/30 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="p-3 rounded-2xl bg-blue-500/20 text-blue-300 border border-blue-500/30 shrink-0">

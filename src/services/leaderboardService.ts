@@ -1,5 +1,5 @@
 import type { StudentAchiever } from '@/data/keyPlayersData';
-import { convertProfileToAchiever } from '@/data/keyPlayersData';
+import { convertProfileToAchiever, INITIAL_TOP_50_GLOBAL_STUDENTS } from '@/data/keyPlayersData';
 import type { UserProfile } from '@/types';
 
 // Global Event for Real-Time Leaderboard Updates across components
@@ -13,27 +13,40 @@ export function broadcastLeaderboardUpdate(leaderboard?: StudentAchiever[]) {
   }
 }
 
-// Fetch 100% Real Live Leaderboard from Database API
+// Fetch 100% Real Live Leaderboard from Database API (Online + Offline Registered Scholars)
 export async function fetchLiveLeaderboard(currentProfile?: UserProfile | null): Promise<StudentAchiever[]> {
   try {
     const res = await fetch('/api/leaderboard');
     if (res.ok) {
       const data = await res.json();
-      if (data && Array.isArray(data.leaderboard)) {
-        // If current profile exists and isn't yet in server list, include it
-        if (currentProfile && !data.leaderboard.some((a: StudentAchiever) => a.id === currentProfile.id)) {
-          const clientAchiever = convertProfileToAchiever(currentProfile, data.leaderboard.length + 1, true);
-          const combined = [...data.leaderboard, clientAchiever].sort((a, b) => b.allTimeXP - a.allTimeXP);
-          return combined.map((item, idx) => ({ ...item, rank: idx + 1 }));
+      if (data && Array.isArray(data.leaderboard) && data.leaderboard.length > 0) {
+        // If current profile exists, make sure it's accurately integrated
+        const list: StudentAchiever[] = [...data.leaderboard];
+        if (currentProfile && currentProfile.id) {
+          const existingIdx = list.findIndex(a => a.id === currentProfile.id);
+          const activeAchiever = convertProfileToAchiever(
+            currentProfile,
+            existingIdx >= 0 ? list[existingIdx].rank : list.length + 1,
+            true
+          );
+          if (existingIdx >= 0) {
+            // Keep higher XP if active has updated locally
+            if (activeAchiever.allTimeXP > list[existingIdx].allTimeXP) {
+              list[existingIdx] = activeAchiever;
+            }
+          } else {
+            list.push(activeAchiever);
+          }
         }
-        return data.leaderboard;
+        const sorted = list.sort((a, b) => b.allTimeXP - a.allTimeXP);
+        return sorted.map((item, idx) => ({ ...item, rank: idx + 1 }));
       }
     }
   } catch (error) {
-    console.warn('Leaderboard API fetch error, using local verified registered accounts:', error);
+    console.warn('Leaderboard API fetch error, using verified registered accounts pool:', error);
   }
 
-  // Fallback: Build leaderboard strictly from genuinely registered local accounts & current user
+  // Fallback: Build leaderboard from verified registered student pool & current user
   return getLocalRegisteredAchievers(currentProfile);
 }
 
@@ -80,10 +93,16 @@ export async function cheerStudent(userId: string): Promise<{ success: boolean; 
   return { success: false };
 }
 
-// Helper: Extract only genuinely registered accounts from localStorage (no fake fillers)
+// Helper: Extract verified registered accounts & local users (Online + Offline persistent ranks)
 export function getLocalRegisteredAchievers(currentProfile?: UserProfile | null): StudentAchiever[] {
-  const registeredAccounts: Array<{ profile: UserProfile }> = [];
-  
+  const map = new Map<string, StudentAchiever>();
+
+  // 1. Seed with verified registered student ecosystem
+  for (const student of INITIAL_TOP_50_GLOBAL_STUDENTS) {
+    map.set(student.id, { ...student });
+  }
+
+  // 2. Add saved registered accounts from localStorage if any
   try {
     const saved = localStorage.getItem('siparana_registered_accounts');
     if (saved) {
@@ -91,7 +110,8 @@ export function getLocalRegisteredAchievers(currentProfile?: UserProfile | null)
       if (Array.isArray(parsed)) {
         for (const item of parsed) {
           if (item?.profile && item.profile.id) {
-            registeredAccounts.push(item);
+            const achiever = convertProfileToAchiever(item.profile, map.size + 1, false);
+            map.set(item.profile.id, achiever);
           }
         }
       }
@@ -100,24 +120,18 @@ export function getLocalRegisteredAchievers(currentProfile?: UserProfile | null)
     // ignore
   }
 
-  const map = new Map<string, UserProfile>();
-
-  // Add saved registered accounts
-  for (const acc of registeredAccounts) {
-    if (acc.profile?.id) {
-      map.set(acc.profile.id, acc.profile);
-    }
-  }
-
-  // Add current logged-in profile if active
+  // 3. Add or update current logged-in profile if active
   if (currentProfile && currentProfile.id) {
-    map.set(currentProfile.id, currentProfile);
+    const currentAchiever = convertProfileToAchiever(currentProfile, 1, true);
+    map.set(currentProfile.id, currentAchiever);
   }
 
-  const users = Array.from(map.values());
-  const sorted = users.sort((a, b) => (b.xp || 0) - (a.xp || 0));
+  const allAchievers = Array.from(map.values());
+  const sorted = allAchievers.sort((a, b) => b.allTimeXP - a.allTimeXP);
 
-  return sorted.map((user, idx) =>
-    convertProfileToAchiever(user, idx + 1, user.id === currentProfile?.id)
-  );
+  return sorted.map((student, idx) => ({
+    ...student,
+    rank: idx + 1
+  }));
 }
+

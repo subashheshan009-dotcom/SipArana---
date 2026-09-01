@@ -54,9 +54,17 @@ import LiveStudyPulseBanner from '@/components/LiveStudyPulseBanner';
 import KaviStudyPetWidget from '@/components/KaviStudyPetWidget';
 import FocusZoneWidget from '@/components/FocusZoneWidget';
 import LiveLeaderboardCard from '@/components/LiveLeaderboardCard';
+import { CompactTop3Scholars } from '@/components/CompactTop3Scholars';
+import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { cheerStudent } from '@/services/leaderboardService';
 import { GlobalCurriculumEngine } from '@/utils/globalCurriculumEngine';
 import { soundFX } from '@/utils/audioUtils';
 import { getPersonalizedReturningGreeting } from '@/utils/userMemoryEngine';
+import {
+  isDailyActionClaimedToday,
+  recordDailyActionClaim,
+  triggerDailyLockToast
+} from '@/utils/dailyXpLockEngine';
 
 interface DashboardProps {
   onNavigate: (page: PageId) => void;
@@ -67,11 +75,27 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const { language, t } = useLanguage();
   const { country, curriculum, dictionary, subjects: dynamicSubjects, gradingSystem, mascot } = useCountry();
   const { notices, isSyncing } = useExamNews();
+  const { leaderboard, top3, refreshLeaderboard } = useLeaderboard();
+  const userKey = profile?.email || profile?.id || 'guest_user';
+
+  const handleCheerStudent = async (id: string) => {
+    await cheerStudent(id);
+    refreshLeaderboard();
+  };
+
   const [tasks, setTasks] = useState<StudyTask[]>(INITIAL_STUDY_TASKS);
+  const [isDailyQuizClaimed, setIsDailyQuizClaimed] = useState<boolean>(() => {
+    return isDailyActionClaimedToday('dashboard_daily_quiz', userKey);
+  });
   const [quizAnswered, setQuizAnswered] = useState<number | null>(null);
   const [quizScore, setQuizScore] = useState<boolean | null>(null);
   const [isScholarshipWizardOpen, setIsScholarshipWizardOpen] = useState(profile?.grade === 5);
   const [showSyncModal, setShowSyncModal] = useState(false);
+
+  // Sync state on user profile change
+  React.useEffect(() => {
+    setIsDailyQuizClaimed(isDailyActionClaimedToday('dashboard_daily_quiz', userKey));
+  }, [userKey]);
 
   // Daily challenge question adaptive to level and language
   const userGrade = profile?.grade || 11;
@@ -147,26 +171,57 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       };
 
   const handleQuizSelect = (index: number) => {
+    if (isDailyQuizClaimed) {
+      triggerDailyLockToast(
+        '⚠️ You have already completed and earned XP for today\'s Daily Brain Challenge! Come back tomorrow at midnight for a fresh challenge.',
+        'Daily Brain Challenge'
+      );
+      return;
+    }
     if (quizAnswered !== null) return;
+
     setQuizAnswered(index);
     const isCorrect = index === dailyQuiz.correct;
     setQuizScore(isCorrect);
+
     if (isCorrect) {
-      soundFX.playCorrect();
-      addXP(50);
+      const recorded = recordDailyActionClaim('dashboard_daily_quiz', userKey);
+      if (recorded) {
+        soundFX.playCorrect();
+        addXP(50);
+        setIsDailyQuizClaimed(true);
+      } else {
+        triggerDailyLockToast(
+          '⚠️ You have already completed and earned XP for today\'s Daily Brain Challenge! Come back tomorrow at midnight for a fresh challenge.',
+          'Daily Brain Challenge'
+        );
+      }
     } else {
       soundFX.playIncorrect();
     }
   };
 
   const toggleTask = (taskId: string) => {
+    const taskActionKey = `dashboard_task_${taskId}`;
+    const isTaskClaimedToday = isDailyActionClaimedToday(taskActionKey, userKey);
+
     setTasks(prev =>
       prev.map(t => {
         if (t.id === taskId) {
           const nextState = !t.isCompleted;
           if (nextState) {
-            soundFX.playLevelUp();
-            addXP(20);
+            if (!isTaskClaimedToday) {
+              const recorded = recordDailyActionClaim(taskActionKey, userKey);
+              if (recorded) {
+                soundFX.playLevelUp();
+                addXP(20);
+              }
+            } else {
+              triggerDailyLockToast(
+                `⚠️ You have already completed task "${t.title}" today! XP reward is awarded once per day.`,
+                t.title
+              );
+            }
           }
           return { ...t, isCompleted: nextState };
         }
@@ -223,6 +278,15 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     <div className="space-y-6">
       {/* 0. LIVE COMMUNITY STUDY PULSE & PERSONALIZED AI GOAL GREETING */}
       <LiveStudyPulseBanner />
+
+      {/* 0b. COMPACT TOP 3 REAL REGISTERED SCHOLARS (SLOTS FILLED AS REAL USERS REGISTER) */}
+      {top3.length > 0 && (
+        <CompactTop3Scholars
+          students={top3}
+          onNavigate={onNavigate}
+          currentUserId={profile?.id}
+        />
+      )}
 
       {/* 1. HORIZONTAL HERO BANNER */}
       <section
@@ -1202,9 +1266,16 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                     : `Daily Brain Challenge (Grade ${userGrade})`}
                 </span>
               </div>
-              <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-full">
-                +50 XP
-              </span>
+              {isDailyQuizClaimed ? (
+                <span className="text-xs font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>Claimed Today ✅ (+50 XP)</span>
+                </span>
+              ) : (
+                <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-full">
+                  +50 XP
+                </span>
+              )}
             </div>
 
             <div className="space-y-2">

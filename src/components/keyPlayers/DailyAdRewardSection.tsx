@@ -17,6 +17,14 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { soundFX } from '@/utils/audioUtils';
+import {
+  isDailyActionClaimedToday,
+  recordDailyActionClaim,
+  getDailyActionCount,
+  incrementDailyActionCount,
+  triggerDailyLockToast,
+  getFormattedTimeUntilMidnight
+} from '@/utils/dailyXpLockEngine';
 import { RewardedAdPlaybackModal } from './RewardedAdPlaybackModal';
 import { LuckySpinWheelModal, type SpinReward } from './LuckySpinWheelModal';
 
@@ -31,27 +39,23 @@ interface DailyAdRewardSectionProps {
 export const DailyAdRewardSection: React.FC<DailyAdRewardSectionProps> = ({
   onRewardClaimed
 }) => {
-  const { addXP } = useAuth();
+  const { profile, addXP } = useAuth();
   const { language } = useLanguage();
 
-  // Local storage key for daily ad tracking
-  const todayKey = new Date().toISOString().split('T')[0];
-  const storageKeyAds = `siparana_ads_watched_${todayKey}`;
-  const storageKeyDailyClaim = `siparana_daily_claim_${todayKey}`;
+  const userKey = profile?.email || profile?.id || 'guest_user';
 
   const [adsWatched, setAdsWatched] = useState<number>(() => {
-    const saved = localStorage.getItem(storageKeyAds);
-    return saved ? Math.min(MAX_DAILY_ADS, parseInt(saved, 10)) : 2; // Default 2 watched, 18 remaining
+    return getDailyActionCount('rewarded_ad_watch', userKey);
   });
 
   const [hasClaimedDaily, setHasClaimedDaily] = useState<boolean>(() => {
-    return localStorage.getItem(storageKeyDailyClaim) === 'true';
+    return isDailyActionClaimedToday('daily_attendance', userKey);
   });
 
   const [isWatchingAd, setIsWatchingAd] = useState<boolean>(false);
   const [isSpinModalOpen, setIsSpinModalOpen] = useState<boolean>(false);
   const [rewardMode, setRewardMode] = useState<'spin' | 'direct'>('spin');
-  const [timeUntilReset, setTimeUntilReset] = useState<string>('');
+  const [timeUntilReset, setTimeUntilReset] = useState<string>(getFormattedTimeUntilMidnight());
   const [toastMessage, setToastMessage] = useState<{
     id: number;
     title: string;
@@ -61,6 +65,12 @@ export const DailyAdRewardSection: React.FC<DailyAdRewardSectionProps> = ({
 
   const adsRemaining = Math.max(0, MAX_DAILY_ADS - adsWatched);
   const isAdCapReached = adsWatched >= MAX_DAILY_ADS;
+
+  // Sync state on external custom event or profile change
+  useEffect(() => {
+    setAdsWatched(getDailyActionCount('rewarded_ad_watch', userKey));
+    setHasClaimedDaily(isDailyActionClaimedToday('daily_attendance', userKey));
+  }, [userKey]);
 
   // Auto-dismiss toast notification
   useEffect(() => {
@@ -74,17 +84,7 @@ export const DailyAdRewardSection: React.FC<DailyAdRewardSectionProps> = ({
   // Calculate midnight countdown timer
   useEffect(() => {
     const updateCountdown = () => {
-      const now = new Date();
-      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-      const diffMs = tomorrow.getTime() - now.getTime();
-
-      const hours = Math.floor(diffMs / (1000 * 60 * 60));
-      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-
-      setTimeUntilReset(
-        `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`
-      );
+      setTimeUntilReset(getFormattedTimeUntilMidnight());
     };
 
     updateCountdown();
@@ -94,7 +94,14 @@ export const DailyAdRewardSection: React.FC<DailyAdRewardSectionProps> = ({
 
   // Handle Watch Ad Click -> opens 15s interactive simulation modal
   const handleWatchAd = () => {
-    if (isAdCapReached || isWatchingAd) return;
+    if (isAdCapReached) {
+      triggerDailyLockToast(
+        '⚠️ Daily Ad Limit Reached (20/20)! Come back tomorrow at midnight for fresh ad rewards.',
+        'Rewarded Ads'
+      );
+      return;
+    }
+    if (isWatchingAd) return;
     soundFX.playPop();
     setIsWatchingAd(true);
   };
@@ -104,20 +111,19 @@ export const DailyAdRewardSection: React.FC<DailyAdRewardSectionProps> = ({
     // 1. Immediately close ad modal window
     setIsWatchingAd(false);
 
-    // 2. Increment watched count & persist in localStorage
-    const newWatched = Math.min(MAX_DAILY_ADS, adsWatched + 1);
-    setAdsWatched(newWatched);
-    localStorage.setItem(storageKeyAds, newWatched.toString());
+    // 2. Increment watched count via lock engine
+    const { newCount } = incrementDailyActionCount('rewarded_ad_watch', userKey, MAX_DAILY_ADS);
+    setAdsWatched(newCount);
 
     if (rewardMode === 'spin') {
-      // 3a. Open Lucky Spin Wheel modal so student spins for randomized XP (+10, +50, +100, +200) or Rare Avatar Frames!
+      // 3a. Open Lucky Spin Wheel modal so student spins for randomized XP
       setIsSpinModalOpen(true);
     } else {
       // 3b. Direct +100 XP grant
       addXP(XP_PER_AD);
       onRewardClaimed?.(XP_PER_AD);
 
-      const remaining = Math.max(0, MAX_DAILY_ADS - newWatched);
+      const remaining = Math.max(0, MAX_DAILY_ADS - newCount);
       setToastMessage({
         id: Date.now(),
         title: '🎉 +100 XP Added Successfully!',
@@ -146,11 +152,25 @@ export const DailyAdRewardSection: React.FC<DailyAdRewardSectionProps> = ({
 
   // Handle Daily 10 XP Free Claim
   const handleDailyClaim = () => {
-    if (hasClaimedDaily) return;
+    if (hasClaimedDaily) {
+      triggerDailyLockToast(
+        '⚠️ You have already claimed your Daily Attendance reward today! Come back tomorrow at midnight for fresh XP.',
+        'Daily Attendance Claim'
+      );
+      return;
+    }
+
+    const recorded = recordDailyActionClaim('daily_attendance', userKey);
+    if (!recorded) {
+      triggerDailyLockToast(
+        '⚠️ You have already claimed your Daily Attendance reward today! Come back tomorrow at midnight for fresh XP.',
+        'Daily Attendance Claim'
+      );
+      return;
+    }
 
     soundFX.playCorrect();
     setHasClaimedDaily(true);
-    localStorage.setItem(storageKeyDailyClaim, 'true');
 
     try {
       confetti({
@@ -299,26 +319,15 @@ export const DailyAdRewardSection: React.FC<DailyAdRewardSectionProps> = ({
                   </div>
                 </div>
               ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleWatchAd}
-                    disabled={isWatchingAd}
-                    className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/25 transition cursor-pointer transform hover:scale-102 active:scale-98"
-                  >
-                    <Play className="w-4 h-4 fill-slate-950 text-slate-950" />
-                    <span>{rewardMode === 'spin' ? 'Watch Ad & Spin 🎡' : 'Watch Ad (+100 XP)'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsSpinModalOpen(true)}
-                    className="px-4 py-2 rounded-xl bg-slate-950/80 hover:bg-slate-800 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5 text-yellow-400" />
-                    <span>Test Lucky Spin Wheel 🎡</span>
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={handleWatchAd}
+                  disabled={isWatchingAd}
+                  className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/25 transition cursor-pointer transform hover:scale-102 active:scale-98"
+                >
+                  <Play className="w-4 h-4 fill-slate-950 text-slate-950" />
+                  <span>{rewardMode === 'spin' ? 'Watch Ad & Spin 🎡' : 'Watch Ad (+100 XP)'}</span>
+                </button>
               )}
             </div>
           </div>

@@ -1,18 +1,29 @@
 import React from 'react';
-import { Crown, Trophy, Medal, Flame, Zap, CheckCircle2, GraduationCap, Globe, ThumbsUp } from 'lucide-react';
+import { Crown, Trophy, Medal, Flame, Zap, CheckCircle2, GraduationCap, Globe, ThumbsUp, ChevronRight } from 'lucide-react';
 import { soundFX } from '@/utils/audioUtils';
 import { AvatarFrameRenderer } from './AvatarFrameRenderer';
 import type { StudentAchiever } from '@/data/keyPlayersData';
+import type { PageId } from '@/components/Layout';
 import confetti from 'canvas-confetti';
 
 interface Top3PodiumProps {
   topStudents: StudentAchiever[];
   onCheerStudent: (id: string) => void;
+  title?: string;
+  subtitle?: string;
+  badgeLabel?: string;
+  onNavigate?: (page: PageId) => void;
+  showViewAllButton?: boolean;
 }
 
 export const Top3Podium: React.FC<Top3PodiumProps> = ({
   topStudents,
-  onCheerStudent
+  onCheerStudent,
+  title = 'Top Champions Podium (Live Real-Time Ranks)',
+  subtitle,
+  badgeLabel = 'WORLD APEX 🌍',
+  onNavigate,
+  showViewAllButton = false
 }) => {
   const rank1 = topStudents[0];
   const rank2 = topStudents[1];
@@ -33,22 +44,57 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
 
   if (!rank1) return null;
 
+  const totalPodiumCount = [rank1, rank2, rank3].filter(Boolean).length;
+
   return (
     <div id="top-3-podium-section" className="space-y-4">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-        <div className="flex items-center gap-2">
-          <Crown className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-          <h3 className="text-base sm:text-lg font-black text-white">
-            Top 3 Global Champions Podium (3D Master Frames)
-          </h3>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center flex-shrink-0">
+            <Crown className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+          </div>
+          <div>
+            <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+              <span>{title}</span>
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-700">
+                100% REAL
+              </span>
+            </h3>
+            {subtitle && (
+              <p className="text-xs text-slate-400">
+                {subtitle}
+              </p>
+            )}
+          </div>
         </div>
-        <span className="text-xs px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-extrabold">
-          WORLD APEX 🌍
-        </span>
+
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          <span className="text-xs px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-extrabold whitespace-nowrap">
+            {badgeLabel}
+          </span>
+          {showViewAllButton && onNavigate && (
+            <button
+              type="button"
+              onClick={() => onNavigate('key_players')}
+              className="px-3 py-1 rounded-full bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 hover:text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer whitespace-nowrap"
+            >
+              <span>View Full Leaderboard</span>
+              <ChevronRight className="w-3 h-3" />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Podium Grid: #2 on left, #1 in center (tallest), #3 on right */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-4 lg:gap-6 items-end pt-6 max-w-full">
+      {/* Podium Grid dynamically responsive based on available champions */}
+      <div
+        className={`pt-6 max-w-full items-end ${
+          totalPodiumCount === 1
+            ? 'max-w-md mx-auto'
+            : totalPodiumCount === 2
+            ? 'max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6'
+            : 'grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-4 lg:gap-6'
+        }`}
+      >
         {/* RANK #2 - SILVER PODIUM */}
         {rank2 && (
           <div className="relative w-full max-w-full rounded-3xl bg-gradient-to-b from-slate-800/80 via-slate-900 to-slate-950 border-2 border-slate-300/60 p-5 sm:p-6 shadow-2xl flex flex-col items-center text-center space-y-3.5 order-2 md:order-1 ring-1 ring-slate-300/30 hover:scale-102 transition duration-300 min-w-0">
@@ -170,12 +216,13 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
           </div>
         )}
 
-        {/* RANK #3 - BRONZE PODIUM */}
+        {/* RANK #3 - BRONZE PODIUM / CHALLENGER ZONE */}
         {rank3 && (
-          <div className="relative w-full max-w-full rounded-3xl bg-gradient-to-b from-amber-950/60 via-slate-900 to-slate-950 border-2 border-amber-700/70 p-5 sm:p-6 shadow-2xl flex flex-col items-center text-center space-y-3.5 order-3 md:order-3 ring-1 ring-amber-700/40 hover:scale-102 transition duration-300 min-w-0">
-            {/* Top Bronze Rank Badge */}
-            <div className="absolute -top-3.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-700 to-amber-500 text-amber-100 font-black text-[11px] sm:text-xs shadow-lg flex items-center gap-1 z-10">
-              <span>🥉 RANK #3</span>
+          <div className="relative w-full max-w-full rounded-3xl bg-gradient-to-b from-amber-950/70 via-slate-900 to-slate-950 border-2 border-amber-600/80 p-5 sm:p-6 shadow-2xl flex flex-col items-center text-center space-y-3.5 order-3 md:order-3 ring-2 ring-orange-500/50 shadow-orange-500/20 hover:scale-102 transition duration-300 min-w-0">
+            {/* Challenger Zone Neon Banner */}
+            <div className="absolute -top-3.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-orange-500 via-amber-600 to-amber-700 text-white font-black text-[11px] sm:text-xs shadow-lg shadow-orange-500/30 flex items-center gap-1.5 z-10 animate-pulse border border-orange-300/40">
+              <Flame className="w-3.5 h-3.5 fill-white text-white shrink-0" />
+              <span>CHALLENGER SPOT #3</span>
             </div>
 
             <div className="pt-4 pb-1">

@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
-import confetti from 'canvas-confetti';
+import React, { useState, useEffect } from 'react';
 import {
   Share2,
   Users,
   Copy,
   Check,
-  Sparkles,
   Award,
   Crown,
   Flame,
@@ -13,49 +11,55 @@ import {
   TrendingUp,
   ExternalLink,
   MessageCircle,
-  Send,
-  Download,
-  CheckCircle2,
-  Heart
+  ShieldCheck,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { soundFX } from '@/utils/audioUtils';
 import { AvatarFrameRenderer } from './AvatarFrameRenderer';
-import type { StudentAchiever } from '@/data/keyPlayersData';
+import {
+  getVerifiedReferrals,
+  getVerifiedReferralCount,
+  type VerifiedReferralRecord
+} from '@/services/referralService';
 
 interface ReferralAndSocialShareSectionProps {
   currentRank?: number;
-  onXPClaimed?: (xp: number) => void;
 }
 
 export const ReferralAndSocialShareSection: React.FC<ReferralAndSocialShareSectionProps> = ({
-  currentRank = 14,
-  onXPClaimed
+  currentRank = 14
 }) => {
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
 
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedStatusText, setCopiedStatusText] = useState(false);
-  const [hasSharedToday, setHasSharedToday] = useState(false);
-  const [showStatusCardModal, setShowStatusCardModal] = useState(false);
+  const [verifiedReferrals, setVerifiedReferrals] = useState<VerifiedReferralRecord[]>([]);
 
-  // Referral counts stored in localStorage
-  const referralKey = `siparana_referrals_count_${profile?.id || 'guest'}`;
-  const [referralCount, setReferralCount] = useState<number>(() => {
-    const saved = localStorage.getItem(referralKey);
-    return saved ? parseInt(saved, 10) : 3;
-  });
-
+  // Unique Scholar Invite Code and Link
   const referralCode = `SCHOLAR_${(profile?.id || 'GLOBAL').slice(-6).toUpperCase()}`;
-  const referralLink = `https://siparana.edu/join?ref=${referralCode}`;
+  const referralLink = typeof window !== 'undefined' 
+    ? `${window.location.origin}?ref=${profile?.id || referralCode}`
+    : `https://siparana.edu/join?ref=${referralCode}`;
 
   const studentName = profile?.name || 'Dedicated Scholar';
   const studentXP = profile?.xp || 1850;
   const streakDays = profile?.streakDays || 7;
   const schoolOrUni = profile?.university || profile?.school || 'National High School';
   const countryFlag = profile?.countryFlag || '🇱🇰';
+
+  // Load verified referrals on mount and whenever profile changes
+  useEffect(() => {
+    if (profile?.id) {
+      const records = getVerifiedReferrals(profile.id);
+      setVerifiedReferrals(records);
+    }
+  }, [profile?.id, profile?.xp]);
+
+  const verifiedCount = verifiedReferrals.length;
+  const totalReferralXP = verifiedCount * 200;
 
   // WhatsApp formatted share text
   const whatsAppShareText = `🏆 *My Academic Rank on SipArana AI Global Leaderboard!* 🚀\n\n👤 *Scholar:* ${studentName} ${countryFlag}\n🥇 *Global Rank:* #${currentRank} Sovereign Master\n⚡ *Total XP:* ${studentXP.toLocaleString()} XP | 🔥 *Streak:* ${streakDays} Days\n🏫 *Institution:* ${schoolOrUni}\n\nJoin me on SipArana AI — The Free 24/7 AI Education & Exam Accelerator! 📚✨\n👉 ${referralLink}`;
@@ -75,42 +79,9 @@ export const ReferralAndSocialShareSection: React.FC<ReferralAndSocialShareSecti
   };
 
   const handleWhatsAppShare = () => {
-    soundFX.playCorrect();
-
-    // Reward +25 XP on first daily share
-    if (!hasSharedToday) {
-      setHasSharedToday(true);
-      addXP(25);
-      onXPClaimed?.(25);
-      try {
-        confetti({
-          particleCount: 50,
-          spread: 60,
-          origin: { y: 0.7 }
-        });
-      } catch {}
-    }
-
+    soundFX.playPop();
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsAppShareText)}`;
     window.open(whatsappUrl, '_blank');
-  };
-
-  const handleSimulateFriendJoined = () => {
-    const newCount = referralCount + 1;
-    setReferralCount(newCount);
-    localStorage.setItem(referralKey, newCount.toString());
-
-    addXP(200);
-    onXPClaimed?.(200);
-    soundFX.playLevelUp();
-
-    try {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    } catch {}
   };
 
   return (
@@ -129,7 +100,7 @@ export const ReferralAndSocialShareSection: React.FC<ReferralAndSocialShareSecti
               </span>
 
               <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-black">
-                +200 XP / Friend
+                +200 XP / Registered Friend
               </span>
             </div>
 
@@ -139,27 +110,51 @@ export const ReferralAndSocialShareSection: React.FC<ReferralAndSocialShareSecti
 
             <p className="text-xs text-slate-300">
               {language === 'si'
-                ? 'ඔබගේ මිතුරන්ට සහ පන්තියේ ළමුන්ට ආරාධනා කරන්න. සෑම මිතුරෙකුම එක්වන විට ඔබට +200 XP ප්‍රසාද හිමිවේ!'
-                : 'Share your personal referral link with classmates and study groups. Earn +200 XP instantly for every active student who joins!'}
+                ? 'ඔබගේ පුද්ගලික ආරාධනා සබැඳිය මිතුරන්ට බෙදාගන්න. ඔබගේ සබැඳියෙන් ලියාපදිංචි වන සෑම නව ශිෂ්‍යයෙකු වෙනුවෙන්ම ඔබට +200 XP ප්‍රසාද හිමිවේ.'
+                : 'Share your personal referral link with classmates. Earn +200 XP automatically when a new student completes registration through your link.'}
             </p>
 
-            {/* Referral Stats Banner */}
+            {/* Verified Referral Real-Time Tracking Stats Banner */}
             <div className="grid grid-cols-3 gap-2.5 p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-center">
               <div>
                 <span className="text-[10px] text-slate-400 font-bold block">Friends Joined</span>
-                <span className="text-base font-black text-white">{referralCount}</span>
+                <span className="text-base font-black text-white">{verifiedCount}</span>
               </div>
               <div>
                 <span className="text-[10px] text-slate-400 font-bold block">XP Earned</span>
-                <span className="text-base font-black text-amber-400">+{referralCount * 200} XP</span>
+                <span className="text-base font-black text-amber-400">+{totalReferralXP} XP</span>
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 font-bold block">Next Milestone</span>
-                <span className="text-base font-black text-blue-400">{Math.min(5, referralCount)}/5</span>
+                <span className="text-[10px] text-slate-400 font-bold block">Verification</span>
+                <span className="text-xs font-black text-emerald-400 flex items-center justify-center gap-1 mt-0.5">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Real-Time</span>
+                </span>
               </div>
             </div>
 
-            {/* Referral Link Box */}
+            {/* List of Verified Joined Friends if any */}
+            {verifiedReferrals.length > 0 && (
+              <div className="space-y-1.5">
+                <div className="text-[11px] font-bold text-slate-400 flex items-center justify-between">
+                  <span>Verified Registered Classmates:</span>
+                  <span className="text-emerald-400 font-black text-[10px]">+{totalReferralXP} XP Granted</span>
+                </div>
+                <div className="max-h-24 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                  {verifiedReferrals.map((ref, idx) => (
+                    <div
+                      key={ref.newUserId || idx}
+                      className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs"
+                    >
+                      <span className="font-bold text-slate-200 truncate">{ref.newUserName}</span>
+                      <span className="text-amber-400 font-black shrink-0">+{ref.xpAwarded} XP</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Unique Referral Link Box */}
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-slate-400 block">
                 Your Unique Scholar Invite Link:
@@ -196,25 +191,15 @@ export const ReferralAndSocialShareSection: React.FC<ReferralAndSocialShareSecti
             </div>
           </div>
 
-          {/* Social Quick Share Actions */}
-          <div className="pt-2 flex flex-wrap items-center gap-2">
+          {/* Action Button: Share to WhatsApp Only */}
+          <div className="pt-2">
             <button
               type="button"
               onClick={handleWhatsAppShare}
-              className="flex-1 min-w-[140px] py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md shadow-emerald-600/20"
+              className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md shadow-emerald-600/20 active:scale-98"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>Share to WhatsApp</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSimulateFriendJoined}
-              className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
-              title="Test invite reward simulation"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Simulate Friend Join (+200 XP)</span>
+              <span>Share Invite Link to WhatsApp</span>
             </button>
           </div>
         </div>
@@ -230,8 +215,8 @@ export const ReferralAndSocialShareSection: React.FC<ReferralAndSocialShareSecti
                 <span>VIRAL STATUS MAKER</span>
               </span>
 
-              <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-black">
-                +25 XP Share Bonus
+              <span className="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold">
+                WhatsApp Status
               </span>
             </div>
 
@@ -242,7 +227,7 @@ export const ReferralAndSocialShareSection: React.FC<ReferralAndSocialShareSecti
             <p className="text-xs text-slate-300">
               {language === 'si'
                 ? 'ඔබගේ Global Rank එක සහ ශිෂ්‍ය පදක්කම් WhatsApp Status එකක් ලෙස ක්ෂණිකව බෙදාගෙන මිතුරන්ට පෙන්වන්න.'
-                : 'Generate a sleek, verified scholar status card showcasing your global rank, streak, and badges directly on WhatsApp.'}
+                : 'Generate a verified scholar status card showcasing your global rank, streak, and badges directly on WhatsApp.'}
             </p>
 
             {/* Live Visual Rank Card Mini Preview */}
@@ -285,7 +270,7 @@ export const ReferralAndSocialShareSection: React.FC<ReferralAndSocialShareSecti
               className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition cursor-pointer active:scale-98"
             >
               <MessageCircle className="w-4 h-4 fill-slate-950" />
-              <span>Post Rank to WhatsApp Status (+25 XP)</span>
+              <span>Post Rank to WhatsApp Status</span>
             </button>
 
             <button
@@ -296,7 +281,7 @@ export const ReferralAndSocialShareSection: React.FC<ReferralAndSocialShareSecti
               {copiedStatusText ? (
                 <>
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Text Copied!</span>
+                  <span>Caption Copied!</span>
                 </>
               ) : (
                 <>

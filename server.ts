@@ -45,7 +45,7 @@ interface StoredUser {
   registeredAt?: string;
 }
 
-// In-Memory User Store with disk persistence
+// In-Memory User Store with disk persistence (Strict Genuine Registered Users Only)
 let storedUsers: StoredUser[] = [];
 
 function loadStoredUsers(): StoredUser[] {
@@ -55,10 +55,17 @@ function loadStoredUsers(): StoredUser[] {
     }
     if (fs.existsSync(USERS_FILE)) {
       const data = fs.readFileSync(USERS_FILE, 'utf-8');
-      storedUsers = JSON.parse(data);
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        // Filter out any stale dummy seed accounts
+        storedUsers = parsed.filter(u => u && u.id && !u.id.includes('senanayake') && !u.id.includes('wijesinghe') && !u.id.includes('sandaruwan') && !u.id.includes('oliver-harrison'));
+      } else {
+        storedUsers = [];
+      }
     } else {
       storedUsers = [];
     }
+    saveStoredUsers();
   } catch (err) {
     console.error('Error loading stored users:', err);
     storedUsers = [];
