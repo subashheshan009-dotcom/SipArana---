@@ -213,7 +213,7 @@ export default function KaviStepByStepMentor({
             <button
               type="button"
               onClick={() => handleClaimMission(currentAdvice)}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs shadow-md transition transform hover:scale-102 flex items-center gap-1.5 cursor-pointer"
+              className="min-h-[44px] sm:min-h-[38px] px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs shadow-md transition transform active:scale-95 flex items-center gap-1.5 cursor-pointer relative z-20 pointer-events-auto touch-manipulation select-none"
             >
               <span>
                 {completedAdviceIds.includes(currentAdvice.id)
@@ -222,7 +222,7 @@ export default function KaviStepByStepMentor({
                   ? currentAdvice.recommendedAction.labelSi
                   : currentAdvice.recommendedAction.labelEn}
               </span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
             </button>
           </div>
         )}

@@ -118,7 +118,7 @@ export const CompactTop3Scholars: React.FC<CompactTop3ScholarsProps> = ({
                   : 'bg-slate-950/50 border-slate-800/70 hover:bg-slate-800/40 hover:border-slate-700/80'
               }`}
             >
-              {/* Left: Rank Badge + Round Avatar */}
+              {/* Left: Rank Badge + Round Avatar with Free Fire Status Indicator */}
               <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                 {getRankBadge(rank)}
 
@@ -135,19 +135,38 @@ export const CompactTop3Scholars: React.FC<CompactTop3ScholarsProps> = ({
                       {getInitials(student.name)}
                     </div>
                   )}
-                  {isCurrentUser && (
-                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-blue-500 border-2 border-slate-900 rounded-full" title="You" />
+                  {/* Free Fire Online/Offline Indicator Dot */}
+                  {student.isOnline ? (
+                    <span
+                      className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-950 rounded-full shadow-xs shadow-emerald-500/50 ring-1 ring-emerald-400"
+                      title="Online"
+                    />
+                  ) : (
+                    <span
+                      className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-slate-500 border-2 border-slate-950 rounded-full"
+                      title="Offline"
+                    />
                   )}
                 </div>
 
-                {/* Middle: Student's Registered Name + Registered School/City */}
+                {/* Middle: Student's Registered Name + Registered School/City + Status */}
                 <div className="min-w-0 pr-1">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-bold text-slate-100 text-xs sm:text-sm truncate">
                       {student.name}
                     </span>
+                    {student.isOnline ? (
+                      <span className="text-[9px] font-black text-emerald-400 bg-emerald-950/70 px-1.5 py-0.5 rounded border border-emerald-500/40 whitespace-nowrap flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Online
+                      </span>
+                    ) : (
+                      <span className="text-[9px] font-semibold text-slate-400 bg-slate-900/70 px-1.5 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+                        Offline
+                      </span>
+                    )}
                     {isCurrentUser && (
-                      <span className="text-[10px] font-extrabold text-blue-300 bg-blue-900/50 px-1.5 py-0.2 rounded border border-blue-700/40 whitespace-nowrap">
+                      <span className="text-[9px] font-black text-blue-300 bg-blue-900/50 px-1.5 py-0.5 rounded border border-blue-700/40 whitespace-nowrap">
                         {language === 'si' ? 'ඔබ' : 'You'}
                       </span>
                     )}

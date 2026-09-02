@@ -22,6 +22,10 @@ export interface StudentAchiever {
   specialBadge: string;
   honorTitle: string;
   isVerified: boolean;
+  isOnline?: boolean;
+  lastActiveDate?: string;
+  lastActiveTimestamp?: number;
+  isCurrentUser?: boolean;
   cheersCount: number;
   bioQuote?: string;
   targetUniversity?: string;
@@ -548,6 +552,9 @@ export function convertProfileToAchiever(
     specialBadge,
     honorTitle,
     isVerified: true,
+    isOnline: isCurrent || Boolean((profile as any).isOnline || (profile.lastActiveDate && profile.lastActiveDate === new Date().toISOString().split('T')[0])),
+    lastActiveDate: profile.lastActiveDate || new Date().toISOString().split('T')[0],
+    isCurrentUser: isCurrent,
     cheersCount: (profile as any).cheersCount || 0,
     bioQuote: profile.bio || profile.statusQuote || 'Dedicated scholar striving for peak academic mastery & Island Rank.',
     targetUniversity: profile.targetUniversity || 'University of Moratuwa / Oxford',

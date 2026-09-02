@@ -57,7 +57,7 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
   };
 
   return (
-    <div id="key-players-page" className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
+    <div id="key-players-page" className="w-full max-w-full space-y-6 sm:space-y-8 overflow-x-hidden">
       {/* =========================================================================
           SECTION 1: TOP 3 PODIUM & PODIUM CHALLENGER TRACKER
           ========================================================================= */}

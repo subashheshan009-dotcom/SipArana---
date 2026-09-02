@@ -275,7 +275,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const returningGreeting = getPersonalizedReturningGreeting(profile, studyMemory, language);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-x-hidden">
       {/* 0. LIVE COMMUNITY STUDY PULSE & PERSONALIZED AI GOAL GREETING */}
       <LiveStudyPulseBanner />
 

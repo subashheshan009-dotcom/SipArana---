@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { StudentAchiever } from '@/data/keyPlayersData';
 import { useAuth } from '@/context/AuthContext';
-import { fetchLiveLeaderboard, LEADERBOARD_UPDATE_EVENT } from '@/services/leaderboardService';
+import { fetchLiveLeaderboard, pingUserHeartbeat, LEADERBOARD_UPDATE_EVENT } from '@/services/leaderboardService';
 
 export function useLeaderboard() {
   const { profile } = useAuth();
@@ -10,6 +10,9 @@ export function useLeaderboard() {
 
   const loadData = useCallback(async () => {
     try {
+      if (profile?.id) {
+        pingUserHeartbeat(profile.id);
+      }
       const data = await fetchLiveLeaderboard(profile);
       setLeaderboard(data);
     } catch (err) {

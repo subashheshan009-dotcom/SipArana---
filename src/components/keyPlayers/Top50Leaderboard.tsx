@@ -280,7 +280,7 @@ export const Top50Leaderboard: React.FC<Top50LeaderboardProps> = ({
                   {/* Rank Badge */}
                   {getRankBadge(rank)}
 
-                  {/* Small Round Profile Picture */}
+                  {/* Small Round Profile Picture with Free Fire Status Indicator */}
                   <div className="relative flex-shrink-0">
                     <AvatarFrameRenderer frameId={student.frameId} size="sm">
                       {student.avatar && !hasImgError ? (
@@ -296,22 +296,41 @@ export const Top50Leaderboard: React.FC<Top50LeaderboardProps> = ({
                         </div>
                       )}
                     </AvatarFrameRenderer>
-                    {isCurrentUser && (
-                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-blue-500 border-2 border-slate-950 rounded-full" />
+                    {/* Free Fire Online/Offline Status Dot */}
+                    {student.isOnline ? (
+                      <span
+                        className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-emerald-500 border-2 border-slate-950 rounded-full shadow-xs shadow-emerald-500/50 ring-1 ring-emerald-400"
+                        title="Online"
+                      />
+                    ) : (
+                      <span
+                        className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-slate-500 border-2 border-slate-950 rounded-full"
+                        title="Offline"
+                      />
                     )}
                   </div>
 
                   {/* Student Name & School/Country Info */}
                   <div className="min-w-0 flex-1 pr-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-bold text-slate-100 text-xs sm:text-sm truncate group-hover:text-amber-300 transition-colors">
                         {student.name}
                       </span>
                       {student.isVerified && (
                         <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
                       )}
+                      {student.isOnline ? (
+                        <span className="text-[9px] font-extrabold text-emerald-400 bg-emerald-950/70 px-1.5 py-0.5 rounded border border-emerald-500/40 whitespace-nowrap flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                          Online
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-semibold text-slate-400 bg-slate-900/70 px-1.5 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+                          Offline
+                        </span>
+                      )}
                       {isCurrentUser && (
-                        <span className="text-[9px] font-black text-blue-300 bg-blue-900/50 px-1.5 py-0.2 rounded border border-blue-700/40 whitespace-nowrap">
+                        <span className="text-[9px] font-black text-blue-300 bg-blue-900/50 px-1.5 py-0.5 rounded border border-blue-700/40 whitespace-nowrap">
                           YOU
                         </span>
                       )}

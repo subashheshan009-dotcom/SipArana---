@@ -381,14 +381,14 @@ export default function KaviStudyPetWidget({ externalMood, onQuickStudy }: KaviS
           </p>
 
           {/* Quick Pet Care Actions */}
-          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 relative z-20 pointer-events-auto">
             <button
               type="button"
               id="kavi-pet-btn"
               onClick={handlePetKavi}
-              className="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-300 text-[11px] font-bold flex items-center gap-1 transition cursor-pointer"
+              className="min-h-[40px] sm:min-h-[34px] px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-300 text-xs sm:text-[11px] font-bold flex items-center gap-1.5 transition cursor-pointer active:scale-95 touch-manipulation"
             >
-              <Heart className="w-3 h-3 text-rose-500 fill-rose-500" />
+              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
               <span>Pet Kavi (+10 XP)</span>
             </button>
 
@@ -396,9 +396,9 @@ export default function KaviStudyPetWidget({ externalMood, onQuickStudy }: KaviS
               type="button"
               id="kavi-feed-btn"
               onClick={handleFeedBerry}
-              className="px-2.5 py-1 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 border border-purple-200 dark:border-purple-800/60 text-purple-700 dark:text-purple-300 text-[11px] font-bold flex items-center gap-1 transition cursor-pointer"
+              className="min-h-[40px] sm:min-h-[34px] px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 border border-purple-200 dark:border-purple-800/60 text-purple-700 dark:text-purple-300 text-xs sm:text-[11px] font-bold flex items-center gap-1.5 transition cursor-pointer active:scale-95 touch-manipulation"
             >
-              <Sparkles className="w-3 h-3 text-purple-500" />
+              <Sparkles className="w-3.5 h-3.5 text-purple-500" />
               <span>Feed Berry (+15 Energy)</span>
             </button>
 
@@ -406,10 +406,10 @@ export default function KaviStudyPetWidget({ externalMood, onQuickStudy }: KaviS
               <button
                 type="button"
                 onClick={onQuickStudy}
-                className="ml-auto px-3 py-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] font-bold flex items-center gap-1 shadow-xs hover:shadow-md transition cursor-pointer"
+                className="ml-auto min-h-[40px] sm:min-h-[34px] px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs sm:text-[11px] font-bold flex items-center gap-1.5 shadow-xs hover:shadow-md transition cursor-pointer active:scale-95 touch-manipulation"
               >
                 <span>Start 25m Focus</span>
-                <ChevronRight className="w-3 h-3" />
+                <ChevronRight className="w-3.5 h-3.5" />
               </button>
             )}
           </div>

@@ -166,8 +166,20 @@ export const FreeFirePlayerProfileModal: React.FC<FreeFirePlayerProfileModalProp
                   </div>
                 )}
               </AvatarFrameRenderer>
+              {/* Free Fire Online/Offline status dot */}
+              {student.isOnline ? (
+                <span
+                  className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-slate-950 rounded-full shadow-md shadow-emerald-500/50 ring-2 ring-emerald-300"
+                  title="Online Now"
+                />
+              ) : (
+                <span
+                  className="absolute bottom-0 right-0 w-4 h-4 bg-slate-500 border-2 border-slate-950 rounded-full"
+                  title="Offline (Rank Reserved)"
+                />
+              )}
               {isCurrentUser && (
-                <span className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-blue-600 border border-white text-[10px] font-black text-white shadow-md">
+                <span className="absolute -top-1 -left-1 px-2 py-0.5 rounded-full bg-blue-600 border border-white text-[9px] font-black text-white shadow-md">
                   YOU
                 </span>
               )}
@@ -175,8 +187,21 @@ export const FreeFirePlayerProfileModal: React.FC<FreeFirePlayerProfileModalProp
 
             {/* Player Banner Name & Rank */}
             <div className="min-w-0 flex-1 pr-6">
-              <div className="inline-block px-2.5 py-0.5 rounded-full bg-black/40 border border-white/20 text-[10px] font-black tracking-wider uppercase text-white mb-1">
-                {rankTheme.badge}
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <div className="inline-block px-2.5 py-0.5 rounded-full bg-black/40 border border-white/20 text-[10px] font-black tracking-wider uppercase text-white">
+                  {rankTheme.badge}
+                </div>
+                {student.isOnline ? (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-400 text-emerald-300 text-[10px] font-black flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Online
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-slate-900/80 border border-slate-700 text-slate-300 text-[10px] font-medium flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                    Offline (Rank Reserved)
+                  </span>
+                )}
               </div>
 
               <h2 className="text-lg sm:text-xl font-black text-white truncate drop-shadow-md flex items-center gap-1.5">

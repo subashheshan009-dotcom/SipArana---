@@ -103,7 +103,7 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
               <span>🥈 RANK #2</span>
             </div>
 
-            <div className="pt-4 pb-1">
+            <div className="pt-4 pb-1 relative">
               <AvatarFrameRenderer
                 avatarUrl={rank2.avatar}
                 name={rank2.name}
@@ -112,6 +112,24 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
                 size="lg"
                 showCrown={true}
               />
+            </div>
+
+            {/* Free Fire Status Indicator */}
+            <div className="flex items-center justify-center">
+              {rank2.isOnline ? (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/90 border border-emerald-500/50 text-[10px] font-black text-emerald-400 shadow-xs shadow-emerald-500/30">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span>ONLINE</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-[10px] font-bold text-slate-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                  <span>OFFLINE</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-1.5 w-full min-w-0">
@@ -162,7 +180,7 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
               <span>👑 SOVEREIGN RANK #1</span>
             </div>
 
-            <div className="pt-5 pb-1">
+            <div className="pt-5 pb-1 relative">
               <AvatarFrameRenderer
                 avatarUrl={rank1.avatar}
                 name={rank1.name}
@@ -172,6 +190,24 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
                 showCrown={true}
                 showTierTag={true}
               />
+            </div>
+
+            {/* Free Fire Status Indicator */}
+            <div className="flex items-center justify-center">
+              {rank1.isOnline ? (
+                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/90 border border-emerald-400 text-[10px] font-black text-emerald-300 shadow-sm shadow-emerald-500/40">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                  </span>
+                  <span>ONLINE NOW</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-[10px] font-bold text-slate-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                  <span>OFFLINE</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-1.5 w-full min-w-0">
@@ -225,7 +261,7 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
               <span>CHALLENGER SPOT #3</span>
             </div>
 
-            <div className="pt-4 pb-1">
+            <div className="pt-4 pb-1 relative">
               <AvatarFrameRenderer
                 avatarUrl={rank3.avatar}
                 name={rank3.name}
@@ -234,6 +270,24 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
                 size="lg"
                 showCrown={true}
               />
+            </div>
+
+            {/* Free Fire Status Indicator */}
+            <div className="flex items-center justify-center">
+              {rank3.isOnline ? (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/90 border border-emerald-500/50 text-[10px] font-black text-emerald-400 shadow-xs shadow-emerald-500/30">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span>ONLINE</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-[10px] font-bold text-slate-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                  <span>OFFLINE</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-1.5 w-full min-w-0">

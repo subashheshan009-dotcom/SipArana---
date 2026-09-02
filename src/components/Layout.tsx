@@ -602,11 +602,11 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
   const activeLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === language) || SUPPORTED_LANGUAGES[0];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col md:flex-row w-full max-w-full overflow-x-hidden relative">
+    <div className="min-h-screen min-h-[100dvh] bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col md:flex-row w-full max-w-full overflow-x-hidden relative">
       {/* Sidebar - Desktop */}
       <aside
         id="desktop-sidebar"
-        className="hidden md:flex md:w-64 lg:w-72 flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 sticky top-0 h-screen z-30 select-none"
+        className="hidden md:flex md:w-64 lg:w-72 flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 sticky top-0 h-screen z-30 select-none flex-shrink-0"
       >
         {/* Brand Header */}
         <div className="p-4 lg:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
@@ -940,7 +940,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 w-full max-w-full overflow-x-hidden">
+      <div className="flex-1 flex flex-col min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto min-h-screen min-h-[100dvh]">
         {/* Top Navbar */}
         <header
           id="top-navbar"
@@ -1666,8 +1666,11 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
           </div>
         )}
 
-        {/* Page Body with safe area padding */}
-        <main id="main-content-scroll" className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-28 md:pb-8 min-w-0 overflow-x-hidden">
+        {/* Page Body with safe area padding and adaptive mobile/tablet/desktop width */}
+        <main
+          id="main-content-scroll"
+          className="flex-1 w-full px-3 sm:px-4 md:max-w-4xl md:px-6 md:py-6 lg:max-w-7xl lg:px-8 lg:py-8 mx-auto pb-28 md:pb-8 min-w-0 overflow-x-hidden relative z-10"
+        >
           {children}
         </main>
 
@@ -1675,7 +1678,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
         <nav
           id="mobile-bottom-navbar"
           aria-label="Mobile Navigation"
-          className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/90 px-1 py-1 shadow-2xl safe-pb flex items-center justify-around select-none"
+          className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/90 px-1 py-1 shadow-2xl safe-pb flex items-center justify-around select-none pointer-events-auto touch-manipulation"
         >
           {/* 1. Dashboard Tab */}
           <button

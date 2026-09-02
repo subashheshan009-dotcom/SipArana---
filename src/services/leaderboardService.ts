@@ -21,7 +21,11 @@ export async function fetchLiveLeaderboard(currentProfile?: UserProfile | null):
       const data = await res.json();
       if (data && Array.isArray(data.leaderboard) && data.leaderboard.length > 0) {
         // If current profile exists, make sure it's accurately integrated
-        const list: StudentAchiever[] = [...data.leaderboard];
+        const list: StudentAchiever[] = data.leaderboard.map((item: any) => ({
+          ...item,
+          isOnline: Boolean(item.isOnline || (item.id === currentProfile?.id))
+        }));
+
         if (currentProfile && currentProfile.id) {
           const existingIdx = list.findIndex(a => a.id === currentProfile.id);
           const activeAchiever = convertProfileToAchiever(
@@ -29,10 +33,14 @@ export async function fetchLiveLeaderboard(currentProfile?: UserProfile | null):
             existingIdx >= 0 ? list[existingIdx].rank : list.length + 1,
             true
           );
+          activeAchiever.isOnline = true;
           if (existingIdx >= 0) {
             // Keep higher XP if active has updated locally
             if (activeAchiever.allTimeXP > list[existingIdx].allTimeXP) {
-              list[existingIdx] = activeAchiever;
+              list[existingIdx] = { ...list[existingIdx], ...activeAchiever, isOnline: true };
+            } else {
+              list[existingIdx].isOnline = true;
+              list[existingIdx].isCurrentUser = true;
             }
           } else {
             list.push(activeAchiever);
@@ -48,6 +56,20 @@ export async function fetchLiveLeaderboard(currentProfile?: UserProfile | null):
 
   // Fallback: Build leaderboard from verified registered student pool & current user
   return getLocalRegisteredAchievers(currentProfile);
+}
+
+// Send periodic heartbeat to keep student marked Online
+export async function pingUserHeartbeat(userId: string): Promise<void> {
+  try {
+    if (!userId) return;
+    await fetch('/api/users/heartbeat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    });
+  } catch {
+    // ignore
+  }
 }
 
 // Sync Real User with Backend Database

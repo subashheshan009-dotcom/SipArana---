@@ -42,6 +42,8 @@ interface StoredUser {
   cheersCount?: number;
   isVerified?: boolean;
   lastActiveDate?: string;
+  lastActiveTimestamp?: number;
+  isOnline?: boolean;
   registeredAt?: string;
 }
 
@@ -87,6 +89,20 @@ function saveStoredUsers() {
 // Initialize stored users on server boot
 loadStoredUsers();
 
+// Determine Free Fire style Online / Offline state
+function isUserActiveOnline(user: StoredUser): boolean {
+  if (user.isOnline === true) return true;
+  const now = Date.now();
+  if (user.lastActiveTimestamp && (now - user.lastActiveTimestamp < 15 * 60 * 1000)) {
+    return true;
+  }
+  const todayStr = new Date().toISOString().split('T')[0];
+  if (user.lastActiveDate === todayStr && user.lastActiveTimestamp && (now - user.lastActiveTimestamp < 60 * 60 * 1000)) {
+    return true;
+  }
+  return false;
+}
+
 // Helper to map a real stored user into the clean Leaderboard Achiever format
 function mapUserToAchiever(user: StoredUser, rank: number) {
   const isUni = user.studentCategory === 'University' || user.level === 'CAMPUS';
@@ -126,6 +142,8 @@ function mapUserToAchiever(user: StoredUser, rank: number) {
     user.stream?.includes('Computer') || isUni ? 'Computer Science & Algorithms' :
     'National Curriculum Scholar';
 
+  const isOnline = isUserActiveOnline(user);
+
   return {
     id: user.id,
     rank,
@@ -148,6 +166,9 @@ function mapUserToAchiever(user: StoredUser, rank: number) {
     specialBadge,
     honorTitle,
     isVerified: user.isVerified ?? true,
+    isOnline,
+    lastActiveDate: user.lastActiveDate || new Date().toISOString().split('T')[0],
+    lastActiveTimestamp: user.lastActiveTimestamp,
     cheersCount: user.cheersCount || 0,
     bioQuote: user.bio || user.statusQuote || 'Studying hard daily with SipArana past paper drills.',
     targetUniversity: user.targetUniversity || 'University of Moratuwa / Oxford',
@@ -255,6 +276,8 @@ async function startServer() {
         cheersCount: existingIndex >= 0 ? (storedUsers[existingIndex].cheersCount || 0) : (Number(user.cheersCount) || 0),
         isVerified: user.isVerified ?? true,
         lastActiveDate: new Date().toISOString().split('T')[0],
+        lastActiveTimestamp: Date.now(),
+        isOnline: true,
         registeredAt: existingIndex >= 0 ? (storedUsers[existingIndex].registeredAt || new Date().toISOString()) : new Date().toISOString()
       };
 
@@ -281,6 +304,26 @@ async function startServer() {
       });
     } catch (error: any) {
       console.error('Error syncing user:', error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Heartbeat endpoint to keep user active/online
+  app.post('/api/users/heartbeat', (req, res) => {
+    try {
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ success: false, error: 'User ID is required' });
+      }
+      const existingUser = storedUsers.find(u => u.id === userId);
+      if (existingUser) {
+        existingUser.lastActiveDate = new Date().toISOString().split('T')[0];
+        existingUser.lastActiveTimestamp = Date.now();
+        existingUser.isOnline = true;
+        saveStoredUsers();
+      }
+      return res.json({ success: true, isOnline: true });
+    } catch (error: any) {
       return res.status(500).json({ success: false, error: error.message });
     }
   });

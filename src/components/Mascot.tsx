@@ -140,7 +140,7 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
   };
 
   return (
-    <div id="siparana-mascot-container" className="fixed bottom-20 right-3 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2.5 max-w-[calc(100vw-1.5rem)] pointer-events-none transition-all duration-300">
+    <div id="siparana-mascot-container" className="fixed bottom-[74px] right-2.5 sm:bottom-6 sm:right-6 z-35 flex flex-col items-end gap-2.5 max-w-[calc(100vw-1.5rem)] pointer-events-none transition-all duration-300 select-none">
       {/* Speech bubble for Kavi Owl AI Assistant */}
       {isOpen && (
         <div
@@ -156,7 +156,7 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
               <button
                 type="button"
                 onClick={handleSpeak}
-                className="p-1.5 rounded-lg hover:bg-slate-800 text-amber-400 transition cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-slate-800 text-amber-400 transition cursor-pointer touch-manipulation"
                 title="Listen to Kavi speak"
               >
                 <Volume2 className="w-3.5 h-3.5" />
@@ -165,7 +165,7 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
                 id="mascot-close-btn"
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg cursor-pointer"
+                className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg cursor-pointer touch-manipulation"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -181,7 +181,7 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
               id="mascot-next-msg-btn"
               type="button"
               onClick={nextMessage}
-              className="text-amber-600 dark:text-amber-400 font-medium hover:underline flex items-center gap-1 cursor-pointer truncate"
+              className="text-amber-600 dark:text-amber-400 font-medium hover:underline flex items-center gap-1 cursor-pointer truncate touch-manipulation"
             >
               <Smile className="w-3 h-3 flex-shrink-0" /> <span className="truncate">{nextTipText}</span>
             </button>
@@ -189,7 +189,7 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
               id="mascot-highfive-btn"
               type="button"
               onClick={handleHighFive}
-              className="bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 px-2.5 py-1 rounded-xl border border-amber-200 dark:border-amber-800 flex items-center gap-1 font-bold hover:bg-amber-100 dark:hover:bg-amber-900/50 whitespace-nowrap shadow-xs cursor-pointer flex-shrink-0"
+              className="bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 px-2.5 py-1 rounded-xl border border-amber-200 dark:border-amber-800 flex items-center gap-1 font-bold hover:bg-amber-100 dark:hover:bg-amber-900/50 whitespace-nowrap shadow-xs cursor-pointer flex-shrink-0 active:scale-95 touch-manipulation"
             >
               ✋ High Five! (+15 XP)
             </button>
@@ -202,11 +202,11 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
                 setIsOpen(false);
                 onNavigate('ai_tutor');
               }}
-              className="w-full py-1.5 px-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-[11px] font-bold flex items-center justify-center gap-1.5 transition cursor-pointer border border-blue-200/60 dark:border-blue-800/60"
+              className="w-full py-2 px-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer border border-blue-200/60 dark:border-blue-800/60 active:scale-95 touch-manipulation"
             >
-              <Sparkles className="w-3 h-3 text-blue-500 flex-shrink-0" />
+              <Sparkles className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
               <span className="truncate">{language === 'si' ? 'AI ගුරු සහකාර වෙත යන්න' : 'Open 24/7 AI Tutor'}</span>
-              <ArrowRight className="w-3 h-3 flex-shrink-0" />
+              <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
             </button>
           )}
         </div>
@@ -224,7 +224,7 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
           id="key-players-crown-badge-btn"
           type="button"
           onClick={handleCrownClick}
-          className="relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-300 text-slate-950 shadow-lg shadow-amber-500/30 border-2 border-amber-200 dark:border-yellow-200 transform hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer ring-2 ring-amber-400/50 hover:ring-amber-300 group-hover:rotate-6"
+          className="relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-300 text-slate-950 shadow-lg shadow-amber-500/30 border-2 border-amber-200 dark:border-yellow-200 transform hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer ring-2 ring-amber-400/50 hover:ring-amber-300 group-hover:rotate-6 touch-manipulation pointer-events-auto"
           title="Click to view Key Players & Top 50 Achievers Leaderboard"
         >
           {/* Animated Glow Halo */}
@@ -256,7 +256,7 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
             setIsOpen(!isOpen);
             if (!isOpen) nextMessage();
           }}
-          className={`relative p-1 rounded-full transition-all duration-300 transform hover:scale-105 shadow-xl cursor-pointer ${
+          className={`relative p-1 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer touch-manipulation pointer-events-auto ${
             isHighFiving
               ? 'scale-110 ring-4 ring-amber-400 rotate-6'
               : 'ring-2 ring-amber-400/80 hover:ring-amber-500'
