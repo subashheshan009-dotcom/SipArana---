@@ -184,7 +184,7 @@ export default function Grade5ScholarshipWizard({
   onClose,
   onNavigateToSubject
 }: Grade5ScholarshipWizardProps) {
-  const { profile, updateProfile, addXP } = useAuth();
+  const { profile, updateProfile } = useAuth();
   const { language } = useLanguage();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -233,7 +233,6 @@ export default function Grade5ScholarshipWizard({
 
   const handleFinishStep1 = () => {
     soundFX.playLevelUp();
-    addXP(30);
     updateProfile({
       name: studentName.trim() || 'SipArana Scholar',
       targetYear,
@@ -250,7 +249,6 @@ export default function Grade5ScholarshipWizard({
 
     if (optionIndex === currentSubject.sampleRiddle.correct) {
       soundFX.playCorrect();
-      addXP(25);
       setAnsweredStars(prev => ({ ...prev, [currentSubject.id]: true }));
       try {
         confetti({
@@ -272,7 +270,6 @@ export default function Grade5ScholarshipWizard({
     const html = generateGrade5ScholarshipPaperHTML(subj.titleEn, subj.titleSi, targetYear, studentName);
     const res = downloadPrintableHTMLDoc(html, filename, true);
 
-    addXP(20);
     if (!res.success || res.isPopupBlocked) {
       if (res.blobUrl) {
         setActiveDownloadUrl(res.blobUrl);
@@ -288,7 +285,6 @@ export default function Grade5ScholarshipWizard({
     const html = generateGrade5TimetableHTML(studentName, targetYear, DEFAULT_TIMETABLE_SLOTS);
     const res = downloadPrintableHTMLDoc(html, filename, true);
 
-    addXP(30);
     try {
       confetti({
         particleCount: 50,
@@ -312,7 +308,6 @@ export default function Grade5ScholarshipWizard({
     const isNowDone = !completedSlots[idx];
     if (isNowDone) {
       soundFX.playCorrect();
-      addXP(15);
     }
     setCompletedSlots(prev => ({ ...prev, [idx]: isNowDone }));
   };

@@ -1244,7 +1244,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...profile,
         streakDays: profile.streakDays + 1,
         lastActiveDate: today,
-        xp: profile.xp + 50,
       };
       persistUser(updated);
     }

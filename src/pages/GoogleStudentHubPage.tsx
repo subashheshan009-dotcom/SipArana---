@@ -52,7 +52,7 @@ interface GoogleStudentHubPageProps {
 }
 
 export default function GoogleStudentHubPage({ onNavigate }: GoogleStudentHubPageProps) {
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
 
   const [activeToolId, setActiveToolId] = useState<GoogleToolDef['id']>('translate');
@@ -148,9 +148,8 @@ export default function GoogleStudentHubPage({ onNavigate }: GoogleStudentHubPag
     } catch {
       // safe fallback
     }
-    addXP(15);
     setMascotCheerCount((prev) => prev + 1);
-    triggerToast('🎉 අරණ මාස්කොට් සමඟ එක්වී +15 XP උපයාගත්තා!');
+    triggerToast('🎉 අරණ මාස්කොට් සමඟ එක්වී සාර්ථකව සම්බන්ධ විය!');
     setTimeout(() => setIsHighFiving(false), 700);
   };
 
@@ -245,13 +244,12 @@ export default function GoogleStudentHubPage({ onNavigate }: GoogleStudentHubPag
           const nextStatus = a.status === 'completed' ? 'pending' : 'completed';
           if (nextStatus === 'completed') {
             soundFX.playCorrect();
-            addXP(a.xpReward);
             try {
               confetti({ particleCount: 35, spread: 50, origin: { y: 0.7 } });
             } catch {
               // safe
             }
-            triggerToast(`🎉 "${a.title}" සම්පූර්ණයි! +${a.xpReward} XP උපයාගත්තා!`);
+            triggerToast(`🎉 "${a.title}" සාර්ථකව සම්පූර්ණ කරන ලදී!`);
           }
           return { ...a, status: nextStatus };
         }
@@ -1263,13 +1261,12 @@ export default function GoogleStudentHubPage({ onNavigate }: GoogleStudentHubPag
                       setCsFirstRunning(true);
                       setCsFirstScore((prev) => prev + 1);
                       soundFX.playCorrect();
-                      addXP(20);
-                      triggerToast('🚀 Scratch ක්‍රමලේඛය ධාවනය විය! +20 XP');
+                      triggerToast('🚀 Scratch ක්‍රමලේඛය සාර්ථකව ධාවනය විය!');
                     }}
                     className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-extrabold flex items-center justify-center gap-2 transition cursor-pointer shadow-sm"
                   >
                     <Play className="w-4 h-4" />
-                    <span>Run Scratch Program (+20 XP)</span>
+                    <span>Run Scratch Program</span>
                   </button>
 
                   <button
@@ -1382,8 +1379,7 @@ export default function GoogleStudentHubPage({ onNavigate }: GoogleStudentHubPag
                               setEarthQuizAnswer(choice);
                               if (choice.includes('නුවරඑළිය')) {
                                 soundFX.playCorrect();
-                                addXP(20);
-                                triggerToast('🎉 නිවැරදියි! පිදුරුතලාගල නුවරඑළිය දිස්ත්‍රික්කයේ පිහිටා ඇත! (+20 XP)');
+                                triggerToast('🎉 නිවැරදියි! පිදුරුතලාගල නුවරඑළිය දිස්ත්‍රික්කයේ පිහිටා ඇත!');
                               } else {
                                 soundFX.playWrong();
                                 triggerToast('නැවත උත්සාහ කරන්න!');

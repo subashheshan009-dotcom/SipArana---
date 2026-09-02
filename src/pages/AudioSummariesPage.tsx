@@ -523,7 +523,7 @@ export const COMPREHENSIVE_AUDIO_SUMMARIES: AudioSummary[] = [
 ];
 
 export default function AudioSummariesPage() {
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
 
   // Role detection
@@ -581,7 +581,6 @@ export default function AudioSummariesPage() {
       utterance.onend = () => {
         setIsPlaying(false);
         setCurrentProgressSeconds(activeSummary.durationSeconds);
-        addXP(40);
         try {
           soundFX.playCorrect();
           confetti({
@@ -720,7 +719,6 @@ export default function AudioSummariesPage() {
     setQuizSubmitted(true);
     const isCorrect = selectedAnswer === activeSummary.conceptQuiz[0].correctIndex;
     if (isCorrect && !quizScoreAwarded) {
-      addXP(25);
       setQuizScoreAwarded(true);
       try {
         soundFX.playCorrect();

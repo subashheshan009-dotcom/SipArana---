@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Heart, Zap, Award, Volume2, Smile, Moon, Coffee, RefreshCw, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import { useAuth } from '@/context/AuthContext';
 import { soundFX } from '@/utils/audioUtils';
 import confetti from 'canvas-confetti';
 
@@ -60,7 +59,6 @@ interface KaviStudyPetWidgetProps {
 
 export default function KaviStudyPetWidget({ externalMood, onQuickStudy }: KaviStudyPetWidgetProps) {
   const { language } = useLanguage();
-  const { profile, addXP } = useAuth();
   const [petState, setPetState] = useState<KaviPetState>(() => {
     try {
       const saved = localStorage.getItem(PET_STORAGE_KEY);
@@ -120,8 +118,6 @@ export default function KaviStudyPetWidget({ externalMood, onQuickStudy }: KaviS
     } catch {
       // ignore
     }
-
-    addXP(10);
 
     setPetState(prev => {
       const nextHappiness = Math.min(100, prev.happiness + 6);

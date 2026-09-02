@@ -34,6 +34,7 @@ import LanguageAdventurePage from '@/pages/LanguageAdventurePage';
 import SmartFileEvaluatorPage from '@/pages/SmartFileEvaluatorPage';
 import OnboardingFlow from '@/components/OnboardingFlow';
 import { GlobalDailyLockToastContainer } from '@/components/GlobalDailyLockToastContainer';
+import { ActiveScreenTimeTracker } from '@/components/ActiveScreenTimeTracker';
 
 function AppContent() {
   const { profile, loading } = useAuth();
@@ -136,6 +137,7 @@ function AppContent() {
         {renderPage()}
       </Layout>
       <Mascot trigger={highFive} onNavigate={handleNavigate} />
+      <ActiveScreenTimeTracker />
       <GlobalDailyLockToastContainer />
     </>
   );

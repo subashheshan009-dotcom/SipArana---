@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Sparkles, X, Heart, Smile, Volume2, Crown, Bot, Trophy, ArrowRight } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { soundFX } from '@/utils/audioUtils';
 import kaviOwlAvatar from '@/assets/images/owl_mascot_avatar_1787579057944.jpg';
@@ -52,7 +51,6 @@ const MOTIVATION_MESSAGES: MascotMessage[] = [
 ];
 
 export default function Mascot({ trigger, onNavigate }: MascotProps) {
-  const { addXP } = useAuth();
   const { language, tText } = useLanguage();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -79,7 +77,6 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
     } catch {
       // safe fallback
     }
-    addXP(15);
     setHeartsCount(prev => prev + 1);
     setTimeout(() => setIsHighFiving(false), 800);
   };

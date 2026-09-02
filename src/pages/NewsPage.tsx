@@ -36,7 +36,6 @@ import FilePermissionHelperModal from '@/components/FilePermissionHelperModal';
 
 export default function NewsPage() {
   const { language } = useLanguage();
-  const { addXP } = useAuth();
   const {
     notices,
     isSyncing,
@@ -116,7 +115,6 @@ export default function NewsPage() {
     setTimeout(() => {
       const res = downloadPrintableHTMLDoc(htmlContent, filename, true);
       setIsDownloading(false);
-      addXP(15);
 
       if (!res.success || res.isPopupBlocked) {
         if (res.blobUrl) {
@@ -173,7 +171,6 @@ export default function NewsPage() {
 
   const handleMascotHighFive = () => {
     setMascotCheer(true);
-    addXP(15);
     try {
       confetti({
         particleCount: 40,

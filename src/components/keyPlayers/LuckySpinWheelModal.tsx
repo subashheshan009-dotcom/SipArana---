@@ -136,7 +136,7 @@ export const LuckySpinWheelModal: React.FC<LuckySpinWheelModalProps> = ({
   onClose,
   onRewardClaimed
 }) => {
-  const { profile, addXP, updateProfile } = useAuth();
+  const { profile, updateProfile } = useAuth();
   const { language } = useLanguage();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -288,15 +288,11 @@ export const LuckySpinWheelModal: React.FC<LuckySpinWheelModalProps> = ({
           });
         } catch {}
 
-        // Apply Reward
-        if (winningSector.type === 'xp' && winningSector.value) {
-          addXP(winningSector.value);
-        } else if (winningSector.type === 'frame' && winningSector.frameId) {
+        // Apply Frame Reward
+        if (winningSector.type === 'frame' && winningSector.frameId) {
           updateProfile({
             customAvatarFrameId: winningSector.frameId
           });
-          // Also give bonus +50 XP for rare frame unlock
-          addXP(50);
         }
 
         onRewardClaimed?.(winningSector);

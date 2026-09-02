@@ -26,7 +26,7 @@ interface FocusZoneWidgetProps {
 }
 
 export default function FocusZoneWidget({ onSessionComplete }: FocusZoneWidgetProps) {
-  const { addXP, profile } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
 
   // Timer states (in seconds)
@@ -108,7 +108,6 @@ export default function FocusZoneWidget({ onSessionComplete }: FocusZoneWidgetPr
     setIsActive(false);
     setIsCompleted(true);
     soundFX.playLevelUp();
-    addXP(100);
     setSessionsCompletedToday(prev => prev + 1);
 
     try {

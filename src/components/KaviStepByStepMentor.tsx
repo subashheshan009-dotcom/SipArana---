@@ -35,7 +35,7 @@ export default function KaviStepByStepMentor({
   onNavigate,
   className = ''
 }: KaviStepByStepMentorProps) {
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
   const { country, curriculum, dictionary, mascot } = useCountry();
   const [activeAdviceIndex, setActiveAdviceIndex] = useState(0);
@@ -78,7 +78,6 @@ export default function KaviStepByStepMentor({
   const handleClaimMission = (advice: DynamicKaviAdvice) => {
     if (completedAdviceIds.includes(advice.id)) return;
     setCompletedAdviceIds(prev => [...prev, advice.id]);
-    addXP(advice.xpBonus);
     soundFX.playLevelUp();
     try {
       confetti({ particleCount: 35, spread: 60, origin: { y: 0.7 } });

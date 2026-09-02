@@ -53,7 +53,7 @@ interface FunEnglishRelaxPageProps {
 }
 
 export default function FunEnglishRelaxPage({ onNavigate }: FunEnglishRelaxPageProps) {
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
 
   // Active step flow (1: Quiz, 2: Story, 3: Riddle & Quotes, 4: Relax)
@@ -172,14 +172,13 @@ export default function FunEnglishRelaxPage({ onNavigate }: FunEnglishRelaxPageP
     } catch {
       // safe fallback
     }
-    addXP(15);
     setMascotCheerCount((c) => c + 1);
     setCustomMascotMessage(
       language === 'si'
-        ? '🎉 නියමයි! අරණ සමඟ High-Five කර +15 XP ලබාගත්තා! දිගටම විනෝදයෙන් ඉගෙන ගනිමු!'
+        ? '🎉 නියමයි! අරණ සමඟ High-Five කළා! දිගටම විනෝදයෙන් ඉගෙන ගනිමු!'
         : language === 'ta'
-        ? '🎉 சிறப்பு! அரணாவுடன் High-Five செய்து +15 XP பெற்றீர்கள்!'
-        : '🎉 Awesome high-five! You earned +15 XP! Keep smiling and learning!'
+        ? '🎉 சிறப்பு! அரணாவுடன் High-Five செய்தீர்கள்!'
+        : '🎉 Awesome high-five! Keep smiling and learning!'
     );
     setTimeout(() => {
       setIsHighFiving(false);
@@ -203,9 +202,8 @@ export default function FunEnglishRelaxPage({ onNavigate }: FunEnglishRelaxPageP
     if (isCorrect) {
       soundFX.playCorrect();
       setQuizScore((prev) => prev + 1);
-      addXP(20);
       setMascotMood('celebrating');
-      triggerToast('🎉 නිවැරදි පිළිතුරයි! +20 XP');
+      triggerToast('🎉 නිවැරදි පිළිතුරයි!');
     } else {
       soundFX.playWrong();
       setMascotMood('encouraging');
@@ -227,14 +225,13 @@ export default function FunEnglishRelaxPage({ onNavigate }: FunEnglishRelaxPageP
       if (!unlockedSteps.includes(2)) {
         setUnlockedSteps((prev) => [...prev, 2]);
       }
-      addXP(30);
       soundFX.playCorrect();
       try {
         confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
       } catch {
         // safe
       }
-      triggerToast('🏆 පියවර 1 සාර්ථකයි! දෙවන පියවර (කෙටි කතාව) විවෘත විය (+30 XP)');
+      triggerToast('🏆 පියවර 1 සාර්ථකයි! දෙවන පියවර (කෙටි කතාව) විවෘත විය');
     }
   };
 
@@ -266,13 +263,12 @@ export default function FunEnglishRelaxPage({ onNavigate }: FunEnglishRelaxPageP
       setUnlockedSteps((prev) => [...prev, 3]);
     }
     soundFX.playCorrect();
-    addXP(35);
     try {
       confetti({ particleCount: 75, spread: 80, origin: { y: 0.6 } });
     } catch {
       // safe
     }
-    triggerToast('🌟 කතාව කියවා ප්‍රශ්නාවලිය සම්පූර්ණයි! පියවර 3 විවෘත විය (+35 XP)');
+    triggerToast('🌟 කතාව කියවා ප්‍රශ්නාවලිය සම්පූර්ණයි! පියවර 3 විවෘත විය');
   };
 
   // -------------------------------------------------------------
@@ -290,9 +286,8 @@ export default function FunEnglishRelaxPage({ onNavigate }: FunEnglishRelaxPageP
     const isCorrect = selectedRiddleOption === currentRiddle.correctIndex;
     if (isCorrect) {
       soundFX.playCorrect();
-      addXP(25);
       setMascotMood('celebrating');
-      triggerToast('🕵️‍♂️ ප්‍රහේලිකාව නිවැරදියි! +25 XP');
+      triggerToast('🕵️‍♂️ ප්‍රහේලිකාව නිවැරදියි!');
     } else {
       soundFX.playWrong();
       setMascotMood('encouraging');
@@ -308,13 +303,12 @@ export default function FunEnglishRelaxPage({ onNavigate }: FunEnglishRelaxPageP
       setUnlockedSteps((prev) => [...prev, 4]);
     }
     soundFX.playCorrect();
-    addXP(35);
     try {
       confetti({ particleCount: 80, spread: 90, origin: { y: 0.6 } });
     } catch {
       // safe
     }
-    triggerToast('🎉 පියවර 3 සම්පූර්ණයි! විවේක සුවය (Relax Zone) විවෘත විය (+35 XP)');
+    triggerToast('🎉 පියවර 3 සම්පූර්ණයි! විවේක සුවය (Relax Zone) විවෘත විය');
   };
 
   // -------------------------------------------------------------
@@ -346,13 +340,12 @@ export default function FunEnglishRelaxPage({ onNavigate }: FunEnglishRelaxPageP
       setCompletedSteps((prev) => [...prev, 4]);
     }
     soundFX.playCorrect();
-    addXP(50);
     try {
       confetti({ particleCount: 120, spread: 100, origin: { y: 0.5 } });
     } catch {
       // safe
     }
-    triggerToast('🏆 සම්පූර්ණ Fun English Journey අවසන්! +50 XP ලාංඡනය හිමිවිය!');
+    triggerToast('🏆 සම්පූර්ණ Fun English Journey අවසන්! සුබ පැතුම්!');
   };
 
   const FORTUNES = [

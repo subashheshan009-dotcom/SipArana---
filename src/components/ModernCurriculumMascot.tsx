@@ -20,7 +20,6 @@ import confetti from 'canvas-confetti';
 import kaviOwlAvatar from '@/assets/images/owl_mascot_avatar_1787579057944.jpg';
 import { soundFX } from '@/utils/audioUtils';
 import { useLanguage } from '@/context/LanguageContext';
-import { useAuth } from '@/context/AuthContext';
 
 export interface ModernCurriculumMascotProps {
   currentStep: 1 | 2 | 3;
@@ -38,7 +37,6 @@ export default function ModernCurriculumMascot({
   className = ''
 }: ModernCurriculumMascotProps) {
   const { language } = useLanguage();
-  const { addXP } = useAuth();
   const [isWiggling, setIsWiggling] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [highFived, setHighFived] = useState(false);
@@ -111,7 +109,6 @@ export default function ModernCurriculumMascot({
     setIsWiggling(true);
     setHighFived(true);
     soundFX.playCorrect();
-    addXP(15);
     try {
       confetti({
         particleCount: 50,

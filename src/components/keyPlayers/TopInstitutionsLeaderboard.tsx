@@ -32,7 +32,7 @@ interface TopInstitutionsLeaderboardProps {
 export const TopInstitutionsLeaderboard: React.FC<TopInstitutionsLeaderboardProps> = ({
   onOpenProfileCustomizer
 }) => {
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
 
   const [institutions, setInstitutions] = useState<InstitutionAchiever[]>(TOP_INSTITUTIONS_LIST);
@@ -89,9 +89,6 @@ export const TopInstitutionsLeaderboard: React.FC<TopInstitutionsLeaderboardProp
         origin: { y: 0.7 }
       });
     } catch {}
-
-    // Give user +5 XP for supporting their school/university
-    addXP(5);
 
     // Increment institution cheer count in state
     setInstitutions((prev) =>
