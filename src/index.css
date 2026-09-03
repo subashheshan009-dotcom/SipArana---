@@ -128,11 +128,16 @@ pre, code {
   background: rgba(148, 163, 184, 0.6);
 }
 
-/* Mobile Safe Area Bottom Padding Variable */
+/* Mobile Safe Area Bottom Padding Variable & Utility Classes */
 :root {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-.safe-pb {
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 8px));
 }
+
+.safe-pb {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 8px));
+}
+

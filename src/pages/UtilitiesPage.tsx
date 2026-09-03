@@ -10,12 +10,10 @@ import {
   BookOpen
 } from 'lucide-react';
 import { FLASHCARDS_DATA, INITIAL_STUDY_TASKS } from '@/data/mockData';
-import { useAuth } from '@/context/AuthContext';
 import type { Flashcard, StudyTask } from '@/types';
 import StudyStopwatch from '@/components/StudyStopwatch';
 
 export default function UtilitiesPage() {
-  const { addXP } = useAuth();
   const [activeTool, setActiveTool] = useState<'stopwatch' | 'calculator' | 'flashcards' | 'planner' | 'formulas'>('stopwatch');
 
   // GPA Calculator State
@@ -51,7 +49,6 @@ export default function UtilitiesPage() {
     };
     setTasks([...tasks, newTask]);
     setNewTaskTitle('');
-    addXP(15);
   };
 
   const toggleTaskStatus = (id: string) => {
@@ -238,11 +235,10 @@ export default function UtilitiesPage() {
                 setIsFlipped(false);
                 setMasteredCount((prev) => Math.min(cards.length, prev + 1));
                 setCardIndex((prev) => (prev + 1) % cards.length);
-                addXP(20);
               }}
               className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-500/25"
             >
-              Mastered (+20 XP)
+              Mastered
             </button>
             <button
               onClick={() => {

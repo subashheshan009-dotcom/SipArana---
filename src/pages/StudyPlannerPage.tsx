@@ -257,7 +257,6 @@ const TIMEFRAME_PRESETS: TimeframeChoice[] = [
 ];
 
 export default function StudyPlannerPage() {
-  const { addXP } = useAuth();
   const { language } = useLanguage();
   const { studySlots, updateStudySlots, toggleStudySlot, isSyncing, triggerManualSync } = useLiveSync();
 
@@ -856,7 +855,6 @@ export default function StudyPlannerPage() {
       setIsGenerating(false);
       setWizardCompleted(true);
       setCurrentStep(5);
-      addXP(60);
 
       try {
         confetti({
@@ -873,7 +871,6 @@ export default function StudyPlannerPage() {
   const handleSlotToggleWithXP = (slotId: string, currentDone: boolean) => {
     toggleStudySlot(slotId);
     if (!currentDone) {
-      addXP(25);
       try {
         confetti({
           particleCount: 30,

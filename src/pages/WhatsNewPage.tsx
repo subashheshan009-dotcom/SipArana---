@@ -33,7 +33,6 @@ interface WhatsNewPageProps {
 
 export default function WhatsNewPage({ onNavigate }: WhatsNewPageProps) {
   const { language } = useLanguage();
-  const { addXP } = useAuth();
   const {
     updates,
     isSyncing,
@@ -89,7 +88,6 @@ export default function WhatsNewPage({ onNavigate }: WhatsNewPageProps) {
 
   const handleMascotHighFive = () => {
     setMascotCheer(true);
-    addXP(15);
     try {
       confetti({
         particleCount: 45,

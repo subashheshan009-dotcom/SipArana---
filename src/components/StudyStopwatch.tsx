@@ -110,7 +110,7 @@ const AVAILABLE_SUBJECTS = [
 ];
 
 export default function StudyStopwatch() {
-  const { addXP, profile } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
 
   // Stopwatch state (starts from 00:00:00 and counts UP)
@@ -293,9 +293,6 @@ export default function StudyStopwatch() {
       date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', Today',
       timeFormatted: fullFormatted
     };
-
-    // Add XP to player context
-    addXP(calculatedXP);
 
     // Trigger visual confetti
     try {

@@ -64,7 +64,7 @@ import {
 type WizardStep = 'category' | 'stream' | 'subject' | 'documents';
 
 export default function OfflineSyllabusPage() {
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
 
   // Step-by-step navigation state
@@ -267,18 +267,6 @@ export default function OfflineSyllabusPage() {
       const res = generateSyllabusPDF(item, profile?.name || 'SipArana Student');
       setDownloadingId(null);
       setCachedIds((prev) => ({ ...prev, [item.id]: true }));
-      
-      if (!isClaimedToday) {
-        const recorded = recordDailyActionClaim(actionKey, userKey);
-        if (recorded) {
-          addXP(15);
-        }
-      } else {
-        triggerDailyLockToast(
-          '⚠️ You have already downloaded and claimed daily XP for this document today! Document saved to cache; XP resets at midnight.',
-          item.titleSinhala || item.title
-        );
-      }
 
       if (res && (!res.success || res.isPopupBlocked)) {
         if (res.blobUrl) {
@@ -311,18 +299,6 @@ export default function OfflineSyllabusPage() {
       });
       setCachedIds(newCached);
       setBatchDownloading(false);
-
-      if (!isBatchClaimedToday) {
-        const recorded = recordDailyActionClaim(batchActionKey, userKey);
-        if (recorded) {
-          addXP(30);
-        }
-      } else {
-        triggerDailyLockToast(
-          '⚠️ You have already claimed batch download XP for this subject package today! Files cached; XP resets at midnight.',
-          selectedSubject?.name || 'Subject Package'
-        );
-      }
     }, 1000);
   };
 

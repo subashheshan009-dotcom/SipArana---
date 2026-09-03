@@ -110,7 +110,7 @@ export const Top50Leaderboard: React.FC<Top50LeaderboardProps> = ({
   return (
     <div
       id="free-fire-top50-leaderboard"
-      className="rounded-3xl bg-slate-900/90 border-2 border-slate-800 p-4 sm:p-5 shadow-2xl space-y-4 backdrop-blur-md"
+      className="rounded-3xl bg-slate-900/90 border-2 border-slate-800 p-4 sm:p-5 shadow-2xl space-y-4 backdrop-blur-md w-full h-auto"
     >
       {/* Header & Metric Summary */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
@@ -228,10 +228,10 @@ export const Top50Leaderboard: React.FC<Top50LeaderboardProps> = ({
       {/* High-Density Scrollable Leaderboard List */}
       <div
         id="leaderboard-scroll-list"
-        className="space-y-2 max-h-[640px] overflow-y-auto pr-1 custom-scrollbar"
+        className="space-y-2.5 max-h-[720px] overflow-y-auto pr-1 custom-scrollbar w-full"
       >
         {filteredStudents.length === 0 ? (
-          <div className="text-center py-12 px-4 bg-slate-950/60 rounded-2xl border border-slate-800 space-y-2">
+          <div className="text-center py-12 px-4 bg-slate-950/60 rounded-2xl border border-slate-800 space-y-2 w-full">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
               <UserCheck className="w-5 h-5" />
             </div>
@@ -263,7 +263,7 @@ export const Top50Leaderboard: React.FC<Top50LeaderboardProps> = ({
               <div
                 key={student.id || `student-${idx}`}
                 onClick={() => setSelectedStudentForModal({ ...student, rank })}
-                className={`group relative flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl border transition-all duration-150 cursor-pointer ${
+                className={`group relative flex items-center justify-between gap-3 p-3 sm:p-3.5 rounded-2xl border transition-all duration-150 cursor-pointer min-w-0 w-full h-auto ${
                   rank === 1
                     ? 'bg-gradient-to-r from-amber-950/50 via-slate-950/90 to-slate-950 border-amber-500/50 hover:border-amber-400 hover:bg-amber-950/60 shadow-md shadow-amber-500/5'
                     : rank === 2
@@ -281,7 +281,7 @@ export const Top50Leaderboard: React.FC<Top50LeaderboardProps> = ({
                   {getRankBadge(rank)}
 
                   {/* Small Round Profile Picture with Free Fire Status Indicator */}
-                  <div className="relative flex-shrink-0">
+                  <div className="relative shrink-0">
                     <AvatarFrameRenderer frameId={student.frameId} size="sm">
                       {student.avatar && !hasImgError ? (
                         <img
@@ -310,38 +310,38 @@ export const Top50Leaderboard: React.FC<Top50LeaderboardProps> = ({
                     )}
                   </div>
 
-                  {/* Student Name & School/Country Info */}
-                  <div className="min-w-0 flex-1 pr-1">
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                  {/* Student Name & School/Country Info with clean line heights */}
+                  <div className="min-w-0 flex-1 pr-1 space-y-0.5">
+                    <div className="flex items-center gap-1.5 flex-wrap min-w-0 leading-snug">
                       <span className="font-bold text-slate-100 text-xs sm:text-sm truncate group-hover:text-amber-300 transition-colors">
                         {student.name}
                       </span>
                       {student.isVerified && (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                       )}
                       {student.isOnline ? (
-                        <span className="text-[9px] font-extrabold text-emerald-400 bg-emerald-950/70 px-1.5 py-0.5 rounded border border-emerald-500/40 whitespace-nowrap flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span className="text-[9px] font-extrabold text-emerald-400 bg-emerald-950/70 px-1.5 py-0.5 rounded border border-emerald-500/40 whitespace-nowrap flex items-center gap-1 leading-none">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                           Online
                         </span>
                       ) : (
-                        <span className="text-[9px] font-semibold text-slate-400 bg-slate-900/70 px-1.5 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+                        <span className="text-[9px] font-semibold text-slate-400 bg-slate-900/70 px-1.5 py-0.5 rounded border border-slate-800 whitespace-nowrap leading-none">
                           Offline
                         </span>
                       )}
                       {isCurrentUser && (
-                        <span className="text-[9px] font-black text-blue-300 bg-blue-900/50 px-1.5 py-0.5 rounded border border-blue-700/40 whitespace-nowrap">
+                        <span className="text-[9px] font-black text-blue-300 bg-blue-900/50 px-1.5 py-0.5 rounded border border-blue-700/40 whitespace-nowrap leading-none">
                           YOU
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400 truncate mt-0.5">
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400 truncate leading-tight">
                       <span className="truncate">
                         {student.institution || 'Verified Scholar'}
                         {student.districtOrCity ? ` • ${student.districtOrCity}` : ''}
                       </span>
-                      <span className="flex-shrink-0 text-xs">
+                      <span className="shrink-0 text-xs">
                         {student.countryFlag || '🌍'}
                       </span>
                     </div>
@@ -349,8 +349,8 @@ export const Top50Leaderboard: React.FC<Top50LeaderboardProps> = ({
                 </div>
 
                 {/* Right: Total XP Pill Tag + Arrow */}
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <div className="px-2.5 sm:px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500/15 to-yellow-500/10 border border-amber-500/30 text-amber-300 font-extrabold text-xs sm:text-xs whitespace-nowrap shadow-sm">
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="px-2.5 sm:px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500/15 to-yellow-500/10 border border-amber-500/30 text-amber-300 font-extrabold text-xs sm:text-xs whitespace-nowrap shadow-xs">
                     {currentXP.toLocaleString()} XP
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all" />

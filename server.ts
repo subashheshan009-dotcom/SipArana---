@@ -45,10 +45,28 @@ interface StoredUser {
   lastActiveTimestamp?: number;
   isOnline?: boolean;
   registeredAt?: string;
+  phone?: string;
+  password?: string;
 }
 
 // In-Memory User Store with disk persistence (Strict Genuine Registered Users Only)
 let storedUsers: StoredUser[] = [];
+
+// Set of active SSE connection streams for real-time live database updates
+const sseClients = new Set<express.Response>();
+
+function broadcastLeaderboardToSse() {
+  if (sseClients.size === 0) return;
+  const achievers = getLeaderboardAchievers();
+  const payload = `data: ${JSON.stringify({ type: 'leaderboard', count: achievers.length, leaderboard: achievers })}\n\n`;
+  for (const client of sseClients) {
+    try {
+      client.write(payload);
+    } catch {
+      sseClients.delete(client);
+    }
+  }
+}
 
 function loadStoredUsers(): StoredUser[] {
   try {
@@ -239,6 +257,174 @@ async function startServer() {
     }
   });
 
+  // Real-time Database Listener Stream (SSE) for instant cross-device updates
+  app.get('/api/leaderboard/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders?.();
+
+    // Immediately push latest leaderboard on connect
+    const achievers = getLeaderboardAchievers();
+    res.write(`data: ${JSON.stringify({ type: 'leaderboard', count: achievers.length, leaderboard: achievers })}\n\n`);
+
+    sseClients.add(res);
+
+    // Keepalive ping comment every 15s to keep proxy connection alive across mobile/desktop
+    const keepAliveTimer = setInterval(() => {
+      try {
+        res.write(': keepalive\n\n');
+      } catch {
+        clearInterval(keepAliveTimer);
+        sseClients.delete(res);
+      }
+    }, 15000);
+
+    req.on('close', () => {
+      clearInterval(keepAliveTimer);
+      sseClients.delete(res);
+    });
+  });
+
+  // Central Database: Register User from Any Device (Phone, Tablet, Laptop)
+  app.post('/api/users/register', (req, res) => {
+    try {
+      const user = req.body;
+      if (!user || !user.id) {
+        return res.status(400).json({ success: false, error: 'User ID is required' });
+      }
+
+      const normEmail = user.email ? user.email.trim().toLowerCase() : '';
+      const normPhone = user.phone ? user.phone.replace(/[^0-9]/g, '') : '';
+
+      const existingIndex = storedUsers.findIndex(u => {
+        if (u.id === user.id) return true;
+        if (normEmail && u.email && u.email.trim().toLowerCase() === normEmail) return true;
+        if (normPhone && u.phone && u.phone.replace(/[^0-9]/g, '') === normPhone) return true;
+        return false;
+      });
+
+      const updatedUser: StoredUser = {
+        id: user.id,
+        name: user.name || 'Scholar',
+        email: user.email || '',
+        phone: user.phone || '',
+        password: user.password || '',
+        avatar: user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
+        studentCategory: user.studentCategory || 'School',
+        grade: Number(user.grade) || 12,
+        level: user.level || 'AL',
+        stream: user.stream || 'Physical Science (Maths)',
+        school: user.school || '',
+        university: user.university || '',
+        district: user.district || 'Colombo',
+        countryCode: user.countryCode || 'LK',
+        countryName: user.countryName || 'Sri Lanka',
+        countryFlag: user.countryFlag || '🇱🇰',
+        xp: Number(user.xp) || 250,
+        streakDays: Number(user.streakDays) || 1,
+        quizzesSolved: Number(user.quizzesSolved || user.completedLessonsCount) || 1,
+        completedLessonsCount: Number(user.completedLessonsCount) || 0,
+        quizAccuracy: Number(user.quizAccuracy) || 96.5,
+        customAvatarFrameId: user.customAvatarFrameId || user.frameId,
+        bio: user.bio || user.statusQuote || '',
+        statusQuote: user.statusQuote || user.bio || '',
+        targetUniversity: user.targetUniversity || '',
+        cheersCount: existingIndex >= 0 ? (storedUsers[existingIndex].cheersCount || 0) : (Number(user.cheersCount) || 0),
+        isVerified: user.isVerified ?? true,
+        lastActiveDate: new Date().toISOString().split('T')[0],
+        lastActiveTimestamp: Date.now(),
+        isOnline: true,
+        registeredAt: existingIndex >= 0 ? (storedUsers[existingIndex].registeredAt || new Date().toISOString()) : new Date().toISOString()
+      };
+
+      if (existingIndex >= 0) {
+        if (!updatedUser.password && storedUsers[existingIndex].password) {
+          updatedUser.password = storedUsers[existingIndex].password;
+        }
+        if (storedUsers[existingIndex].xp > updatedUser.xp && !req.body.forceOverrideXP) {
+          updatedUser.xp = storedUsers[existingIndex].xp;
+        }
+        storedUsers[existingIndex] = updatedUser;
+      } else {
+        storedUsers.push(updatedUser);
+      }
+
+      saveStoredUsers();
+      broadcastLeaderboardToSse();
+
+      const achievers = getLeaderboardAchievers();
+      const userRank = achievers.findIndex(a => a.id === updatedUser.id) + 1;
+
+      return res.json({
+        success: true,
+        user: updatedUser,
+        userRank: userRank || achievers.length,
+        totalCount: achievers.length,
+        leaderboard: achievers
+      });
+    } catch (error: any) {
+      console.error('Error registering user in central database:', error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Central Database: Login User from Any Device (Phone, Tablet, Laptop)
+  app.post('/api/users/login', (req, res) => {
+    try {
+      const { emailOrPhone, password } = req.body;
+      if (!emailOrPhone) {
+        return res.status(400).json({ success: false, error: 'Email or phone is required' });
+      }
+
+      const trimmedInput = String(emailOrPhone).trim().toLowerCase();
+      const cleanPhone = trimmedInput.replace(/[^0-9]/g, '');
+
+      const foundUser = storedUsers.find(u => {
+        const emailMatch = u.email && u.email.trim().toLowerCase() === trimmedInput;
+        const phoneMatch = cleanPhone && u.phone && u.phone.replace(/[^0-9]/g, '') === cleanPhone;
+        const nameMatch = u.name && u.name.trim().toLowerCase() === trimmedInput;
+        return emailMatch || phoneMatch || nameMatch;
+      });
+
+      if (!foundUser) {
+        return res.status(404).json({
+          success: false,
+          notFoundInDb: true,
+          error: 'User not found in central database'
+        });
+      }
+
+      if (foundUser.password && password && foundUser.password !== password) {
+        return res.status(401).json({
+          success: false,
+          error: 'මුරපදය වැරදියි. කරුණාකර නිවැරදි මුරපදය ඇතුළත් කරන්න (Invalid Password).'
+        });
+      }
+
+      // Mark as online and update activity
+      foundUser.lastActiveDate = new Date().toISOString().split('T')[0];
+      foundUser.lastActiveTimestamp = Date.now();
+      foundUser.isOnline = true;
+      saveStoredUsers();
+      broadcastLeaderboardToSse();
+
+      const achievers = getLeaderboardAchievers();
+      const userRank = achievers.findIndex(a => a.id === foundUser.id) + 1;
+
+      return res.json({
+        success: true,
+        profile: foundUser,
+        userRank: userRank || achievers.length,
+        leaderboard: achievers
+      });
+    } catch (error: any) {
+      console.error('Error logging in user from central database:', error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // Sync / Register Real User Profile with live DB
   app.post('/api/users/sync', (req, res) => {
     try {
@@ -292,6 +478,7 @@ async function startServer() {
       }
 
       saveStoredUsers();
+      broadcastLeaderboardToSse();
 
       const achievers = getLeaderboardAchievers();
       const userRank = achievers.findIndex(a => a.id === updatedUser.id) + 1;
@@ -321,6 +508,7 @@ async function startServer() {
         existingUser.lastActiveTimestamp = Date.now();
         existingUser.isOnline = true;
         saveStoredUsers();
+        broadcastLeaderboardToSse();
       }
       return res.json({ success: true, isOnline: true });
     } catch (error: any) {
@@ -343,6 +531,7 @@ async function startServer() {
 
       user.cheersCount = (user.cheersCount || 0) + 1;
       saveStoredUsers();
+      broadcastLeaderboardToSse();
 
       return res.json({
         success: true,
@@ -370,7 +559,10 @@ async function startServer() {
 
       user.xp = (user.xp || 0) + Math.max(0, amount);
       user.lastActiveDate = new Date().toISOString().split('T')[0];
+      user.lastActiveTimestamp = Date.now();
+      user.isOnline = true;
       saveStoredUsers();
+      broadcastLeaderboardToSse();
 
       const achievers = getLeaderboardAchievers();
       const userRank = achievers.findIndex(a => a.id === user.id) + 1;

@@ -115,7 +115,7 @@ export default function DailyStreakModal({
   onClaimMysteryChest,
   initialTab = 'streak'
 }: DailyStreakModalProps) {
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'streak' | 'xp' | 'badges'>(initialTab);
   const [isWatchingAd, setIsWatchingAd] = useState(false);
@@ -562,7 +562,6 @@ export default function DailyStreakModal({
         adDurationSeconds={15}
         onAdCompleted={() => {
           setIsWatchingAd(false);
-          addXP(100);
         }}
         onClose={() => setIsWatchingAd(false)}
       />

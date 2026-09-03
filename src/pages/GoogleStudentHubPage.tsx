@@ -523,13 +523,12 @@ export default function GoogleStudentHubPage({ onNavigate }: GoogleStudentHubPag
             <button
               onClick={() => {
                 soundFX.playCorrect();
-                addXP(10);
-                triggerToast(`⭐ ${activeTool.name} මෙවලම අධ්‍යයනය කර +10 XP උපයාගත්තා!`);
+                triggerToast(`⭐ ${activeTool.name} මෙවලම අධ්‍යයනය සම්පූර්ණයි!`);
               }}
               className="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 text-xs font-extrabold flex items-center gap-1.5 transition cursor-pointer"
             >
               <Award className="w-4 h-4 text-amber-500" />
-              <span>Earn +10 XP</span>
+              <span>Mark Studied</span>
             </button>
           </div>
         </div>
@@ -1151,16 +1150,15 @@ export default function GoogleStudentHubPage({ onNavigate }: GoogleStudentHubPag
                   onClick={() => {
                     setTriviaSolved({ ...triviaSolved, [activeExhibit.id]: true });
                     soundFX.playCorrect();
-                    addXP(25);
-                    triggerToast(`🏛️ ${activeExhibit.name} කලාකෘතිය අධ්‍යයනය කර +25 XP ලබාගත්තා!`);
+                    triggerToast(`🏛️ ${activeExhibit.name} කලාකෘතිය අධ්‍යයනය සම්පූර්ණ කළා!`);
                   }}
                   className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>
                     {triviaSolved[activeExhibit.id]
-                      ? '✓ Studied & XP Claimed (+25 XP)'
-                      : 'Complete Cultural Study (+25 XP)'}
+                      ? '✓ Cultural Study Completed'
+                      : 'Complete Cultural Study'}
                   </span>
                 </button>
               </div>

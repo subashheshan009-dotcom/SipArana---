@@ -71,7 +71,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ onNavigate }: DashboardProps) {
-  const { profile, studyMemory, addXP } = useAuth();
+  const { profile, studyMemory } = useAuth();
   const { language, t } = useLanguage();
   const { country, curriculum, dictionary, subjects: dynamicSubjects, gradingSystem, mascot } = useCountry();
   const { notices, isSyncing } = useExamNews();
@@ -185,17 +185,8 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     setQuizScore(isCorrect);
 
     if (isCorrect) {
-      const recorded = recordDailyActionClaim('dashboard_daily_quiz', userKey);
-      if (recorded) {
-        soundFX.playCorrect();
-        addXP(50);
-        setIsDailyQuizClaimed(true);
-      } else {
-        triggerDailyLockToast(
-          '⚠️ You have already completed and earned XP for today\'s Daily Brain Challenge! Come back tomorrow at midnight for a fresh challenge.',
-          'Daily Brain Challenge'
-        );
-      }
+      soundFX.playCorrect();
+      setIsDailyQuizClaimed(true);
     } else {
       soundFX.playIncorrect();
     }
@@ -210,18 +201,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         if (t.id === taskId) {
           const nextState = !t.isCompleted;
           if (nextState) {
-            if (!isTaskClaimedToday) {
-              const recorded = recordDailyActionClaim(taskActionKey, userKey);
-              if (recorded) {
-                soundFX.playLevelUp();
-                addXP(20);
-              }
-            } else {
-              triggerDailyLockToast(
-                `⚠️ You have already completed task "${t.title}" today! XP reward is awarded once per day.`,
-                t.title
-              );
-            }
+            soundFX.playLevelUp();
           }
           return { ...t, isCompleted: nextState };
         }

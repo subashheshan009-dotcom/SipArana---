@@ -71,7 +71,6 @@ export default function AITutorPage() {
   const {
     profile,
     studyMemory,
-    addXP,
     recordChat,
     recordAsset,
     recordEvaluation,
@@ -255,7 +254,6 @@ export default function AITutorPage() {
         grade: selectedGrade,
         content: res
       });
-      addXP(30);
       soundFX.playLevelUp();
       confetti({ particleCount: 50, spread: 60, origin: { y: 0.85 } });
     } catch (err: any) {
@@ -282,7 +280,6 @@ export default function AITutorPage() {
         grade: selectedGrade,
         content: res
       });
-      addXP(30);
       soundFX.playLevelUp();
     } catch (err: any) {
       setMultiFormatOutput(`⚠️ Error: ${err.message}`);
@@ -331,7 +328,6 @@ export default function AITutorPage() {
         grade: selectedGrade,
         content: res
       });
-      addXP(40);
       soundFX.playLevelUp();
     } catch (err: any) {
       setDocOutput(`⚠️ Error: ${err.message}`);
@@ -355,7 +351,6 @@ export default function AITutorPage() {
         grade: selectedGrade,
         content: res
       });
-      addXP(35);
       soundFX.playLevelUp();
     } catch (err: any) {
       setMindmapOutput(`⚠️ Error: ${err.message}`);
@@ -381,7 +376,6 @@ export default function AITutorPage() {
         grade: selectedGrade,
         content: res
       });
-      addXP(50);
       soundFX.playLevelUp();
       confetti({ particleCount: 70, spread: 70, origin: { y: 0.8 } });
     } catch (err: any) {
@@ -421,7 +415,6 @@ export default function AITutorPage() {
         });
       }
 
-      addXP(45);
       soundFX.playLevelUp();
       confetti({ particleCount: 60, spread: 60, origin: { y: 0.8 } });
     } catch (err: any) {
@@ -478,7 +471,6 @@ export default function AITutorPage() {
       };
       setMessages((prev) => [...prev, aiMsg]);
       recordChat(userMsg, aiMsg);
-      addXP(20);
       soundFX.playCorrect();
     } catch {
       const fallbackMsg: ChatMessage = {

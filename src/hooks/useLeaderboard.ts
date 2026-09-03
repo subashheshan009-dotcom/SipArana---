@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { StudentAchiever } from '@/data/keyPlayersData';
 import { useAuth } from '@/context/AuthContext';
-import { fetchLiveLeaderboard, pingUserHeartbeat, LEADERBOARD_UPDATE_EVENT } from '@/services/leaderboardService';
+import {
+  fetchLiveLeaderboard,
+  pingUserHeartbeat,
+  subscribeToRealtimeLeaderboard,
+  LEADERBOARD_UPDATE_EVENT
+} from '@/services/leaderboardService';
 
 export function useLeaderboard() {
   const { profile } = useAuth();
@@ -25,7 +30,7 @@ export function useLeaderboard() {
   useEffect(() => {
     loadData();
 
-    // Listen to real-time custom event broadcasts
+    // 1. Listen to real-time custom event broadcasts across browser windows / tabs
     const handleUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<{ leaderboard?: StudentAchiever[] }>;
       if (customEvent.detail && customEvent.detail.leaderboard) {
@@ -37,16 +42,25 @@ export function useLeaderboard() {
 
     window.addEventListener(LEADERBOARD_UPDATE_EVENT, handleUpdate);
 
-    // Periodic live sync every 15 seconds to ensure changes from other devices are reflected
+    // 2. Real-time central database listener (SSE stream from server for cross-device live sync)
+    const unsubscribeStream = subscribeToRealtimeLeaderboard(profile, (liveList) => {
+      setLeaderboard(liveList);
+      setLoading(false);
+    });
+
+    // 3. Periodic heartbeat and backup sync every 20 seconds
     const interval = setInterval(() => {
-      loadData();
-    }, 15000);
+      if (profile?.id) {
+        pingUserHeartbeat(profile.id);
+      }
+    }, 20000);
 
     return () => {
       window.removeEventListener(LEADERBOARD_UPDATE_EVENT, handleUpdate);
+      unsubscribeStream();
       clearInterval(interval);
     };
-  }, [loadData]);
+  }, [loadData, profile]);
 
   const top3 = leaderboard.slice(0, 3);
   const userRank = profile ? leaderboard.findIndex(u => u.id === profile.id) + 1 : 0;

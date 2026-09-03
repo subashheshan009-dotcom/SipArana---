@@ -48,7 +48,7 @@ export default function MediaStudiesPage({
   onNavigateQuizzes,
   onNavigateOffline
 }: MediaStudiesPageProps) {
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
 
   const [activeTab, setActiveTab] = useState<MediaSubTopic>('theories');
@@ -69,7 +69,6 @@ export default function MediaStudiesPage({
   const toggleNoteCompletion = (id: string) => {
     setCompletedNotes((prev) => {
       const next = !prev[id];
-      if (next) addXP(15);
       return { ...prev, [id]: next };
     });
   };

@@ -156,7 +156,7 @@ const FLASHCARDS_DATA: Flashcard[] = [
 ];
 
 export default function FlashcardsPage() {
-  const { addXP, profile } = useAuth();
+  const { profile } = useAuth();
   const { language, tText } = useLanguage();
 
   const [selectedSubject, setSelectedSubject] = useState<string>('All');
@@ -207,17 +207,6 @@ export default function FlashcardsPage() {
       if (!masteredIds.includes(currentCard.id)) {
         setMasteredIds([...masteredIds, currentCard.id]);
         setNeedsReviewIds(needsReviewIds.filter((id) => id !== currentCard.id));
-        if (!isClaimedToday) {
-          const recorded = recordDailyActionClaim(cardActionKey, userKey);
-          if (recorded) {
-            addXP(25);
-          }
-        } else {
-          triggerDailyLockToast(
-            '⚠️ You have already claimed XP for mastering this card today! Card status updated; XP resets at midnight.',
-            currentCard.topic
-          );
-        }
         try {
           confetti({
             particleCount: 40,
@@ -232,12 +221,6 @@ export default function FlashcardsPage() {
       if (!needsReviewIds.includes(currentCard.id)) {
         setNeedsReviewIds([...needsReviewIds, currentCard.id]);
         setMasteredIds(masteredIds.filter((id) => id !== currentCard.id));
-        if (!isClaimedToday) {
-          const recorded = recordDailyActionClaim(cardActionKey, userKey);
-          if (recorded) {
-            addXP(10);
-          }
-        }
       }
     }
 

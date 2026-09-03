@@ -137,7 +137,7 @@ export default function Mascot({ trigger, onNavigate }: MascotProps) {
   };
 
   return (
-    <div id="siparana-mascot-container" className="fixed bottom-[74px] right-2.5 sm:bottom-6 sm:right-6 z-35 flex flex-col items-end gap-2.5 max-w-[calc(100vw-1.5rem)] pointer-events-none transition-all duration-300 select-none">
+    <div id="siparana-mascot-container" className="fixed bottom-[78px] right-2.5 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2.5 max-w-[calc(100vw-1.5rem)] pointer-events-none transition-all duration-300 select-none">
       {/* Speech bubble for Kavi Owl AI Assistant */}
       {isOpen && (
         <div

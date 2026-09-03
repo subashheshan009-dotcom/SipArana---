@@ -60,7 +60,7 @@ import { soundFX } from '@/utils/audioUtils';
 type WizardStep = 'category' | 'stream' | 'subject' | 'details';
 
 export default function SubjectsPage() {
-  const { profile, toggleBookmarkPaper, addXP } = useAuth();
+  const { profile, toggleBookmarkPaper } = useAuth();
   const { language } = useLanguage();
   const { country, curriculum, dictionary, stages } = useCountry();
 
@@ -122,7 +122,6 @@ export default function SubjectsPage() {
     setTimeout(() => {
       const res = downloadPrintableHTMLDoc(html, filename, true);
       setDownloadingPaperId(null);
-      addXP(20);
 
       if (!res.success || res.isPopupBlocked) {
         if (res.blobUrl) {
@@ -1026,7 +1025,6 @@ export default function SubjectsPage() {
                                     setQuizSubmitted(true);
                                     if (selectedOption === q.correctIndex) {
                                       soundFX.playCorrect();
-                                      addXP(30);
                                     } else {
                                       soundFX.playIncorrect();
                                     }

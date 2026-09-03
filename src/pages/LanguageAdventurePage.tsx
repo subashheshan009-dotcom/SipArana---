@@ -39,7 +39,7 @@ const BADGES_STORAGE_KEY = 'siparana_adventure_unlocked_badges_v1';
 const STREAK_STORAGE_KEY = 'siparana_adventure_streak_days_v1';
 
 export default function LanguageAdventurePage({ onNavigate }: LanguageAdventurePageProps) {
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
 
   // Active Main Section Tab
@@ -85,11 +85,9 @@ export default function LanguageAdventurePage({ onNavigate }: LanguageAdventureP
     return () => clearInterval(interval);
   }, []);
 
-  // Handle XP earning
-  const handleEarnXP = (amount: number) => {
-    addXP(amount);
-    setRecentXPEarned(amount);
-    setTimeout(() => setRecentXPEarned(null), 3000);
+  // Handle XP earning (Stubbed for strict fair XP policy)
+  const handleEarnXP = (_amount: number) => {
+    // Controlled: XP restricted to Daily Attendance, Rewarded Ads, and 5-min Study Time
   };
 
   // Handle Unlocking Badges

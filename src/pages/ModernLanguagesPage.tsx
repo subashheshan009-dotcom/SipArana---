@@ -54,7 +54,7 @@ type SubjectDetailTab = 'units' | 'vocabulary' | 'quiz' | 'cheatsheet';
 
 export default function ModernLanguagesPage({ onNavigate }: ModernLanguagesPageProps) {
   const { language } = useLanguage();
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
 
   // Wizard state
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
@@ -179,7 +179,6 @@ export default function ModernLanguagesPage({ onNavigate }: ModernLanguagesPageP
     const isCorrect = quizAnswers[q.id] === q.correctIndex;
     if (isCorrect) {
       soundFX.playCorrect();
-      addXP(25);
       try {
         confetti({
           particleCount: 40,

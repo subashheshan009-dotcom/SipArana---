@@ -1,7 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserProfile, Stream, ExamLevel, Medium, SchoolGrade, StudentCategory, GlobalCountryCode, AppLanguage } from '@/types';
 import { getCountryByCode, getCurriculumById, getCountrySubdivisions } from '@/data/globalCurriculumData';
-import { syncUserWithBackend } from '@/services/leaderboardService';
+import {
+  syncUserWithBackend,
+  registerUserWithBackend,
+  loginUserWithBackend,
+  addXPWithBackend
+} from '@/services/leaderboardService';
 import {
   captureIncomingReferral,
   processVerifiedReferralOnRegistration
@@ -769,7 +774,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const trimmedInput = emailOrPhone.trim().toLowerCase();
     const cleanPhone = trimmedInput.replace(/[^0-9]/g, '');
 
-    // 1. Check custom registered users in local storage
+    // 1. Check Central Cloud Database across all devices (Mobile, Tablet, Laptop)
+    try {
+      const cloudRes = await loginUserWithBackend(emailOrPhone, pass);
+      if (cloudRes.success && cloudRes.profile) {
+        persistUser(cloudRes.profile);
+        return { success: true };
+      }
+      if (!cloudRes.notFoundInDb && cloudRes.error) {
+        return { success: false, error: cloudRes.error };
+      }
+    } catch {
+      // Continue to local fallbacks
+    }
+
+    // 2. Check custom registered users in local storage
     const storedUsersJson = localStorage.getItem('siparana_registered_accounts');
     if (storedUsersJson) {
       try {
@@ -797,7 +816,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // 2. Check predefined demo users
+    // 3. Check predefined demo users
     const matchedDemo = Object.values(DEFAULT_USERS).find((u) => {
       return (
         u.email.toLowerCase() === trimmedInput ||
@@ -812,7 +831,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: true };
     }
 
-    // 3. Fallback: If non-empty email/phone, create a clean student profile
+    // 4. Fallback: If non-empty email/phone, create a clean student profile
     const isEmail = trimmedInput.includes('@');
     const displayEmail = isEmail ? trimmedInput : `${cleanPhone || 'user'}@siparana.lk`;
     const derivedName = isEmail
@@ -851,6 +870,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // ignore
     }
 
+    await registerUserWithBackend(newUser, pass, cleanPhone);
     persistUser(newUser);
     return { success: true };
   };
@@ -1085,6 +1105,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // ignore
     }
 
+    // Register in Central Database (persists across phone, tablet, laptop)
+    await registerUserWithBackend(newUser, password, phone);
     persistUser(newUser);
     processVerifiedReferralOnRegistration(newUser.id, newUser.name);
     return { success: true };
@@ -1232,8 +1254,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const addXP = (amount: number) => {
     if (!profile) return;
-    const updated = { ...profile, xp: profile.xp + amount };
+    const safeAmount = Math.max(0, amount);
+    const updated = { ...profile, xp: profile.xp + safeAmount };
     persistUser(updated);
+    addXPWithBackend(profile.id, safeAmount);
   };
 
   const incrementStreak = () => {

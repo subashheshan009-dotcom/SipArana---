@@ -40,6 +40,7 @@ export default function QuizPlayer({ quiz, onExit, onViewAnalytics }: QuizPlayer
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [reviewFilter, setReviewFilter] = useState<'all' | 'wrong' | 'flagged'>('all');
   const [startTime] = useState(Date.now());
+  const [finalTimeSpent, setFinalTimeSpent] = useState(0);
 
   const currentQ = quiz.questions[currentIndex];
 
@@ -107,6 +108,7 @@ export default function QuizPlayer({ quiz, onExit, onViewAnalytics }: QuizPlayer
 
     const scorePct = Math.round((correctCount / quiz.questions.length) * 100);
     const timeSpentSeconds = Math.round((Date.now() - startTime) / 1000);
+    setFinalTimeSpent(timeSpentSeconds);
 
     if (scorePct >= 70) {
       try {
@@ -134,7 +136,7 @@ export default function QuizPlayer({ quiz, onExit, onViewAnalytics }: QuizPlayer
       totalQuestions: quiz.questions.length,
       timeSpentSeconds,
       completedAt: new Date().toISOString(),
-      xpEarned: earnedXP,
+      xpEarned: 0,
       grade: quiz.grade,
       weakTopicsDetected: weakTopics,
     };
@@ -448,7 +450,7 @@ export default function QuizPlayer({ quiz, onExit, onViewAnalytics }: QuizPlayer
                     ✓ {correctTotal} of {quiz.questions.length} Correct
                   </div>
                   <div className="text-blue-200 font-medium">
-                    ⏱️ Time: {Math.floor(timeSpentSeconds / 60)}m {timeSpentSeconds % 60}s
+                    ⏱️ Time: {Math.floor(finalTimeSpent / 60)}m {finalTimeSpent % 60}s
                   </div>
                 </div>
               </div>

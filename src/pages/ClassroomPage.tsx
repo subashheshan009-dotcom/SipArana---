@@ -39,7 +39,7 @@ interface ClassroomPageProps {
 }
 
 export default function ClassroomPage({ onNavigate }: ClassroomPageProps) {
-  const { profile, addXP } = useAuth();
+  const { profile } = useAuth();
   const { language } = useLanguage();
 
   const [isNotified, setIsNotified] = useState<boolean>(() => {
@@ -73,8 +73,7 @@ export default function ClassroomPage({ onNavigate }: ClassroomPageProps) {
       } catch {
         // safe fallback
       }
-      addXP(25);
-      triggerToast('🎉 ඔබට ස්තූතියි! නව වීඩියෝ පන්ති ආරම්භ වූ වහාම ඔබට දැනුම්දෙනු ඇත. (+25 XP හිමිවිය!)');
+      triggerToast('🎉 ඔබට ස්තූතියි! නව වීඩියෝ පන්ති ආරම්භ වූ වහාම ඔබට දැනුම්දෙනු ඇත.');
     } else {
       setIsNotified(false);
       try {
