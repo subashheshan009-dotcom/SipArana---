@@ -61,8 +61,8 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
           ========================================================================= */}
       <section id="section-top-3-podium" className="space-y-3">
         <div className="flex items-center gap-2 px-1">
-          <Crown className="w-4 h-4 text-yellow-400" />
-          <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
+          <Crown className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
+          <h2 className="text-xs uppercase font-black tracking-wider text-slate-700 dark:text-slate-300">
             Top 3 Global Champions Podium (3D Master Frames)
           </h2>
         </div>
@@ -82,8 +82,8 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
           ========================================================================= */}
       <section id="section-my-scholar-identity" className="w-full space-y-3">
         <div className="flex items-center gap-2 px-1">
-          <Award className="w-4 h-4 text-amber-400" />
-          <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
+          <Award className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+          <h2 className="text-xs uppercase font-black tracking-wider text-slate-700 dark:text-slate-300">
             My Scholar Identity & Global Rank Overview
           </h2>
         </div>
@@ -102,8 +102,8 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
       <section id="section-dual-column-battle-arena" className="w-full space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
           <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-400" />
-            <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
+            <Trophy className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+            <h2 className="text-xs uppercase font-black tracking-wider text-slate-700 dark:text-slate-300">
               Free Fire Arena • Live Rankings & Sponsor Boosts
             </h2>
           </div>
@@ -116,7 +116,7 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
               className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer ${
                 activeLeaderboardTab === 'scholars'
                   ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-slate-300 hover:text-white'
               }`}
             >
               <Trophy className="w-3.5 h-3.5" />
@@ -128,7 +128,7 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
               className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer ${
                 activeLeaderboardTab === 'institutions'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-slate-300 hover:text-white'
               }`}
             >
               <GraduationCap className="w-3.5 h-3.5" />
@@ -170,8 +170,8 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
           ========================================================================= */}
       <section id="section-viral-referral-sharing" className="space-y-3">
         <div className="flex items-center gap-2 px-1">
-          <Sparkles className="w-4 h-4 text-emerald-400" />
-          <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
+          <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+          <h2 className="text-xs uppercase font-black tracking-wider text-slate-700 dark:text-slate-300">
             Viral Growth & Social Rank Sharing (+200 XP Referrals)
           </h2>
         </div>
@@ -185,8 +185,8 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
           ========================================================================= */}
       <section id="section-score-progression" className="space-y-3">
         <div className="flex items-center gap-2 px-1">
-          <TrendingUp className="w-4 h-4 text-blue-400" />
-          <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
+          <TrendingUp className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+          <h2 className="text-xs uppercase font-black tracking-wider text-slate-700 dark:text-slate-300">
             Visual Score Progression & Trajectory
           </h2>
         </div>
@@ -198,8 +198,8 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
           ========================================================================= */}
       <section id="section-rank-tiers" className="space-y-3">
         <div className="flex items-center gap-2 px-1">
-          <Sparkles className="w-4 h-4 text-purple-400" />
-          <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
+          <Sparkles className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+          <h2 className="text-xs uppercase font-black tracking-wider text-slate-700 dark:text-slate-300">
             Rank Tier Progression Matrix (Free Fire Framework)
           </h2>
         </div>
@@ -211,8 +211,8 @@ export default function KeyPlayersPage({ onNavigate }: KeyPlayersPageProps) {
           ========================================================================= */}
       <section id="section-study-schedule" className="space-y-3">
         <div className="flex items-center gap-2 px-1">
-          <BookOpen className="w-4 h-4 text-emerald-400" />
-          <h2 className="text-xs uppercase font-black tracking-wider text-slate-400">
+          <BookOpen className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+          <h2 className="text-xs uppercase font-black tracking-wider text-slate-700 dark:text-slate-300">
             Weekly Island Rank 1 Study Schedule & Daily Targets
           </h2>
         </div>

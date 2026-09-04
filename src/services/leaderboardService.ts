@@ -292,13 +292,38 @@ export async function cheerStudent(userId: string): Promise<{ success: boolean; 
   return { success: false };
 }
 
+// Explicit Presence Reporter across Mobile and Laptop (beacon on pagehide/unload)
+export function updateUserPresence(userId: string, isOnline: boolean): void {
+  if (!userId || typeof window === 'undefined') return;
+  const payload = JSON.stringify({ userId, isOnline });
+  try {
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'application/json' });
+      navigator.sendBeacon('/api/users/presence', blob);
+    } else {
+      fetch('/api/users/presence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true
+      }).catch(() => {});
+    }
+  } catch {
+    // ignore
+  }
+}
+
 // Helper: Extract verified registered accounts & local users (Online + Offline persistent ranks)
 export function getLocalRegisteredAchievers(currentProfile?: UserProfile | null): StudentAchiever[] {
   const map = new Map<string, StudentAchiever>();
 
-  // 1. Seed with verified registered student ecosystem
-  for (const student of INITIAL_TOP_50_GLOBAL_STUDENTS) {
-    map.set(student.id, { ...student });
+  // 1. Seed baseline genuine registered accounts from INITIAL_TOP_50_GLOBAL_STUDENTS
+  if (Array.isArray(INITIAL_TOP_50_GLOBAL_STUDENTS)) {
+    for (const student of INITIAL_TOP_50_GLOBAL_STUDENTS) {
+      if (student && student.id) {
+        map.set(student.id, { ...student });
+      }
+    }
   }
 
   // 2. Add saved registered accounts from localStorage if any

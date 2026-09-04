@@ -5,7 +5,9 @@ import {
   syncUserWithBackend,
   registerUserWithBackend,
   loginUserWithBackend,
-  addXPWithBackend
+  addXPWithBackend,
+  pingUserHeartbeat,
+  updateUserPresence
 } from '@/services/leaderboardService';
 import {
   captureIncomingReferral,
@@ -614,6 +616,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
+  // Real-time multi-device presence & heartbeat engine
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    // 1. Send immediate online heartbeat
+    pingUserHeartbeat(profile.id);
+
+    // 2. Continuous heartbeat every 12 seconds
+    const interval = setInterval(() => {
+      pingUserHeartbeat(profile.id);
+    }, 12000);
+
+    // 3. Tab visibility / App backgrounding state handler
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        pingUserHeartbeat(profile.id);
+        updateUserPresence(profile.id, true);
+      } else if (document.visibilityState === 'hidden') {
+        updateUserPresence(profile.id, false);
+      }
+    };
+
+    // 4. Mobile app close / Browser tab unload beacon
+    const handlePageHide = () => {
+      updateUserPresence(profile.id, false);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('beforeunload', handlePageHide);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('beforeunload', handlePageHide);
+      updateUserPresence(profile.id, false);
+    };
+  }, [profile?.id]);
+
   const persistUser = (user: UserProfile | null) => {
     setProfile(user);
     if (user) {
@@ -640,6 +682,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // ignore
       }
     } else {
+      if (profile?.id) {
+        updateUserPresence(profile.id, false);
+      }
       localStorage.removeItem('siparana_user');
       setStudyMemory(null);
     }
@@ -651,6 +696,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const trimmedName = (params.name || '').trim();
     if (!trimmedName) {
       return { success: false, error: 'කරුණාකර නම (Username) ඇතුළත් කරන්න.' };
+    }
+
+    // Check if user already exists in central cloud database first
+    try {
+      const remoteRes = await loginUserWithBackend(trimmedName);
+      if (remoteRes.success && remoteRes.profile) {
+        persistUser(remoteRes.profile);
+        return { success: true };
+      }
+    } catch {
+      // Proceed with creation
     }
 
     const isUni = params.studentCategory === 'University';
