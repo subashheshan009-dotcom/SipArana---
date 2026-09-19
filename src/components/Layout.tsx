@@ -40,7 +40,8 @@ import {
   Award,
   CreditCard,
   Radio,
-  ScanLine
+  ScanLine,
+  Timer
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -62,6 +63,7 @@ import { Gift } from 'lucide-react';
 export type PageId =
   | 'dashboard'
   | 'smart_evaluator'
+  | 'focus_room'
   | 'planner'
   | 'flashcards'
   | 'audio'
@@ -197,6 +199,15 @@ const RAW_NAV_ITEMS: Record<PageId, NavItemDef> = {
     enLabel: 'Voice Notes & Audio',
     siLabel: 'ශ්‍රව්‍ය සටහන්',
     taLabel: 'குரல் குறிப்புகள்'
+  },
+  focus_room: {
+    id: 'focus_room',
+    icon: Timer,
+    enLabel: 'Focus Study Room',
+    siLabel: 'පාඩම් කාමරය (Focus Room)',
+    taLabel: 'கவன படிப்பு அறை',
+    badgeText: 'XP 🔥',
+    badgeType: 'live'
   },
 
   // GROUP 3: LANGUAGES & SKILLS
@@ -388,6 +399,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
   const GRADE5_ALLOWED_PAGES: PageId[] = [
     'dashboard',
     'smart_evaluator',
+    'focus_room',
     'subjects',
     'planner',
     'flashcards',
@@ -437,6 +449,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
           pastelText: 'text-purple-800 dark:text-purple-200',
           items: [
             RAW_NAV_ITEMS.smart_evaluator,
+            RAW_NAV_ITEMS.focus_room,
             { ...RAW_NAV_ITEMS.ai_tutor, enLabel: 'Kavi Owl AI Tutor', siLabel: 'කවි බකමූණා AI ගුරු සහකාර' },
             { ...RAW_NAV_ITEMS.planner, enLabel: 'My Study Routine', siLabel: 'මගේ පාඩම් කාලසටහන' },
             { ...RAW_NAV_ITEMS.flashcards, enLabel: 'Scholarship Flashcards', siLabel: 'ක්ෂණික මතක කාඩ්' },
@@ -488,6 +501,7 @@ export default function Layout({ current, onNavigate, children }: LayoutProps) {
         pastelText: 'text-purple-800 dark:text-purple-200',
         items: [
           RAW_NAV_ITEMS.smart_evaluator,
+          RAW_NAV_ITEMS.focus_room,
           RAW_NAV_ITEMS.ai_tutor,
           RAW_NAV_ITEMS.planner,
           RAW_NAV_ITEMS.flashcards,

@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import type { StudentAchiever } from '@/data/keyPlayersData';
 import { useAuth } from '@/context/AuthContext';
 import {
-  fetchLiveLeaderboard,
   pingUserHeartbeat,
-  subscribeToRealtimeLeaderboard,
   LEADERBOARD_UPDATE_EVENT
 } from '@/services/leaderboardService';
+import {
+  fetchRealUsersFromCloud,
+  subscribeToRealtimeCloudLeaderboard
+} from '@/services/cloudDatabase';
 
 export function useLeaderboard() {
   const { profile } = useAuth();
@@ -18,10 +20,10 @@ export function useLeaderboard() {
       if (profile?.id) {
         pingUserHeartbeat(profile.id);
       }
-      const data = await fetchLiveLeaderboard(profile);
+      const data = await fetchRealUsersFromCloud(profile);
       setLeaderboard(data);
     } catch (err) {
-      console.warn('Error loading live leaderboard:', err);
+      console.warn('Error loading live cloud leaderboard:', err);
     } finally {
       setLoading(false);
     }
@@ -42,8 +44,8 @@ export function useLeaderboard() {
 
     window.addEventListener(LEADERBOARD_UPDATE_EVENT, handleUpdate);
 
-    // 2. Real-time central database listener (SSE stream from server for cross-device live sync)
-    const unsubscribeStream = subscribeToRealtimeLeaderboard(profile, (liveList) => {
+    // 2. Real-time dynamic cloud database listener (Firestore snapshot + Central Multi-Device Bridge)
+    const unsubscribeCloud = subscribeToRealtimeCloudLeaderboard(profile, (liveList) => {
       setLeaderboard(liveList);
       setLoading(false);
     });
@@ -57,7 +59,7 @@ export function useLeaderboard() {
 
     return () => {
       window.removeEventListener(LEADERBOARD_UPDATE_EVENT, handleUpdate);
-      unsubscribeStream();
+      unsubscribeCloud();
       clearInterval(interval);
     };
   }, [loadData, profile]);

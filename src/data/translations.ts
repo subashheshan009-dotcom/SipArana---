@@ -486,7 +486,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     phone_number: 'Phone Number',
     phone_placeholder: '07X XXXXXXX',
     school_name: 'School / Institution',
-    school_placeholder: 'e.g. Ananda College, Colombo',
+    school_placeholder: 'e.g. National Model School, Colombo',
     district: 'District',
     grade_year: 'Grade',
     stream_label: 'Study Stream',

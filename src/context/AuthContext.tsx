@@ -7,8 +7,14 @@ import {
   loginUserWithBackend,
   addXPWithBackend,
   pingUserHeartbeat,
-  updateUserPresence
+  updateUserPresence,
+  setStoredAuthToken
 } from '@/services/leaderboardService';
+import {
+  syncUserProfileToCloud,
+  updateUserPresenceInCloud,
+  isMockStudent
+} from '@/services/cloudDatabase';
 import {
   captureIncomingReferral,
   processVerifiedReferralOnRegistration
@@ -107,7 +113,7 @@ interface AuthContextType {
   setCountryAndCurriculum: (countryCode: GlobalCountryCode, curriculumId?: string) => void;
   setUniversityAndDegree: (university: string, faculty: string, degreeProgramme: string, degreeCode: string, academicYear?: number, academicSemester?: number) => void;
   toggleStudentCategory: (category?: StudentCategory) => void;
-  addXP: (amount: number) => void;
+  addXP: (amount: number, activityType?: string, activityPayload?: any) => void;
   incrementStreak: () => void;
   toggleBookmarkPaper: (paperId: string) => void;
   
@@ -140,7 +146,7 @@ const DEFAULT_USERS: Record<DemoPresetKey, UserProfile> = {
     curriculumId: 'LK_NIE',
     curriculumName: 'Sri Lanka National NIE',
     targetYear: 2026,
-    school: 'Royal Primary School, Colombo',
+    school: 'Primary Model School, Colombo',
     district: 'Colombo',
     medium: 'Sinhala',
     isPremium: true,
@@ -335,7 +341,7 @@ const DEFAULT_USERS: Record<DemoPresetKey, UserProfile> = {
     curriculumId: 'LK_NIE',
     curriculumName: 'Sri Lanka National NIE',
     targetYear: 2026,
-    school: 'Ananda College, Colombo',
+    school: 'National College, Colombo',
     district: 'Colombo',
     medium: 'Sinhala',
     isPremium: true,
@@ -357,7 +363,7 @@ const DEFAULT_USERS: Record<DemoPresetKey, UserProfile> = {
     level: 'AL',
     stream: 'Biological Science (Bio)',
     targetYear: 2026,
-    school: 'Visakha Vidyalaya, Colombo',
+    school: 'Girls High School, Colombo',
     district: 'Colombo',
     medium: 'English',
     isPremium: false,
@@ -378,7 +384,7 @@ const DEFAULT_USERS: Record<DemoPresetKey, UserProfile> = {
     level: 'AL',
     stream: 'Commerce',
     targetYear: 2025,
-    school: 'Dharmaraja College, Kandy',
+    school: 'Central College, Kandy',
     district: 'Kandy',
     medium: 'Sinhala',
     isPremium: true,
@@ -399,7 +405,7 @@ const DEFAULT_USERS: Record<DemoPresetKey, UserProfile> = {
     level: 'OL',
     stream: 'General O/L',
     targetYear: 2026,
-    school: 'Mahinda College, Galle',
+    school: 'Secondary College, Galle',
     district: 'Galle',
     medium: 'Sinhala',
     isPremium: false,
@@ -420,7 +426,7 @@ const DEFAULT_USERS: Record<DemoPresetKey, UserProfile> = {
     level: 'JUNIOR',
     stream: 'Junior Secondary (Grade 6-9)',
     targetYear: 2029,
-    school: 'Maliyadeva Balika, Kurunegala',
+    school: 'Junior Academy, Kurunegala',
     district: 'Kurunegala',
     medium: 'Sinhala',
     isPremium: false,
@@ -441,7 +447,7 @@ const DEFAULT_USERS: Record<DemoPresetKey, UserProfile> = {
     level: 'AL',
     stream: 'Arts',
     targetYear: 2026,
-    school: 'Devi Balika Vidyalaya, Colombo',
+    school: 'Senior Model School, Colombo',
     district: 'Colombo',
     medium: 'Sinhala',
     isPremium: true,
@@ -584,34 +590,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (saved) {
       try {
         const u = JSON.parse(saved) as UserProfile;
-        const normalizedUser: UserProfile = {
-          ...DEFAULT_USERS.maths,
-          ...u,
-          hasCompletedOnboarding: true
-        };
-        setProfile(normalizedUser);
-        const mem = getUserStudyMemory(normalizedUser.email, normalizedUser);
-        setStudyMemory(mem);
-        syncUserWithBackend(normalizedUser);
+        // If it was the deprecated dummy account 'usr_maths_1', clean it out
+        if (u && u.id && u.id !== 'usr_maths_1') {
+          setProfile(u);
+          const mem = getUserStudyMemory(u.email, u);
+          setStudyMemory(mem);
+          syncUserWithBackend(u);
+        } else {
+          localStorage.removeItem('siparana_user');
+          setProfile(null);
+        }
       } catch {
-        const defaultUser: UserProfile = { ...DEFAULT_USERS.maths, hasCompletedOnboarding: true };
-        setProfile(defaultUser);
-        const mem = getUserStudyMemory(defaultUser.email, defaultUser);
-        setStudyMemory(mem);
-        syncUserWithBackend(defaultUser);
+        localStorage.removeItem('siparana_user');
+        setProfile(null);
       }
     } else {
-      // Default to ready-to-use logged-in student profile so the entire dashboard & AI tools render immediately
-      const defaultUser: UserProfile = { ...DEFAULT_USERS.maths, hasCompletedOnboarding: true };
-      setProfile(defaultUser);
-      try {
-        localStorage.setItem('siparana_user', JSON.stringify(defaultUser));
-      } catch {
-        // ignore
-      }
-      const mem = getUserStudyMemory(defaultUser.email, defaultUser);
-      setStudyMemory(mem);
-      syncUserWithBackend(defaultUser);
+      setProfile(null);
     }
     setLoading(false);
   }, []);
@@ -632,15 +626,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         pingUserHeartbeat(profile.id);
-        updateUserPresence(profile.id, true);
+        updateUserPresenceInCloud(profile.id, true);
       } else if (document.visibilityState === 'hidden') {
-        updateUserPresence(profile.id, false);
+        updateUserPresenceInCloud(profile.id, false);
       }
     };
 
     // 4. Mobile app close / Browser tab unload beacon
     const handlePageHide = () => {
-      updateUserPresence(profile.id, false);
+      updateUserPresenceInCloud(profile.id, false);
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -652,7 +646,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pagehide', handlePageHide);
       window.removeEventListener('beforeunload', handlePageHide);
-      updateUserPresence(profile.id, false);
+      updateUserPresenceInCloud(profile.id, false);
     };
   }, [profile?.id]);
 
@@ -663,27 +657,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const mem = getUserStudyMemory(user.email, user);
       setStudyMemory(mem);
 
-      // Asynchronously sync with backend database
-      syncUserWithBackend(user);
+      // Asynchronously sync with cloud database (Only genuine real users, never mock demo accounts)
+      if (!isMockStudent(user.id, user.email)) {
+        syncUserProfileToCloud(user);
 
-      // Keep user in registered accounts repository so future email logins retrieve exact profile
-      try {
-        const storedUsers: Array<{ profile: UserProfile; password?: string; phone?: string }> =
-          JSON.parse(localStorage.getItem('siparana_registered_accounts') || '[]');
-        const norm = normalizeEmail(user.email);
-        const idx = storedUsers.findIndex(acc => normalizeEmail(acc.profile.email) === norm);
-        if (idx >= 0) {
-          storedUsers[idx].profile = { ...storedUsers[idx].profile, ...user };
-        } else {
-          storedUsers.push({ profile: user });
+        // Keep user in registered accounts repository so future email logins retrieve exact profile
+        try {
+          const storedUsers: Array<{ profile: UserProfile; password?: string; phone?: string }> =
+            JSON.parse(localStorage.getItem('siparana_registered_accounts') || '[]');
+          const norm = normalizeEmail(user.email);
+          const idx = storedUsers.findIndex(acc => normalizeEmail(acc.profile.email) === norm);
+          if (idx >= 0) {
+            storedUsers[idx].profile = { ...storedUsers[idx].profile, ...user };
+          } else {
+            storedUsers.push({ profile: user });
+          }
+          // Filter out any mock accounts
+          const cleanAccounts = storedUsers.filter(acc => acc.profile && !isMockStudent(acc.profile.id, acc.profile.email));
+          localStorage.setItem('siparana_registered_accounts', JSON.stringify(cleanAccounts));
+        } catch {
+          // ignore
         }
-        localStorage.setItem('siparana_registered_accounts', JSON.stringify(storedUsers));
-      } catch {
-        // ignore
       }
     } else {
       if (profile?.id) {
-        updateUserPresence(profile.id, false);
+        updateUserPresenceInCloud(profile.id, false);
       }
       localStorage.removeItem('siparana_user');
       setStudyMemory(null);
@@ -804,7 +802,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         gradingTarget: params.gradingTarget || (targetCountry.code === 'LK' ? 'Z-Score 2.10 (Top 100)' : targetCountry.code === 'JP' ? '偏差値 70' : 'A* / Grade 9'),
         nativeLanguage: params.nativeLanguage || targetCountry.defaultLanguage,
         targetYear: params.targetYear || (selectedGrade === 5 ? 2026 : selectedGrade === 11 ? 2026 : selectedGrade === 13 ? 2026 : 2027),
-        school: params.school || (targetCountry.code === 'LK' ? (selectedGrade === 5 ? 'Royal Primary School, Colombo' : 'Sri Lanka National School') : `${targetCountry.name} International Academy`),
+        school: params.school || (targetCountry.code === 'LK' ? 'Sri Lanka National School' : `${targetCountry.name} International Academy`),
         district: params.district || (targetCountry.code === 'LK' ? 'Colombo' : targetCountry.name),
         medium: params.medium || (targetCountry.code === 'LK' ? 'Sinhala' : targetCountry.code === 'JP' ? 'Japanese' : 'English'),
         isPremium: true,
@@ -1136,7 +1134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       targetYear:
         profileFields.targetYear ||
         (gradeVal === 5 ? 2026 : gradeVal === 11 ? 2026 : gradeVal === 13 ? 2026 : 2027),
-      school: profileFields.school || (targetCountryCode === 'LK' ? (gradeVal === 5 ? 'Royal Primary School, Colombo' : 'National Model School') : `${targetCountry.name} Academy`),
+      school: profileFields.school || (targetCountryCode === 'LK' ? 'National Model School' : `${targetCountry.name} Academy`),
       district: profileFields.district || (targetCountryCode === 'LK' ? 'Colombo' : getCountrySubdivisions(targetCountryCode).defaultSubdivision),
       medium: profileFields.medium || (targetCountryCode === 'LK' ? 'Sinhala' : targetCountry.defaultLanguage === 'ja' ? 'Japanese' : targetCountry.defaultLanguage === 'de' ? 'German' : 'English'),
       isPremium: false,
@@ -1299,21 +1297,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    setStoredAuthToken(null);
     persistUser(null);
   };
 
   const updateProfile = (data: Partial<UserProfile>) => {
     if (!profile) return;
-    const updated = { ...profile, ...data };
+    // CRITICAL SECURITY GUARD: Prevent any client-side caller or browser console from spoofing XP via updateProfile
+    const { xp, ...safeData } = data as any;
+    const updated = { ...profile, ...safeData };
     persistUser(updated);
   };
 
-  const addXP = (amount: number) => {
+  const addXP = (amount: number, activityType: string = 'general_study', activityPayload: any = {}) => {
     if (!profile) return;
-    const safeAmount = Math.max(0, amount);
+    const safeAmount = Math.min(Math.max(0, amount), 120);
+    // Optimistic UI update, capped to safe amount
     const updated = { ...profile, xp: profile.xp + safeAmount };
     persistUser(updated);
-    addXPWithBackend(profile.id, safeAmount);
+    // Server performs authoritative validation & rate limiting
+    addXPWithBackend(profile.id, safeAmount, activityType, activityPayload).then(res => {
+      if (res && res.newXP !== undefined) {
+        // Sync with authoritative server XP value
+        setProfile(prev => prev ? { ...prev, xp: res.newXP! } : null);
+      }
+    });
   };
 
   const incrementStreak = () => {

@@ -35,7 +35,8 @@ import {
   BrainCircuit,
   Newspaper,
   ScanLine,
-  UploadCloud
+  UploadCloud,
+  Timer
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -65,6 +66,15 @@ import {
   recordDailyActionClaim,
   triggerDailyLockToast
 } from '@/utils/dailyXpLockEngine';
+import { ParentalNotificationBanner } from '@/components/parentReport/ParentalNotificationBanner';
+import { ParentalReportHubModal } from '@/components/parentReport/ParentalReportHubModal';
+import { InAppParentChatModal } from '@/components/parentReport/InAppParentChatModal';
+import {
+  getLatestWeeklyReport,
+  generateWeeklyStudyReport,
+  saveWeeklyReport,
+  type WeeklyStudyReport
+} from '@/services/weeklyReportService';
 
 interface DashboardProps {
   onNavigate: (page: PageId) => void;
@@ -77,6 +87,20 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const { notices, isSyncing } = useExamNews();
   const { leaderboard, top3, refreshLeaderboard } = useLeaderboard();
   const userKey = profile?.email || profile?.id || 'guest_user';
+
+  // Weekly Report & Parent Chat States
+  const [weeklyReport, setWeeklyReport] = useState<WeeklyStudyReport | null>(() => getLatestWeeklyReport());
+  const [showWeeklyReportHub, setShowWeeklyReportHub] = useState(false);
+  const [showParentChat, setShowParentChat] = useState(false);
+
+  React.useEffect(() => {
+    if (!weeklyReport) {
+      generateWeeklyStudyReport(profile).then((rep) => {
+        saveWeeklyReport(rep);
+        setWeeklyReport(rep);
+      });
+    }
+  }, [profile]);
 
   const handleCheerStudent = async (id: string) => {
     await cheerStudent(id);
@@ -265,6 +289,15 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           students={top3}
           onNavigate={onNavigate}
           currentUserId={profile?.id}
+        />
+      )}
+
+      {/* 0c. AUTOMATED WEEKLY STUDY REPORT FOR PARENTS & IN-APP CHAT (SUNDAY TRIGGER) */}
+      {weeklyReport && (
+        <ParentalNotificationBanner
+          report={weeklyReport}
+          onOpenReport={() => setShowWeeklyReportHub(true)}
+          onOpenChat={() => setShowParentChat(true)}
         />
       )}
 
@@ -803,6 +836,30 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                 </div>
               </button>
 
+              {/* Focus Study Room */}
+              <button
+                id="dash-tool-focus-room"
+                onClick={() => onNavigate('focus_room')}
+                className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 hover:border-cyan-400 dark:hover:border-cyan-600 hover:-translate-y-0.5 hover:shadow-md transition-all text-left space-y-2 group cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="p-2 rounded-xl bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 group-hover:scale-105 transition-transform">
+                    <Timer className="w-4 h-4" />
+                  </div>
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-950/80 dark:text-cyan-300 border border-cyan-200/70">
+                    +10 XP / 5m 🔥
+                  </span>
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-[13px] font-bold text-slate-800 dark:text-slate-100 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors leading-tight">
+                    {language === 'si' ? 'ගැඹුරු පාඩම් කාමරය' : 'Focus Study Room'}
+                  </h4>
+                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-normal leading-tight mt-0.5 truncate">
+                    {language === 'si' ? 'Stopwatch & Pomodoro' : 'Stopwatch & Lo-Fi Beats'}
+                  </p>
+                </div>
+              </button>
+
               {/* AI Study Planner */}
               <button
                 id="dash-tool-planner"
@@ -1023,6 +1080,30 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                   </h4>
                   <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-normal leading-tight mt-0.5 truncate">
                     {language === 'si' ? 'Performance Analytics' : 'ප්‍රගති වාර්තාව'}
+                  </p>
+                </div>
+              </button>
+
+              {/* Weekly Parent Report Card & Chat */}
+              <button
+                id="dash-tool-parent-report"
+                onClick={() => setShowWeeklyReportHub(true)}
+                className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 hover:border-blue-400 dark:hover:border-blue-600 hover:-translate-y-0.5 hover:shadow-md transition-all text-left space-y-2 group cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200/70">
+                    SUNDAY
+                  </span>
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-[13px] font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
+                    {language === 'si' ? 'දෙමාපිය වාර්තාව' : 'Weekly Parent Report'}
+                  </h4>
+                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-normal leading-tight mt-0.5 truncate">
+                    {language === 'si' ? 'Sunday Summary & Chat' : 'Sunday Summary & Chat'}
                   </p>
                 </div>
               </button>
@@ -1471,6 +1552,23 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         isOpen={showSyncModal}
         onClose={() => setShowSyncModal(false)}
         onNavigate={onNavigate}
+      />
+
+      {/* Weekly Parental Report Hub Modal */}
+      <ParentalReportHubModal
+        isOpen={showWeeklyReportHub}
+        onClose={() => setShowWeeklyReportHub(false)}
+        onOpenChat={() => {
+          setShowWeeklyReportHub(false);
+          setShowParentChat(true);
+        }}
+      />
+
+      {/* In-App Parent Chat Modal */}
+      <InAppParentChatModal
+        isOpen={showParentChat}
+        onClose={() => setShowParentChat(false)}
+        currentReport={weeklyReport}
       />
     </div>
   );

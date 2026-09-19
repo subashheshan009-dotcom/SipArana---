@@ -29,7 +29,10 @@ import {
   Filter,
   BarChart3,
   Sparkles,
-  ArrowUpRight
+  ArrowUpRight,
+  MessageCircle,
+  Share2,
+  Calendar
 } from 'lucide-react';
 import {
   INITIAL_TEST_ATTEMPTS,
@@ -40,6 +43,18 @@ import {
 } from '@/data/analyticsData';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { WeeklyProgressPostCard } from '@/components/parentReport/WeeklyProgressPostCard';
+import { ParentalNotificationBanner } from '@/components/parentReport/ParentalNotificationBanner';
+import { InAppParentChatModal } from '@/components/parentReport/InAppParentChatModal';
+import { ParentalReportHubModal } from '@/components/parentReport/ParentalReportHubModal';
+import {
+  generateWeeklyStudyReport,
+  getStoredWeeklyReports,
+  saveWeeklyReport,
+  sendWeeklyReportToParentChat,
+  type WeeklyStudyReport,
+  getParentContactInfo
+} from '@/services/weeklyReportService';
 
 interface PerformanceAnalyticsPageProps {
   onNavigateQuizzes?: () => void;
@@ -59,6 +74,12 @@ export default function PerformanceAnalyticsPage({
   const [weakPoints, setWeakPoints] = useState<WeakPointItem[]>(INITIAL_WEAK_POINTS);
   const [selectedTimeRange, setSelectedTimeRange] = useState<'7d' | '30d' | 'all'>('all');
 
+  // Weekly Parental Report states
+  const [weeklyReport, setWeeklyReport] = useState<WeeklyStudyReport | null>(null);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [showHubModal, setShowHubModal] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+
   // Load from localStorage or seed initial
   useEffect(() => {
     try {
@@ -75,6 +96,29 @@ export default function PerformanceAnalyticsPage({
       setTestAttempts(INITIAL_TEST_ATTEMPTS);
     }
   }, []);
+
+  // Load or generate weekly report
+  useEffect(() => {
+    const existingReports = getStoredWeeklyReports();
+    if (existingReports.length > 0) {
+      setWeeklyReport(existingReports[0]);
+    } else {
+      setIsGeneratingReport(true);
+      generateWeeklyStudyReport(profile).then((rep) => {
+        saveWeeklyReport(rep);
+        setWeeklyReport(rep);
+        setIsGeneratingReport(false);
+      });
+    }
+  }, [profile]);
+
+  const handleRefreshWeeklyReport = async () => {
+    setIsGeneratingReport(true);
+    const fresh = await generateWeeklyStudyReport(profile);
+    saveWeeklyReport(fresh);
+    setWeeklyReport(fresh);
+    setIsGeneratingReport(false);
+  };
 
   // Compute Metrics
   const totalTests = testAttempts.length;
@@ -149,6 +193,64 @@ export default function PerformanceAnalyticsPage({
           </p>
         </div>
       </div>
+
+      {/* Parental Notification Banner (Automated Sunday Trigger) */}
+      {weeklyReport && (
+        <ParentalNotificationBanner
+          report={weeklyReport}
+          onOpenReport={() => setShowHubModal(true)}
+          onOpenChat={() => setShowChatModal(true)}
+        />
+      )}
+
+      {/* Aesthetic Weekly Performance Summary Card (Shareable / Chat Ready) */}
+      {weeklyReport && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <Calendar className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  {language === 'si' ? 'සතිපතා දෙමාපිය ප්‍රගති වාර්තාව' : 'Automated Weekly Study Report for Parents'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {language === 'si' ? 'ඉරිදා ස්වයංක්‍රීයව සම්පාදනය වන ප්‍රගති සටහන' : 'Sunday aggregation of study timer hours, XP gained, and exam mastery.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowChatModal(true)}
+                className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>In-App Parent Chat</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowHubModal(true)}
+                className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Report History</span>
+              </button>
+            </div>
+          </div>
+
+          <WeeklyProgressPostCard
+            report={weeklyReport}
+            onSendToChat={() => {
+              sendWeeklyReportToParentChat(weeklyReport);
+              setWeeklyReport({ ...weeklyReport, isSentToParent: true });
+            }}
+            onOpenChatModal={() => setShowChatModal(true)}
+          />
+        </div>
+      )}
 
       {/* 4 Summary Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -472,6 +574,24 @@ export default function PerformanceAnalyticsPage({
           </table>
         </div>
       </div>
+
+      {/* In-App Parent Chat Modal */}
+      <InAppParentChatModal
+        isOpen={showChatModal}
+        onClose={() => setShowChatModal(false)}
+        currentReport={weeklyReport}
+        onRefreshReport={handleRefreshWeeklyReport}
+      />
+
+      {/* Parental Report Hub & History Modal */}
+      <ParentalReportHubModal
+        isOpen={showHubModal}
+        onClose={() => setShowHubModal(false)}
+        onOpenChat={() => {
+          setShowHubModal(false);
+          setShowChatModal(true);
+        }}
+      />
     </div>
   );
 }

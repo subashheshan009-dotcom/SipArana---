@@ -1,9 +1,39 @@
 import type { StudentAchiever } from '@/data/keyPlayersData';
-import { convertProfileToAchiever, INITIAL_TOP_50_GLOBAL_STUDENTS } from '@/data/keyPlayersData';
+import { convertProfileToAchiever } from '@/data/keyPlayersData';
 import type { UserProfile } from '@/types';
 
 // Global Event for Real-Time Leaderboard Updates across components
 export const LEADERBOARD_UPDATE_EVENT = 'siparana_leaderboard_updated';
+
+// Security: Auth Token Storage & Retrieval
+export function getStoredAuthToken(): string | null {
+  try {
+    return localStorage.getItem('siparana_auth_token');
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredAuthToken(token: string | null): void {
+  try {
+    if (token) {
+      localStorage.setItem('siparana_auth_token', token);
+    } else {
+      localStorage.removeItem('siparana_auth_token');
+    }
+  } catch {
+    // ignore
+  }
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const token = getStoredAuthToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
 
 export function broadcastLeaderboardUpdate(leaderboard?: StudentAchiever[]) {
   if (typeof window !== 'undefined') {
@@ -78,12 +108,14 @@ export function subscribeToRealtimeLeaderboard(
   let isClosed = false;
 
   const processIncomingList = (rawList: any[]) => {
-    const list: StudentAchiever[] = rawList.map((item: any) => ({
-      ...item,
-      isOnline: Boolean(item.isOnline || (currentProfile && item.id === currentProfile.id))
-    }));
+    const list: StudentAchiever[] = rawList
+      .filter((item: any) => !isMockStudent(item.id, item.email))
+      .map((item: any) => ({
+        ...item,
+        isOnline: Boolean(item.isOnline || (currentProfile && item.id === currentProfile.id))
+      }));
 
-    if (currentProfile && currentProfile.id) {
+    if (currentProfile && currentProfile.id && !isMockStudent(currentProfile.id, currentProfile.email)) {
       const existingIdx = list.findIndex(a => a.id === currentProfile.id);
       if (existingIdx >= 0) {
         list[existingIdx].isCurrentUser = true;
@@ -169,7 +201,7 @@ export async function registerUserWithBackend(
   user: UserProfile,
   password?: string,
   phone?: string
-): Promise<{ success: boolean; user?: UserProfile; leaderboard?: StudentAchiever[]; error?: string }> {
+): Promise<{ success: boolean; user?: UserProfile; leaderboard?: StudentAchiever[]; error?: string; token?: string }> {
   try {
     const res = await fetch('/api/users/register', {
       method: 'POST',
@@ -178,13 +210,17 @@ export async function registerUserWithBackend(
     });
     if (res.ok) {
       const data = await res.json();
+      if (data && data.token) {
+        setStoredAuthToken(data.token);
+      }
       if (data && data.leaderboard) {
         broadcastLeaderboardUpdate(data.leaderboard);
       }
       return {
         success: true,
         user: data.user ? { ...user, ...data.user } : user,
-        leaderboard: data.leaderboard
+        leaderboard: data.leaderboard,
+        token: data.token
       };
     } else {
       const errData = await res.json().catch(() => ({}));
@@ -200,7 +236,7 @@ export async function registerUserWithBackend(
 export async function loginUserWithBackend(
   emailOrPhone: string,
   password?: string
-): Promise<{ success: boolean; profile?: UserProfile; error?: string; notFoundInDb?: boolean; leaderboard?: StudentAchiever[] }> {
+): Promise<{ success: boolean; profile?: UserProfile; error?: string; notFoundInDb?: boolean; leaderboard?: StudentAchiever[]; token?: string }> {
   try {
     const res = await fetch('/api/users/login', {
       method: 'POST',
@@ -209,10 +245,13 @@ export async function loginUserWithBackend(
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok && data.success && data.profile) {
+      if (data.token) {
+        setStoredAuthToken(data.token);
+      }
       if (data.leaderboard) {
         broadcastLeaderboardUpdate(data.leaderboard);
       }
-      return { success: true, profile: data.profile, leaderboard: data.leaderboard };
+      return { success: true, profile: data.profile, leaderboard: data.leaderboard, token: data.token };
     }
     return {
       success: false,
@@ -225,16 +264,23 @@ export async function loginUserWithBackend(
   }
 }
 
-// Add XP in Central Database directly
+// Server-Authoritative Verified XP Award (Anti-Hacking & Rate-Limited)
 export async function addXPWithBackend(
   userId: string,
-  amount: number
+  amount: number,
+  activityType: string = 'general_study',
+  activityPayload: any = {}
 ): Promise<{ success: boolean; newXP?: number; leaderboard?: StudentAchiever[] }> {
   try {
-    const res = await fetch('/api/users/add-xp', {
+    const res = await fetch('/api/users/award-xp', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, amount })
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        userId,
+        clientClaimAmount: amount,
+        activityType,
+        activityPayload
+      })
     });
     if (res.ok) {
       const data = await res.json();
@@ -244,21 +290,24 @@ export async function addXPWithBackend(
       return { success: true, newXP: data.newXP, leaderboard: data.leaderboard };
     }
   } catch (err) {
-    console.warn('Add XP backend error:', err);
+    console.warn('Award verified XP backend error:', err);
   }
   return { success: false };
 }
 
-// Sync Real User with Backend Database
+// Sync Real User with Backend Database (Enforces RLS Write Permission)
 export async function syncUserWithBackend(profile: UserProfile): Promise<{ success: boolean; leaderboard?: StudentAchiever[]; userRank?: number }> {
   try {
     const res = await fetch('/api/users/sync', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(profile)
     });
     if (res.ok) {
       const data = await res.json();
+      if (data && data.token) {
+        setStoredAuthToken(data.token);
+      }
       if (data && data.leaderboard) {
         broadcastLeaderboardUpdate(data.leaderboard);
         return { success: true, leaderboard: data.leaderboard, userRank: data.userRank };
@@ -279,7 +328,7 @@ export async function cheerStudent(userId: string): Promise<{ success: boolean; 
   try {
     const res = await fetch('/api/users/cheer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ userId })
     });
     if (res.ok) {
@@ -313,27 +362,27 @@ export function updateUserPresence(userId: string, isOnline: boolean): void {
   }
 }
 
+const DEMO_MOCK_PREFIXES = ['usr_sch_', 'usr_uk_', 'usr_us_', 'usr_jp_', 'usr_in_', 'usr_au_', 'usr_ib_', 'usr_maths_', 'usr_bio_', 'usr_com_', 'usr_ol_', 'usr_jun_', 'usr_art_', 'usr_tech_', 'usr_uni_'];
+
+function isMockStudent(id?: string, email?: string): boolean {
+  if (!id) return true;
+  if (DEMO_MOCK_PREFIXES.some(prefix => id.startsWith(prefix))) return true;
+  if (email && email.endsWith('@siparana.lk') && (email.startsWith('senuri.') || email.startsWith('kasun.') || email.startsWith('rashmi.') || email.startsWith('tharindu.') || email.startsWith('sithum.') || email.startsWith('minoli.') || email.startsWith('sanduni.'))) return true;
+  return false;
+}
+
 // Helper: Extract verified registered accounts & local users (Online + Offline persistent ranks)
 export function getLocalRegisteredAchievers(currentProfile?: UserProfile | null): StudentAchiever[] {
   const map = new Map<string, StudentAchiever>();
 
-  // 1. Seed baseline genuine registered accounts from INITIAL_TOP_50_GLOBAL_STUDENTS
-  if (Array.isArray(INITIAL_TOP_50_GLOBAL_STUDENTS)) {
-    for (const student of INITIAL_TOP_50_GLOBAL_STUDENTS) {
-      if (student && student.id) {
-        map.set(student.id, { ...student });
-      }
-    }
-  }
-
-  // 2. Add saved registered accounts from localStorage if any
+  // 1. Add saved registered accounts from localStorage if any
   try {
     const saved = localStorage.getItem('siparana_registered_accounts');
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) {
         for (const item of parsed) {
-          if (item?.profile && item.profile.id) {
+          if (item?.profile && item.profile.id && !isMockStudent(item.profile.id, item.profile.email)) {
             const achiever = convertProfileToAchiever(item.profile, map.size + 1, false);
             map.set(item.profile.id, achiever);
           }
@@ -344,8 +393,8 @@ export function getLocalRegisteredAchievers(currentProfile?: UserProfile | null)
     // ignore
   }
 
-  // 3. Add or update current logged-in profile if active
-  if (currentProfile && currentProfile.id) {
+  // 2. Add or update current logged-in profile if active
+  if (currentProfile && currentProfile.id && !isMockStudent(currentProfile.id, currentProfile.email)) {
     const currentAchiever = convertProfileToAchiever(currentProfile, 1, true);
     map.set(currentProfile.id, currentAchiever);
   }

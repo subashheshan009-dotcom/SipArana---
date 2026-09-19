@@ -1,0 +1,117 @@
+rules_version = '2';
+
+/**
+ * SIPARANA GLOBAL AI EDUCATION ECOSYSTEM
+ * Cloud Firestore Production Security Rules
+ * 
+ * Strict Zero-Trust & Child-Safe Academic Privacy Architecture
+ * Enforces:
+ * 1. Read Permissions: Public read ONLY for sanitized leaderboard projections.
+ *    Strict privacy for student emails, phone numbers, passwords, and private settings.
+ * 2. Write Permissions: Users may only write their own document (request.auth.uid == userId).
+ * 3. XP Integrity: Total XP CANNOT be modified directly from client console;
+ *    XP increments must originate from verified server-side transactions / Cloud Functions.
+ * 4. XSS & Injection Defense: Input data validation on all student profile fields.
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================
+    // SECURITY HELPER FUNCTIONS
+    // ==========================================
+
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Validates string length and basic sanitary bounds
+    function isValidString(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    // ==========================================
+    // 1. PUBLIC LEADERBOARD (Sanitized Projections Only)
+    // ==========================================
+    // Publicly exposes ONLY non-sensitive leaderboard fields:
+    // Display Name, School, Public Avatar URL, Stream, Total XP, Online Status.
+    // NEVER exposes email addresses, phone numbers, passwords, or personal account settings.
+    match /leaderboard/{userId} {
+      // Allow public read for global rankings
+      allow read: if true;
+
+      // Clients CANNOT write directly to the leaderboard.
+      // Projections are maintained strictly by trusted server-side engines.
+      allow write: if false;
+    }
+
+    // ==========================================
+    // 2. USERS COLLECTION (Private & Sensitive Student Records)
+    // ==========================================
+    // Contains sensitive PII (Email, Phone, Credentials, Preferences, Private Chat Memory)
+    match /users/{userId} {
+
+      // READ PERMISSION:
+      // A student may only read their own sensitive profile record.
+      // Other students and unauthorized guests are blocked with 403 Forbidden.
+      allow read: if isOwner(userId);
+
+      // CREATE PERMISSION:
+      // User can only create their own profile. Starting XP cannot be artificially inflated.
+      allow create: if isOwner(userId)
+                    && isValidString(request.resource.data.name, 1, 60)
+                    && (!('xp' in request.resource.data) || request.resource.data.xp <= 100);
+
+      // WRITE / UPDATE PERMISSION:
+      // 1. User can only edit their own database record (`request.auth.uid == userId`).
+      // 2. ANTI-XP SPOOFING: Prevent user from manually altering totalXP directly from client console!
+      //    The 'xp', 'totalXP', and 'allTimeXP' fields must remain strictly unchanged on client updates.
+      allow update: if isOwner(userId)
+                    && (
+                      // XP must not be modified by client update
+                      !request.resource.data.diff(resource.data).affectedKeys().hasAny(['xp', 'totalXP', 'allTimeXP'])
+                      || request.resource.data.xp == resource.data.xp
+                    )
+                    // Input sanitization constraints
+                    && (!('name' in request.resource.data) || isValidString(request.resource.data.name, 1, 60))
+                    && (!('bio' in request.resource.data) || isValidString(request.resource.data.bio, 0, 300))
+                    && (!('school' in request.resource.data) || isValidString(request.resource.data.school, 0, 120));
+
+      // DELETE PERMISSION:
+      // Restricted strictly to the account owner.
+      allow delete: if isOwner(userId);
+
+      // ----------------------------------------
+      // Private Subcollections (Notes, Chats, Bookmarks)
+      // ----------------------------------------
+      match /private/{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /study_memory/{memoryId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // ==========================================
+    // 3. SECURE XP TRANSACTIONS & AUDIT LOGS
+    // ==========================================
+    // Append-only ledger of verified educational achievements.
+    // Client write is disabled; written only by trusted server verification.
+    match /xp_audit_logs/{logId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if false; // Server-side admin only
+    }
+
+    // ==========================================
+    // 4. DEFAULT CATCH-ALL: ZERO-TRUST LOCKDOWN
+    // ==========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

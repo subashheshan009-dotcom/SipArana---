@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { CountryProvider } from '@/context/CountryContext';
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -32,14 +32,23 @@ import FunEnglishRelaxPage from '@/pages/FunEnglishRelaxPage';
 import ModernLanguagesPage from '@/pages/ModernLanguagesPage';
 import LanguageAdventurePage from '@/pages/LanguageAdventurePage';
 import SmartFileEvaluatorPage from '@/pages/SmartFileEvaluatorPage';
+import FocusStudyRoomPage from '@/pages/FocusStudyRoomPage';
 import OnboardingFlow from '@/components/OnboardingFlow';
 import { GlobalDailyLockToastContainer } from '@/components/GlobalDailyLockToastContainer';
 import { ActiveScreenTimeTracker } from '@/components/ActiveScreenTimeTracker';
+import { checkAndTriggerSundayNotification } from '@/services/weeklyReportService';
 
 function AppContent() {
   const { profile, loading } = useAuth();
   const [page, setPage] = useState<PageId>('dashboard');
   const [highFive, setHighFive] = useState(false);
+
+  // Automated Sunday Parental Weekly Report Trigger
+  useEffect(() => {
+    if (profile) {
+      checkAndTriggerSundayNotification(profile);
+    }
+  }, [profile]);
 
   if (loading) {
     return (
@@ -77,6 +86,8 @@ function AppContent() {
         return <Dashboard onNavigate={handleNavigate} />;
       case 'smart_evaluator':
         return <SmartFileEvaluatorPage onNavigateFlashcards={() => handleNavigate('flashcards')} />;
+      case 'focus_room':
+        return <FocusStudyRoomPage />;
       case 'planner':
         return <StudyPlannerPage />;
       case 'flashcards':

@@ -146,6 +146,10 @@ class SoundFX {
     }
   }
 
+  playFanfare() {
+    this.playChestOpen();
+  }
+
   playPetInteract() {
     try {
       const ctx = this.getContext();

@@ -1,13 +1,15 @@
-import React from 'react';
-import { Crown, Trophy, Medal, Flame, Zap, CheckCircle2, GraduationCap, Globe, ThumbsUp, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Crown, Trophy, Medal, Flame, Zap, CheckCircle2, GraduationCap, Globe, ThumbsUp, ChevronRight, Sparkles, UserCheck } from 'lucide-react';
 import { soundFX } from '@/utils/audioUtils';
 import { AvatarFrameRenderer } from './AvatarFrameRenderer';
 import type { StudentAchiever } from '@/data/keyPlayersData';
 import type { PageId } from '@/components/Layout';
 import confetti from 'canvas-confetti';
+import { useAuth } from '@/context/AuthContext';
+import { fetchTopPodiumUsersFromDb, subscribeToPodiumCloud, isMockStudent } from '@/services/cloudDatabase';
 
 interface Top3PodiumProps {
-  topStudents: StudentAchiever[];
+  topStudents?: StudentAchiever[];
   onCheerStudent: (id: string) => void;
   title?: string;
   subtitle?: string;
@@ -25,9 +27,56 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
   onNavigate,
   showViewAllButton = false
 }) => {
-  const rank1 = topStudents[0];
-  const rank2 = topStudents[1];
-  const rank3 = topStudents[2];
+  const { profile } = useAuth();
+  const [dbChampions, setDbChampions] = useState<StudentAchiever[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // 1. Direct Central Database Binding (Strictly Real Users Only, orderBy totalXP desc limit 3)
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadPodium = async () => {
+      try {
+        const directUsers = await fetchTopPodiumUsersFromDb(profile);
+        if (isMounted && directUsers && directUsers.length > 0) {
+          const genuine = directUsers.filter((u) => !isMockStudent(u.id));
+          setDbChampions(genuine);
+        }
+      } catch (err) {
+        console.debug('Top3Podium direct db load note:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadPodium();
+
+    // Real-time Database onSnapshot + SSE Listener
+    const unsubscribe = subscribeToPodiumCloud(profile, (livePodium) => {
+      if (isMounted && livePodium) {
+        const genuine = livePodium.filter((u) => !isMockStudent(u.id));
+        setDbChampions(genuine);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, [profile]);
+
+  // Combine direct database query with fallback props, strictly purging any mock/robot users
+  const genuinePassed = (topStudents || []).filter((u) => !isMockStudent(u.id));
+  const activeChampions = dbChampions.length > 0 ? dbChampions : genuinePassed;
+
+  // Sort strictly by totalXP descending and assign 1-based ranks
+  const sortedChampions = [...activeChampions].sort((a, b) => (b.allTimeXP || 0) - (a.allTimeXP || 0));
+
+  const rank1 = sortedChampions[0];
+  const rank2 = sortedChampions[1];
+  const rank3 = sortedChampions[2];
+
+  const totalPodiumCount = [rank1, rank2, rank3].filter(Boolean).length;
 
   const handleCheer = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -42,9 +91,44 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
     onCheerStudent(id);
   };
 
-  if (!rank1) return null;
+  // If 0 real users in database, display authentic waiting state (NEVER generate fake robots)
+  if (totalPodiumCount === 0 && !loading) {
+    return (
+      <div
+        id="top-3-podium-section"
+        className="relative overflow-hidden rounded-3xl bg-slate-900/95 dark:bg-slate-950/95 border-2 border-slate-800 dark:border-slate-800/80 p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-center space-y-4 text-slate-100"
+      >
+        <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/10">
+          <Crown className="w-7 h-7 text-yellow-400 fill-yellow-400" />
+        </div>
+        <div className="space-y-1.5 max-w-md mx-auto">
+          <h3 className="text-lg font-black text-white">{title}</h3>
+          <p className="text-xs text-slate-400 font-medium">
+            Live Central Database is active. Solve daily past paper quizzes or study with the Focus Timer to claim Sovereign Rank #1!
+          </p>
+        </div>
+        {onNavigate && (
+          <button
+            type="button"
+            onClick={() => onNavigate('exam_mode')}
+            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black transition cursor-pointer shadow-md shadow-amber-500/20 inline-flex items-center gap-1.5"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Solve a Quiz to Claim Rank #1</span>
+          </button>
+        )}
+      </div>
+    );
+  }
 
-  const totalPodiumCount = [rank1, rank2, rank3].filter(Boolean).length;
+  if (totalPodiumCount === 0 && loading) {
+    return (
+      <div className="rounded-3xl bg-slate-900/95 border-2 border-slate-800 p-8 text-center text-slate-400 animate-pulse">
+        <Crown className="w-8 h-8 text-yellow-500/50 mx-auto mb-2 animate-bounce" />
+        <span className="text-xs font-bold">Connecting to central database podium...</span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -63,13 +147,22 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
           <div>
             <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2 flex-wrap leading-tight">
               <span>{title}</span>
-              <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                100% REAL
+              <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+                <UserCheck className="w-3 h-3" />
+                <span>100% REAL DATABASE</span>
               </span>
             </h3>
-            {subtitle && (
+            {subtitle ? (
               <p className="text-xs text-slate-300 font-medium mt-0.5">
                 {subtitle}
+              </p>
+            ) : (
+              <p className="text-xs text-slate-400 font-medium mt-0.5">
+                {totalPodiumCount === 1
+                  ? '1 registered scholar currently holds the sovereign crown'
+                  : totalPodiumCount === 2
+                  ? '2 registered scholars currently occupying podium ranks'
+                  : 'Live podium rankings updated from central database'}
               </p>
             )}
           </div>
@@ -92,17 +185,17 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
         </div>
       </div>
 
-      {/* Podium Grid dynamically responsive based on available champions */}
+      {/* Podium Grid dynamically responsive based strictly on available real champions */}
       <div
         className={`pt-5 max-w-full items-end ${
           totalPodiumCount === 1
-            ? 'max-w-md mx-auto'
+            ? 'max-w-md mx-auto flex flex-col items-center justify-center'
             : totalPodiumCount === 2
-            ? 'max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6'
+            ? 'max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6'
             : 'grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-4 lg:gap-6'
         }`}
       >
-        {/* RANK #2 - SILVER PODIUM */}
+        {/* RANK #2 - SILVER PODIUM (Rendered ONLY if a real 2nd student exists) */}
         {rank2 && (
           <div className="relative w-full max-w-full rounded-3xl bg-gradient-to-b from-slate-800/90 via-slate-900 to-slate-950 border-2 border-slate-300/60 p-5 sm:p-6 shadow-2xl flex flex-col items-center text-center space-y-3.5 order-2 md:order-1 ring-1 ring-slate-300/30 hover:scale-102 transition duration-300 min-w-0">
             {/* Top Silver Rank Badge */}
@@ -180,7 +273,15 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
 
         {/* RANK #1 - GOLD PODIUM (TALL & GLOWING) */}
         {rank1 && (
-          <div className="relative w-full max-w-full rounded-3xl bg-gradient-to-b from-amber-950/90 via-slate-900 to-slate-950 border-2 border-yellow-400 p-6 sm:p-7 shadow-2xl flex flex-col items-center text-center space-y-4 order-1 md:order-2 ring-2 ring-yellow-400/50 shadow-yellow-500/20 transform md:-translate-y-3 hover:scale-103 transition duration-300 min-w-0">
+          <div
+            className={`relative w-full max-w-full rounded-3xl bg-gradient-to-b from-amber-950/90 via-slate-900 to-slate-950 border-2 border-yellow-400 p-6 sm:p-7 shadow-2xl flex flex-col items-center text-center space-y-4 ring-2 ring-yellow-400/50 shadow-yellow-500/20 transition duration-300 min-w-0 ${
+              totalPodiumCount === 1
+                ? 'max-w-md w-full'
+                : totalPodiumCount === 2
+                ? 'order-1'
+                : 'order-1 md:order-2 transform md:-translate-y-3 hover:scale-103'
+            }`}
+          >
             {/* Top Gold Rank 1 Crown Badge */}
             <div className="absolute -top-4.5 px-4 sm:px-5 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl flex items-center gap-1.5 animate-pulse z-10 whitespace-nowrap">
               <Crown className="w-4 h-4 fill-slate-950 flex-shrink-0" />
@@ -259,7 +360,7 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
           </div>
         )}
 
-        {/* RANK #3 - BRONZE PODIUM / CHALLENGER ZONE */}
+        {/* RANK #3 - BRONZE PODIUM / CHALLENGER ZONE (Rendered ONLY if a real 3rd student exists) */}
         {rank3 && (
           <div className="relative w-full max-w-full rounded-3xl bg-gradient-to-b from-amber-950/80 via-slate-900 to-slate-950 border-2 border-orange-500/80 p-5 sm:p-6 shadow-2xl flex flex-col items-center text-center space-y-3.5 order-3 md:order-3 ring-2 ring-orange-500/50 shadow-orange-500/20 hover:scale-102 transition duration-300 min-w-0">
             {/* Challenger Zone Neon Banner */}
@@ -336,6 +437,30 @@ export const Top3Podium: React.FC<Top3PodiumProps> = ({
           </div>
         )}
       </div>
+
+      {/* Dynamic Podium Slot Availability Indicator when only 1 or 2 real users exist */}
+      {totalPodiumCount < 3 && totalPodiumCount > 0 && (
+        <div className="mt-4 pt-3 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-2 px-2 text-center sm:text-left">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+            <p className="text-xs text-amber-200/90 font-medium">
+              {totalPodiumCount === 1
+                ? '🏆 Podium Spots #2 (Silver) & #3 (Bronze) are OPEN for real contenders!'
+                : '🥈 Podium Spot #3 (Challenger Bronze) is OPEN for real contenders!'}
+            </p>
+          </div>
+          {onNavigate && (
+            <button
+              type="button"
+              onClick={() => onNavigate('exam_mode')}
+              className="text-xs font-bold text-amber-300 hover:text-amber-200 underline decoration-amber-400/50 hover:decoration-amber-300 cursor-pointer"
+            >
+              Complete quizzes to claim your spot &rarr;
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
+

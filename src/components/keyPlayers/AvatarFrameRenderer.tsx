@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Crown, Flame, Zap, Sparkles } from 'lucide-react';
 
 interface AvatarFrameRendererProps {
@@ -22,6 +22,8 @@ export const AvatarFrameRenderer: React.FC<AvatarFrameRendererProps> = ({
   showTierTag = false,
   className = ''
 }) => {
+  const [imgError, setImgError] = useState(false);
+
   // Dimension mappings
   const sizeConfig = {
     xs: {
@@ -29,52 +31,71 @@ export const AvatarFrameRenderer: React.FC<AvatarFrameRendererProps> = ({
       avatar: 'w-7 h-7',
       crownIcon: 'w-3 h-3 -top-2',
       badgeText: 'text-[7px] -bottom-1.5 px-1',
-      frameThickness: 'p-0.5'
+      frameThickness: 'p-0.5',
+      initialsText: 'text-[9px]'
     },
     sm: {
       container: 'w-11 h-11',
       avatar: 'w-9 h-9',
       crownIcon: 'w-3.5 h-3.5 -top-2.5',
       badgeText: 'text-[8px] -bottom-2 px-1.5',
-      frameThickness: 'p-0.5'
+      frameThickness: 'p-0.5',
+      initialsText: 'text-xs'
     },
     md: {
       container: 'w-14 h-14',
       avatar: 'w-12 h-12',
       crownIcon: 'w-4 h-4 -top-3',
       badgeText: 'text-[9px] -bottom-2 px-2',
-      frameThickness: 'p-1'
+      frameThickness: 'p-1',
+      initialsText: 'text-sm'
     },
     lg: {
       container: 'w-20 h-20',
       avatar: 'w-16 h-16',
       crownIcon: 'w-6 h-6 -top-4',
       badgeText: 'text-[10px] -bottom-2.5 px-2.5 py-0.5',
-      frameThickness: 'p-1.5'
+      frameThickness: 'p-1.5',
+      initialsText: 'text-lg'
     },
     xl: {
       container: 'w-28 h-28',
       avatar: 'w-22 h-22',
       crownIcon: 'w-8 h-8 -top-5',
       badgeText: 'text-[11px] -bottom-3 px-3 py-0.5',
-      frameThickness: 'p-2'
+      frameThickness: 'p-2',
+      initialsText: 'text-2xl'
     },
     '2xl': {
       container: 'w-36 h-36',
       avatar: 'w-28 h-28',
       crownIcon: 'w-10 h-10 -top-6',
       badgeText: 'text-xs -bottom-3.5 px-3.5 py-1',
-      frameThickness: 'p-2.5'
+      frameThickness: 'p-2.5',
+      initialsText: 'text-3xl'
     }
   }[size];
 
-  // Specific Free Fire Frame decorations & styles
+  // Specific Frame decorations & styles
   const isRank1 = rank === 1;
   const isRank2 = rank === 2;
   const isRank3 = rank === 3;
 
-  const fallbackAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`;
-  const displayAvatar = avatarUrl && avatarUrl.trim().length > 0 ? avatarUrl : fallbackAvatar;
+  // Clean real student avatar URL
+  const trimmedUrl = avatarUrl?.trim();
+  const validAvatarUrl = trimmedUrl && trimmedUrl.length > 0
+    ? (trimmedUrl.startsWith('image/') ? `data:${trimmedUrl}` : trimmedUrl)
+    : undefined;
+
+  // Helper for clean, standard student initials (e.g. "K" or "KL")
+  const getInitials = (fullName: string) => {
+    if (!fullName || typeof fullName !== 'string') return 'S';
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return fullName.slice(0, 2).toUpperCase();
+  };
 
   // Frame styling determination
   let frameBorderClass = 'border-2 border-slate-400 bg-slate-800';
@@ -201,17 +222,31 @@ export const AvatarFrameRenderer: React.FC<AvatarFrameRendererProps> = ({
       <div
         className={`w-full h-full rounded-full flex items-center justify-center overflow-hidden transition-all duration-300 ${sizeConfig.frameThickness} ${frameBorderClass} ${frameGlowClass}`}
       >
-        {/* Inner Avatar Image */}
+        {/* Inner Avatar: Real student uploaded photo OR authentic standard initials */}
         <div className="w-full h-full rounded-full overflow-hidden bg-slate-900 flex items-center justify-center relative">
-          <img
-            src={displayAvatar}
-            alt={name}
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover rounded-full select-none"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = fallbackAvatar;
-            }}
-          />
+          {validAvatarUrl && !imgError ? (
+            <img
+              src={validAvatarUrl}
+              alt={name}
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover rounded-full select-none"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div
+              className={`w-full h-full rounded-full flex items-center justify-center font-black ${sizeConfig.initialsText} select-none shadow-inner ${
+                isRank1
+                  ? 'bg-gradient-to-br from-yellow-400 via-amber-300 to-yellow-500 text-slate-950'
+                  : isRank2
+                  ? 'bg-gradient-to-br from-slate-300 via-slate-100 to-slate-300 text-slate-950'
+                  : isRank3
+                  ? 'bg-gradient-to-br from-amber-600 via-orange-500 to-amber-700 text-white'
+                  : 'bg-gradient-to-br from-indigo-600 via-purple-600 to-slate-800 text-white'
+              }`}
+            >
+              <span>{getInitials(name)}</span>
+            </div>
+          )}
           {/* Subtle glossy sheen overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/30 pointer-events-none rounded-full" />
         </div>

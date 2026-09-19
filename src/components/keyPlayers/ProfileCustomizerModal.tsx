@@ -406,7 +406,7 @@ export const ProfileCustomizerModal: React.FC<ProfileCustomizerModalProps> = ({
                   type="text"
                   value={schoolOrInst}
                   onChange={(e) => setSchoolOrInst(e.target.value)}
-                  placeholder="e.g. Ananda College, Cambridge, MIT, Richmond, Royal College"
+                  placeholder="e.g. Oxford, MIT, Cambridge, National High School"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm text-white outline-none transition"
                 />
               </div>

@@ -120,21 +120,14 @@ export default function GoogleAccountPickerModal({
       // ignore
     }
 
-    // Preset standard demo accounts for instant testing if not already included
+    // Preset real student account for instant authentication across devices
     const standardGooglePresets: DeviceGoogleAccount[] = [
       {
         id: 'usr_g_heshan',
         name: 'Heshan Subasinghe',
         email: 'subashheshan009@gmail.com',
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-        badge: 'University Engineering'
-      },
-      {
-        id: 'usr_g_kasun',
-        name: 'Kasun Perera',
-        email: 'kasun.perera.studies@gmail.com',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-        badge: 'A/L Maths Candidate'
+        badge: 'Verified Scholar'
       }
     ];
 

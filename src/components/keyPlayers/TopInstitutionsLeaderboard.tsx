@@ -18,12 +18,14 @@ import {
   Sparkles,
   ArrowUpRight,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Building2
 } from 'lucide-react';
 import { soundFX } from '@/utils/audioUtils';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { TOP_INSTITUTIONS_LIST, type InstitutionAchiever } from '@/data/keyPlayersData';
+import { useLeaderboard } from '@/hooks/useLeaderboard';
+import type { InstitutionAchiever } from '@/data/keyPlayersData';
 
 interface TopInstitutionsLeaderboardProps {
   onOpenProfileCustomizer?: () => void;
@@ -34,13 +36,93 @@ export const TopInstitutionsLeaderboard: React.FC<TopInstitutionsLeaderboardProp
 }) => {
   const { profile } = useAuth();
   const { language } = useLanguage();
+  const { leaderboard } = useLeaderboard();
 
-  const [institutions, setInstitutions] = useState<InstitutionAchiever[]>(TOP_INSTITUTIONS_LIST);
+  const [cheersMap, setCheersMap] = useState<Record<string, number>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCountry, setSelectedCountry] = useState<string>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [sortBy, setSortBy] = useState<'xp' | 'students' | 'accuracy'>('xp');
   const [expandedInstId, setExpandedInstId] = useState<string | null>(null);
+
+  // Compute institutions strictly from genuine registered students in central database
+  const institutions = useMemo<InstitutionAchiever[]>(() => {
+    const instMap = new Map<string, {
+      name: string;
+      category: string;
+      countryCode: string;
+      countryFlag: string;
+      countryName: string;
+      city: string;
+      studentsCount: number;
+      totalXP: number;
+      totalAccuracy: number;
+      topStream: string;
+      baseCheers: number;
+    }>();
+
+    for (const student of leaderboard) {
+      const instName = student.institution?.trim();
+      if (!instName) continue;
+
+      const key = instName.toLowerCase();
+      const existing = instMap.get(key);
+      if (existing) {
+        existing.studentsCount += 1;
+        existing.totalXP += (student.allTimeXP || 0);
+        existing.totalAccuracy += (student.quizAccuracy || 95);
+        existing.baseCheers += (student.cheersCount || 0);
+      } else {
+        instMap.set(key, {
+          name: instName,
+          category: student.academicCategory || 'School',
+          countryCode: student.countryCode || 'LK',
+          countryFlag: student.countryFlag || '🇱🇰',
+          countryName: student.countryName || 'Sri Lanka',
+          city: student.districtOrCity || 'National',
+          studentsCount: 1,
+          totalXP: student.allTimeXP || 0,
+          totalAccuracy: student.quizAccuracy || 95,
+          topStream: student.stream || 'General Academic',
+          baseCheers: student.cheersCount || 0
+        });
+      }
+    }
+
+    const aggregated: InstitutionAchiever[] = Array.from(instMap.values()).map((item, idx) => {
+      const id = `inst-${item.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+      const addedCheers = cheersMap[id] || 0;
+      const validCategory: 'National High School' | 'Collegiate University' | 'International School' | 'Primary / Junior College' =
+        item.category === 'University' ? 'Collegiate University' :
+        item.category === 'Scholarship / Primary' ? 'Primary / Junior College' :
+        item.countryCode !== 'LK' ? 'International School' :
+        'National High School';
+
+      return {
+        id,
+        rank: idx + 1,
+        name: item.name,
+        shortName: item.name.length > 24 ? item.name.slice(0, 22) + '...' : item.name,
+        category: validCategory,
+        countryCode: item.countryCode,
+        countryFlag: item.countryFlag,
+        countryName: item.countryName,
+        city: item.city,
+        totalStudents: item.studentsCount,
+        totalXP: item.totalXP,
+        averageAccuracy: Math.round((item.totalAccuracy / item.studentsCount) * 10) / 10,
+        topStream: item.topStream,
+        cheersCount: item.baseCheers + addedCheers,
+        shieldBadge: '🏫 Authentic Registered Institution',
+        crestColor: 'from-blue-600 via-indigo-500 to-slate-800'
+      };
+    });
+
+    return aggregated.sort((a, b) => b.totalXP - a.totalXP).map((inst, idx) => ({
+      ...inst,
+      rank: idx + 1
+    }));
+  }, [leaderboard, cheersMap]);
 
   // Filter and sort institutions
   const filteredInstitutions = useMemo(() => {
@@ -90,12 +172,10 @@ export const TopInstitutionsLeaderboard: React.FC<TopInstitutionsLeaderboardProp
       });
     } catch {}
 
-    // Increment institution cheer count in state
-    setInstitutions((prev) =>
-      prev.map((inst) =>
-        inst.id === id ? { ...inst, cheersCount: inst.cheersCount + 1 } : inst
-      )
-    );
+    setCheersMap((prev) => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }));
   };
 
   const top3 = filteredInstitutions.slice(0, 3);
@@ -349,102 +429,120 @@ export const TopInstitutionsLeaderboard: React.FC<TopInstitutionsLeaderboardProp
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {filteredInstitutions.map((inst, index) => {
-                const rankNum = index + 1;
-                const isUserSchool =
-                  profile?.school?.toLowerCase().includes(inst.shortName.toLowerCase()) ||
-                  profile?.university?.toLowerCase().includes(inst.shortName.toLowerCase());
-
-                return (
-                  <tr
-                    key={inst.id}
-                    onClick={() => setExpandedInstId((prev) => (prev === inst.id ? null : inst.id))}
-                    className={`hover:bg-slate-800/50 transition cursor-pointer ${
-                      isUserSchool ? 'bg-indigo-950/30 font-semibold' : ''
-                    }`}
-                  >
-                    {/* Rank Badge */}
-                    <td className="py-3.5 px-3">
-                      <div className="flex items-center gap-1.5">
-                        {rankNum === 1 ? (
-                          <span className="w-7 h-7 rounded-xl bg-yellow-400 text-slate-950 font-black flex items-center justify-center text-xs shadow-md shadow-yellow-500/30">
-                            1
-                          </span>
-                        ) : rankNum === 2 ? (
-                          <span className="w-7 h-7 rounded-xl bg-slate-300 text-slate-950 font-black flex items-center justify-center text-xs shadow-md">
-                            2
-                          </span>
-                        ) : rankNum === 3 ? (
-                          <span className="w-7 h-7 rounded-xl bg-amber-600 text-white font-black flex items-center justify-center text-xs shadow-md">
-                            3
-                          </span>
-                        ) : (
-                          <span className="w-7 h-7 rounded-xl bg-slate-800 text-slate-300 font-bold flex items-center justify-center text-xs">
-                            #{rankNum}
-                          </span>
-                        )}
+              {filteredInstitutions.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 px-4 text-center">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                        <Building2 className="w-6 h-6" />
                       </div>
-                    </td>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-200">No Registered Institutions in Database</h4>
+                        <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+                          Schools and universities automatically appear here as real students register with their school across Phone, Laptop, and Tablet.
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredInstitutions.map((inst, index) => {
+                  const rankNum = index + 1;
+                  const isUserSchool =
+                    profile?.school?.toLowerCase().includes(inst.shortName.toLowerCase()) ||
+                    profile?.university?.toLowerCase().includes(inst.shortName.toLowerCase());
 
-                    {/* Institution Name & City */}
-                    <td className="py-3.5 px-3 min-w-[200px]">
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-lg shrink-0">{inst.countryFlag}</span>
-                        <div>
-                          <div className="font-bold text-white flex items-center gap-2">
-                            <span>{inst.name}</span>
-                            {isUserSchool && (
-                              <span className="px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[9px] font-black uppercase">
-                                My Institution
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[11px] text-slate-400 block">
-                            {inst.city}, {inst.countryName}
-                          </span>
+                  return (
+                    <tr
+                      key={inst.id}
+                      onClick={() => setExpandedInstId((prev) => (prev === inst.id ? null : inst.id))}
+                      className={`hover:bg-slate-800/50 transition cursor-pointer ${
+                        isUserSchool ? 'bg-indigo-950/30 font-semibold' : ''
+                      }`}
+                    >
+                      {/* Rank Badge */}
+                      <td className="py-3.5 px-3">
+                        <div className="flex items-center gap-1.5">
+                          {rankNum === 1 ? (
+                            <span className="w-7 h-7 rounded-xl bg-yellow-400 text-slate-950 font-black flex items-center justify-center text-xs shadow-md shadow-yellow-500/30">
+                              1
+                            </span>
+                          ) : rankNum === 2 ? (
+                            <span className="w-7 h-7 rounded-xl bg-slate-300 text-slate-950 font-black flex items-center justify-center text-xs shadow-md">
+                              2
+                            </span>
+                          ) : rankNum === 3 ? (
+                            <span className="w-7 h-7 rounded-xl bg-amber-600 text-white font-black flex items-center justify-center text-xs shadow-md">
+                              3
+                            </span>
+                          ) : (
+                            <span className="w-7 h-7 rounded-xl bg-slate-800 text-slate-300 font-bold flex items-center justify-center text-xs">
+                              #{rankNum}
+                            </span>
+                          )}
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Category */}
-                    <td className="py-3.5 px-3">
-                      <span className="px-2.5 py-1 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 text-[11px] font-medium whitespace-nowrap">
-                        {inst.category}
-                      </span>
-                    </td>
+                      {/* Institution Name & City */}
+                      <td className="py-3.5 px-3 min-w-[200px]">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-lg shrink-0">{inst.countryFlag}</span>
+                          <div>
+                            <div className="font-bold text-white flex items-center gap-2">
+                              <span>{inst.name}</span>
+                              {isUserSchool && (
+                                <span className="px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[9px] font-black uppercase">
+                                  My Institution
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px] text-slate-400 block">
+                              {inst.city}, {inst.countryName}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
 
-                    {/* Student count */}
-                    <td className="py-3.5 px-3 text-right font-bold text-slate-300">
-                      {inst.totalStudents.toLocaleString()}
-                    </td>
+                      {/* Category */}
+                      <td className="py-3.5 px-3">
+                        <span className="px-2.5 py-1 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 text-[11px] font-medium whitespace-nowrap">
+                          {inst.category}
+                        </span>
+                      </td>
 
-                    {/* Accuracy */}
-                    <td className="py-3.5 px-3 text-right font-bold text-emerald-400">
-                      {inst.averageAccuracy}%
-                    </td>
+                      {/* Student count */}
+                      <td className="py-3.5 px-3 text-right font-bold text-slate-300">
+                        {inst.totalStudents.toLocaleString()}
+                      </td>
 
-                    {/* Total XP */}
-                    <td className="py-3.5 px-3 text-right">
-                      <span className="font-black text-amber-300 text-sm">
-                        {inst.totalXP.toLocaleString()}
-                      </span>
-                      <span className="text-[10px] text-slate-400 block">XP</span>
-                    </td>
+                      {/* Accuracy */}
+                      <td className="py-3.5 px-3 text-right font-bold text-emerald-400">
+                        {inst.averageAccuracy}%
+                      </td>
 
-                    {/* Cheer Button */}
-                    <td className="py-3.5 px-3 text-center">
-                      <button
-                        type="button"
-                        onClick={(e) => handleCheerInstitution(e, inst.id)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 font-bold text-xs inline-flex items-center gap-1.5 transition cursor-pointer hover:scale-105 active:scale-95"
-                      >
-                        <ThumbsUp className="w-3.5 h-3.5 text-amber-400" />
-                        <span>{inst.cheersCount}</span>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                      {/* Total XP */}
+                      <td className="py-3.5 px-3 text-right">
+                        <span className="font-black text-amber-300 text-sm">
+                          {inst.totalXP.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] text-slate-400 block">XP</span>
+                      </td>
+
+                      {/* Cheer Button */}
+                      <td className="py-3.5 px-3 text-center">
+                        <button
+                          type="button"
+                          onClick={(e) => handleCheerInstitution(e, inst.id)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 font-bold text-xs inline-flex items-center gap-1.5 transition cursor-pointer hover:scale-105 active:scale-95"
+                        >
+                          <ThumbsUp className="w-3.5 h-3.5 text-amber-400" />
+                          <span>{inst.cheersCount}</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
